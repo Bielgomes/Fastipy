@@ -1,4 +1,4 @@
-from decorators.Routes import Routes
+from pyhermes import Routes
 
 routes = Routes()
 
@@ -18,4 +18,4 @@ def home():
 def home():
   print("PUT")
 
-routes.run(port=7777)
+routes.run(application="CodeFreelas API", port=7777)
