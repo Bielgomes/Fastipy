@@ -51,25 +51,35 @@ class Routes:
 
     httpd = HTTPServer(('localhost', port), handler) 
     
-    print('''
-   ▄███████▄ ▄██   ▄           ▄█    █▄       ▄████████    ▄████████   ▄▄▄▄███▄▄▄▄      ▄████████    ▄████████ 
-  ███    ███ ███   ██▄        ███    ███     ███    ███   ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███   ███    ███ 
-  ███    ███ ███▄▄▄███        ███    ███     ███    █▀    ███    ███ ███   ███   ███   ███    █▀    ███    █▀  
-  ███    ███ ▀▀▀▀▀▀███       ▄███▄▄▄▄███▄▄  ▄███▄▄▄      ▄███▄▄▄▄██▀ ███   ███   ███  ▄███▄▄▄       ███        
-▀█████████▀  ▄██   ███      ▀▀███▀▀▀▀███▀  ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ███   ███   ███ ▀▀███▀▀▀     ▀███████████ 
-  ███        ███   ███        ███    ███     ███    █▄  ▀███████████ ███   ███   ███   ███    █▄           ███ 
-  ███        ███   ███        ███    ███     ███    ███   ███    ███ ███   ███   ███   ███    ███    ▄█    ███ 
- ▄████▀       ▀█████▀         ███    █▀      ██████████   ███    ███  ▀█   ███   █▀    ██████████  ▄████████▀  
-                                                          ███    ███                                                                                                                                         
-''')
+#     print('''
+#    ▄███████▄ ▄██   ▄           ▄█    █▄       ▄████████    ▄████████   ▄▄▄▄███▄▄▄▄      ▄████████    ▄████████ 
+#   ███    ███ ███   ██▄        ███    ███     ███    ███   ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███   ███    ███ 
+#   ███    ███ ███▄▄▄███        ███    ███     ███    █▀    ███    ███ ███   ███   ███   ███    █▀    ███    █▀  
+#   ███    ███ ▀▀▀▀▀▀███       ▄███▄▄▄▄███▄▄  ▄███▄▄▄      ▄███▄▄▄▄██▀ ███   ███   ███  ▄███▄▄▄       ███        
+# ▀█████████▀  ▄██   ███      ▀▀███▀▀▀▀███▀  ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ███   ███   ███ ▀▀███▀▀▀     ▀███████████ 
+#   ███        ███   ███        ███    ███     ███    █▄  ▀███████████ ███   ███   ███   ███    █▄           ███ 
+#   ███        ███   ███        ███    ███     ███    ███   ███    ███ ███   ███   ███   ███    ███    ▄█    ███ 
+#  ▄████▀       ▀█████▀         ███    █▀      ██████████   ███    ███  ▀█   ███   █▀    ██████████  ▄████████▀  
+#                                                           ███    ███                                                                                                                                         
+# ''')
 
-    spaces = len(application)
-    print(f'PyHermes Server Running')
-    
+    open_browser = "| Open http://localhost:{port}"
+    pyHermes = "| PyHermes Server Running"
+    debug_mode = "| Debug mode > True "
+    application_port = f"| {application} on port > {port}"
+    top_down = "+" + "-"*(len(application_port)) + "+"
+
+    def add_pipe(string):
+        return string + " "*(len(application_port) - len(string) + 1) + "|"
+        
+    print(top_down)
+    print(add_pipe(pyHermes))
+
     if debug:
-      print(f'Debug mode' , ''*(spaces), '> True')
+        print(add_pipe(debug_mode))
 
-    print(f'{application} on port > "{port}"')
-    print(f'\nOpen http://localhost:{port} in your browser')
+    print(add_pipe(application_port))
+    print(add_pipe(open_browser))
+    print(top_down)
 
     httpd.serve_forever()
