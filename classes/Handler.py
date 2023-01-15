@@ -1,5 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 
+import contextvars
+
 import time
 
 class Handler(BaseHTTPRequestHandler):
@@ -18,19 +20,28 @@ class Handler(BaseHTTPRequestHandler):
   def handle_request(self, method):
     for path in self.routes:
       if path == self.path:
-        self.routes[path][method]()
+        request = contextvars.ContextVar(name='color', default='red')
+
+        self.routes[path][method](request)
+
+        print(self.path)
+        print(self.command)
+        print(self.headers)
+        print(self.server_version)
+
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b'ok')
         break
 
-class DebugHandler(Handler):
+class Debug_handler(Handler):
   def handle_request(self, method):
     start = time.time()
 
     for path in self.routes:
       if path == self.path:
-        self.routes[path][method]()
+        request = contextvars.ContextVar('color', default='red')
+        self.routes[path][method](request)
         self.send_response(200)
         self.end_headers()
         self.wfile.write(b'ok')

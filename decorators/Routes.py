@@ -1,9 +1,9 @@
 from http.server import HTTPServer
 
-from classes.Handler import Handler, DebugHandler
+from classes.handler import Handler, Debug_handler
 
-from exceptions.DuplicateRoute import DuplicateRoute
-from exceptions.InvalidPath import InvalidPath
+from exceptions.duplicate_route import Duplicate_route
+from exceptions.invalid_path import Invalid_path
 
 import re
 
@@ -13,16 +13,16 @@ class Routes:
 
   def validate_path(self, path):
     if not re.fullmatch(r'\/([a-zA-Z0-9])*', path['path']):
-      raise InvalidPath(f'Invalid path: "{path["path"]}"')
+      raise Invalid_path(f'Invalid path: "{path["path"]}"')
     
     try:
       if self.routes[path['path']].get(path['method']):
-        raise DuplicateRoute(f'Duplicate route: Method "{path["method"]}" Path "{path["path"]}"')
+        raise Duplicate_route(f'Duplicate route: Method "{path["method"]}" Path "{path["path"]}"')
     except KeyError:
       self.routes[path['path']] = {path['method']: path['function']}
 
   def get(self, path):
-    def internal(func):
+    def internal(func, *args, **kwargs):
       self.validate_path({'method': 'GET', 'path': path, 'function': func})
     return internal
 
@@ -45,26 +45,26 @@ class Routes:
     if not debug:
       handler = Handler
     else:
-      handler = DebugHandler
+      handler = Debug_handler
 
     handler.routes = self.routes
 
     httpd = HTTPServer(('localhost', port), handler) 
     
-#     print('''
-#    ▄███████▄ ▄██   ▄           ▄█    █▄       ▄████████    ▄████████   ▄▄▄▄███▄▄▄▄      ▄████████    ▄████████ 
-#   ███    ███ ███   ██▄        ███    ███     ███    ███   ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███   ███    ███ 
-#   ███    ███ ███▄▄▄███        ███    ███     ███    █▀    ███    ███ ███   ███   ███   ███    █▀    ███    █▀  
-#   ███    ███ ▀▀▀▀▀▀███       ▄███▄▄▄▄███▄▄  ▄███▄▄▄      ▄███▄▄▄▄██▀ ███   ███   ███  ▄███▄▄▄       ███        
-# ▀█████████▀  ▄██   ███      ▀▀███▀▀▀▀███▀  ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ███   ███   ███ ▀▀███▀▀▀     ▀███████████ 
-#   ███        ███   ███        ███    ███     ███    █▄  ▀███████████ ███   ███   ███   ███    █▄           ███ 
-#   ███        ███   ███        ███    ███     ███    ███   ███    ███ ███   ███   ███   ███    ███    ▄█    ███ 
-#  ▄████▀       ▀█████▀         ███    █▀      ██████████   ███    ███  ▀█   ███   █▀    ██████████  ▄████████▀  
-#                                                           ███    ███                                                                                                                                         
-# ''')
+    print('''
+   ▄███████▄ ▄██   ▄           ▄█    █▄       ▄████████    ▄████████   ▄▄▄▄███▄▄▄▄      ▄████████    ▄████████ 
+  ███    ███ ███   ██▄        ███    ███     ███    ███   ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███   ███    ███ 
+  ███    ███ ███▄▄▄███        ███    ███     ███    █▀    ███    ███ ███   ███   ███   ███    █▀    ███    █▀  
+  ███    ███ ▀▀▀▀▀▀███       ▄███▄▄▄▄███▄▄  ▄███▄▄▄      ▄███▄▄▄▄██▀ ███   ███   ███  ▄███▄▄▄       ███        
+▀█████████▀  ▄██   ███      ▀▀███▀▀▀▀███▀  ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ███   ███   ███ ▀▀███▀▀▀     ▀███████████ 
+  ███        ███   ███        ███    ███     ███    █▄  ▀███████████ ███   ███   ███   ███    █▄           ███ 
+  ███        ███   ███        ███    ███     ███    ███   ███    ███ ███   ███   ███   ███    ███    ▄█    ███ 
+ ▄████▀       ▀█████▀         ███    █▀      ██████████   ███    ███  ▀█   ███   █▀    ██████████  ▄████████▀  
+                                                          ███    ███                                                                                                                                         
+''')
 
     open_browser = f"| Open http://localhost:{port}"
-    pyHermes = "| PyHermes Server Running"
+    py_hermes = "| PyHermes Server Running"
     debug_mode = "| Debug mode > True "
     application_port = f"| {application} on port > {port}"
     top_down = "+" + "-"*(len(application_port)) + "+"
@@ -73,7 +73,7 @@ class Routes:
         return string + " "*(len(application_port) - len(string) + 1) + "|"
         
     print(top_down)
-    print(add_pipe(pyHermes))
+    print(add_pipe(py_hermes))
 
     if debug:
         print(add_pipe(debug_mode))

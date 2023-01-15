@@ -1,2 +1,2 @@
-from decorators.Routes import Routes
-from classes.Response import Response
+from decorators.routes import Routes
+from classes.response import Response

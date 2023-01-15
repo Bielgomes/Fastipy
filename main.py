@@ -4,7 +4,7 @@ routes = Routes()
 
 @routes.get('/')
 def home():
-  print("Esse")
+  print(request.get('color'))
 
 @routes.get('/home')
 def home():
@@ -18,4 +18,8 @@ def home():
 def home():
   print("PUT")
 
-routes.run(application="CodeFreelas API", port=7777, debug=True)
+routes.run(
+  application="CodeFreelas API",
+  port=7777,
+  debug=True
+)
