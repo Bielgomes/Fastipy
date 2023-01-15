@@ -63,7 +63,7 @@ class Routes:
 #                                                           ███    ███                                                                                                                                         
 # ''')
 
-    open_browser = "| Open http://localhost:{port}"
+    open_browser = f"| Open http://localhost:{port}"
     pyHermes = "| PyHermes Server Running"
     debug_mode = "| Debug mode > True "
     application_port = f"| {application} on port > {port}"
@@ -80,6 +80,5 @@ class Routes:
 
     print(add_pipe(application_port))
     print(add_pipe(open_browser))
-    print(top_down)
-
+    print(top_down)    
     httpd.serve_forever()
