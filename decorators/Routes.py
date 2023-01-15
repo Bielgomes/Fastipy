@@ -5,6 +5,8 @@ from classes.handler import Handler, Debug_handler
 from exceptions.duplicate_route import Duplicate_route
 from exceptions.invalid_path import Invalid_path
 
+from functions.printReady import printready
+
 import re
 
 class Routes:
@@ -51,34 +53,17 @@ class Routes:
 
     httpd = HTTPServer(('localhost', port), handler) 
     
-    print('''
-   ▄███████▄ ▄██   ▄           ▄█    █▄       ▄████████    ▄████████   ▄▄▄▄███▄▄▄▄      ▄████████    ▄████████ 
-  ███    ███ ███   ██▄        ███    ███     ███    ███   ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███   ███    ███ 
-  ███    ███ ███▄▄▄███        ███    ███     ███    █▀    ███    ███ ███   ███   ███   ███    █▀    ███    █▀  
-  ███    ███ ▀▀▀▀▀▀███       ▄███▄▄▄▄███▄▄  ▄███▄▄▄      ▄███▄▄▄▄██▀ ███   ███   ███  ▄███▄▄▄       ███        
-▀█████████▀  ▄██   ███      ▀▀███▀▀▀▀███▀  ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ███   ███   ███ ▀▀███▀▀▀     ▀███████████ 
-  ███        ███   ███        ███    ███     ███    █▄  ▀███████████ ███   ███   ███   ███    █▄           ███ 
-  ███        ███   ███        ███    ███     ███    ███   ███    ███ ███   ███   ███   ███    ███    ▄█    ███ 
- ▄████▀       ▀█████▀         ███    █▀      ██████████   ███    ███  ▀█   ███   █▀    ██████████  ▄████████▀  
-                                                          ███    ███                                                                                                                                         
-''')
+#     print('''
+#    ▄███████▄ ▄██   ▄           ▄█    █▄       ▄████████    ▄████████   ▄▄▄▄███▄▄▄▄      ▄████████    ▄████████ 
+#   ███    ███ ███   ██▄        ███    ███     ███    ███   ███    ███ ▄██▀▀▀███▀▀▀██▄   ███    ███   ███    ███ 
+#   ███    ███ ███▄▄▄███        ███    ███     ███    █▀    ███    ███ ███   ███   ███   ███    █▀    ███    █▀  
+#   ███    ███ ▀▀▀▀▀▀███       ▄███▄▄▄▄███▄▄  ▄███▄▄▄      ▄███▄▄▄▄██▀ ███   ███   ███  ▄███▄▄▄       ███        
+# ▀█████████▀  ▄██   ███      ▀▀███▀▀▀▀███▀  ▀▀███▀▀▀     ▀▀███▀▀▀▀▀   ███   ███   ███ ▀▀███▀▀▀     ▀███████████ 
+#   ███        ███   ███        ███    ███     ███    █▄  ▀███████████ ███   ███   ███   ███    █▄           ███ 
+#   ███        ███   ███        ███    ███     ███    ███   ███    ███ ███   ███   ███   ███    ███    ▄█    ███ 
+#  ▄████▀       ▀█████▀         ███    █▀      ██████████   ███    ███  ▀█   ███   █▀    ██████████  ▄████████▀  
+#                                                           ███    ███                                                                                      
+# ''')
 
-    open_browser = f"| Open http://localhost:{port}"
-    py_hermes = "| PyHermes Server Running"
-    debug_mode = "| Debug mode > True "
-    application_port = f"| {application} on port > {port}"
-    top_down = "+" + "-"*(len(application_port)) + "+"
-
-    def add_pipe(string):
-        return string + " "*(len(application_port) - len(string) + 1) + "|"
-        
-    print(top_down)
-    print(add_pipe(py_hermes))
-
-    if debug:
-        print(add_pipe(debug_mode))
-
-    print(add_pipe(application_port))
-    print(add_pipe(open_browser))
-    print(top_down)    
+    printready(application, port, debug)
     httpd.serve_forever()

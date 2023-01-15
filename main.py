@@ -4,7 +4,7 @@ routes = Routes()
 
 @routes.get('/')
 def home():
-  print(request.get('color'))
+  print("GET")
 
 @routes.get('/home')
 def home():
