@@ -3,7 +3,7 @@ from http.server import BaseHTTPRequestHandler
 from classes.response import Response
 from classes.request import Request
 
-import time
+from classes.timer import Timer
 
 class Handler(BaseHTTPRequestHandler):
   def do_GET(self):
@@ -26,11 +26,9 @@ class Handler(BaseHTTPRequestHandler):
 
 class Debug_handler(Handler):
   def handle_request(self, method):
-    start = time.time()
+    timer = Timer()
     for path in self.routes:
       if path == self.path.split('?')[0] and self.routes[path][method]:
         self.routes[path][method](Request(self), Response(self))
-        end = time.time()
-        elapsed_time = (end - start) * 1000
-        print(f"Debug > Function execution time: {elapsed_time.__round__(2)} ms")
+        timer.end()
         break
