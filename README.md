@@ -6,12 +6,12 @@
 
 ## What is it and what is it for
 
-[PyForgeAPI](https://github.com/luisviniciuslv/PyForgeAPI) is a fast, very simple to use and understand open source python library for developing RESTful APIs.
+[PyForgeAPI](https://pypi.org/project/PyForgeAPI/) is a fast, very simple to use and understand open source python library for developing RESTful APIs.
 
-## Installation `future`
+## Installation
 
 ```bash
-pip install pyforgeapi
+pip install PyForgeAPI
 ```
 
 ## Exemples
