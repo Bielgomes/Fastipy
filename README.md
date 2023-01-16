@@ -78,7 +78,7 @@ routes = Routes()
 def createUser(req: Request, res: Response):
   user = req.body.json
   # Update user in database
-  res.sendStatus( 201 )
+  res.sendStatus(201)
 
 routes.run(application="Person API", port=1395)
 ```
