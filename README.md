@@ -44,7 +44,7 @@ routes = Routes()
 def getUser(req: Request, res: Response):
   users =["#users from database"]
   for i in users:
-    if i["id"] == req.form["id"]:
+    if i["id"] == req.params["id"]:
       return res.json(i).send()
   return res.sendStatus(404)
 
