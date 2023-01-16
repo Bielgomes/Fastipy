@@ -1,7 +1,6 @@
 from http.server import BaseHTTPRequestHandler
 
 import json
-import re
 
 class Request():
   def __init__(self, request: BaseHTTPRequestHandler):

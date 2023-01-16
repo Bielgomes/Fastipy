@@ -21,8 +21,9 @@ class Handler(BaseHTTPRequestHandler):
     self.handler_request('DELETE')
 
   def handler_request(self, method):
-    for path in self.routes:
-      if path == self.path.split('?')[0] and self.routes[path][method]:
+    for path in self.routes:  
+      if path_validate(self.path, path):
+        self.full_path = path
         self.routes[path][method](Request(self), Response(self))
         break
 
@@ -31,7 +32,7 @@ class Debug_handler(Handler):
     timer = Timer()
 
     for path in self.routes:  
-      if path_validate(self.path, path):
+      if path_validate(self, path, method):
         self.full_path = path
         self.routes[path][method](Request(self), Response(self))
         timer.end()

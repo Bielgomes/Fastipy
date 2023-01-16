@@ -16,6 +16,8 @@ pip install pyforgeapi
 
 ## Exemples
 
+### Exemple for GET Route with form params
+
 ```python
 from pyforgeapi import Routes, Response, Request
 
@@ -23,25 +25,62 @@ routes = Routes(debug=True)
 
 @routes.get('/')
 def home(req: Request, res: Response):
-  password = req.params['password']
+  # Get form params age
+  age = req.form['age']
+  # Recovery all persons from database with this age
+  res.html("<h1>Listing all persons</h1><ul><li>A Person</li></ul>").status(200).send()
 
-  if password == '123':
-    return res.html("<h1>Logado</h1>").status(200).send()
-  return res.html("<h1>Senha incorreta</h1>").status(401).send()
+routes.run(application="Person API", port=1395)
 ```
+
+### Exemple for GET Route with params
 
 ```python
 from pyforgeapi import Routes, Response, Request
 
-routes = Routes(debug=True)
+routes = Routes()
 
-@routes.post('/')
-def home(req: Request, res: Response):
-  password = req.body.json['password']
+@routes.get('/user/:id')
+def getUser(req: Request, res: Response):
+  users =["#users from database"]
+  for i in users:
+    if i["id"] == req.form["id"]:
+      return res.json(i).send()
+  return res.sendStatus(404)
 
-  if password == '123':
-    return res.html("<h1>Logado</h1>").status(200).send()
-  return res.html("<h1>Senha incorreta</h1>").status(401).send()
+routes.run(application="Person API", port=1395)
+```
+
+### Exemple for POST Route with Body
+
+```python
+from pyforgeapi import Routes, Response, Request
+
+routes = Routes()
+
+@routes.post('/user')
+def createUser(req: Request, res: Response):
+  user = req.body.json
+  # Save user in database
+  res.sendStatus( 201 )
+
+routes.run(application="Person API", port=1395)
+```
+
+### Exemple for PUT Route with Body
+
+```python
+from pyforgeapi import Routes, Response, Request
+
+routes = Routes()
+
+@routes.put('/user')
+def createUser(req: Request, res: Response):
+  user = req.body.json
+  # Update user in database
+  res.sendStatus( 201 )
+
+routes.run(application="Person API", port=1395)
 ```
 
 # Contributors

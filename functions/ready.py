@@ -1,4 +1,4 @@
-def ready(application, port, debug):
+def ready(application, host, port, debug):
   print('''
    ▄███████▄ ▄██   ▄      ▄████████  ▄██████▄     ▄████████    ▄██████▄     ▄████████    ▄████████    ▄███████▄  ▄█  
   ███    ███ ███   ██▄   ███    ███ ███    ███   ███    ███   ███    ███   ███    ███   ███    ███   ███    ███ ███  
@@ -11,7 +11,7 @@ def ready(application, port, debug):
                                                  ███    ███                                                          
 ''')
   
-  open_browser = f"| Open http://localhost:{port}"
+  open_browser = f"| Open http://{host}:{port}"
   py_forge_api = "| PyForgeAPI Server Running"
   debug_mode = "| Debug mode > True "
   application_port = f"| {application} on port > {port}"
@@ -24,12 +24,14 @@ def ready(application, port, debug):
   top_down = "+" + "-"*(longest) + "+"
 
   def add_pipe(string):
-      return string + " "*(longest - len(string) + 1) + "|"
+    return string + " "*(longest - len(string) + 1) + "|"
   
   print(top_down)
   print(add_pipe(py_forge_api))
+
   if debug:
       print(add_pipe(debug_mode))
+
   print(add_pipe(application_port))
   print(add_pipe(open_browser))
   print(top_down)
