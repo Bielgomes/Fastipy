@@ -24,7 +24,6 @@ routes = Routes(debug=True)
 @routes.get('/')
 def home(req: Request, res: Response):
   password = req.params['password']
-  print(password)
 
   if password == '123':
     return res.html("<h1>Logado</h1>").status(200).send()
@@ -39,7 +38,6 @@ routes = Routes(debug=True)
 @routes.post('/')
 def home(req: Request, res: Response):
   password = req.body.json['password']
-  print(password)
 
   if password == '123':
     return res.html("<h1>Logado</h1>").status(200).send()

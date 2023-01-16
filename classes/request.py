@@ -1,5 +1,7 @@
 from http.server import BaseHTTPRequestHandler
+
 import json
+import re
 
 class Request():
   def __init__(self, request: BaseHTTPRequestHandler):
@@ -11,10 +13,10 @@ class Request():
   
   @property
   def path(self):
-    return self._request.path.split('?')[0]
+    return self._request.path
 
   @property
-  def params(self):
+  def form(self):
     try:
       params = {}
       _params = self._request.path.split('?')[1].split('&')
@@ -24,7 +26,20 @@ class Request():
       return params
     except:
       params = {}
-  
+
+  @property
+  def params(self):
+    original_parts = self._request.path.split("/")
+    path_parts = self._request.full_path.split("/")
+
+    params = {}
+
+    for i in range(len(original_parts)):
+      if path_parts[i].startswith(':'):
+        params[path_parts[i].replace(':', '')] = original_parts[i]
+
+    return params if params else None
+
   @property
   def headers(self):
     return self._request.headers

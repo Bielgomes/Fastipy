@@ -13,43 +13,48 @@ class Routes:
   def __init__(self, debug=False):
     self.routes = {}
     self.debug = debug
+    self.registred_paths = {}
     
     if self.debug:
       print('')
 
-  def validate_path(self, path):
-    if not re.search(r'\/([a-zA-Z0-9])*', path['path']):
-      raise Invalid_path(f'Invalid path: "{path["path"]}"')
-    
+  def add_rote(self, route):
+    if not re.fullmatch(r"^(\/:?[a-zA-Z]?[a-zA-Z0-9]+)*(\/[a-zA-Z0-9]+)*$|^\/$", route['path']):
+      raise Invalid_path(f'Invalid path: "{route["path"]}"')
+
+    new_route = re.sub(r':(\w+)', 'variable', route['path'])    
+
     try:
-      if self.routes[path['path']].get(path['method']):
-        raise Duplicate_route(f'Duplicate route: Method "{path["method"]}" Path "{path["path"]}"')
-      else:
-        self.routes[path['path']][path['method']] = path['function']
+      if new_route in self.registred_paths[route['method']]:
+        raise Duplicate_route(f'Duplicate route: Method "{route["method"]}" Path "{route["path"]}"')
+      
+      self.registred_paths[route['method']].append(new_route)
+      self.routes[route['path']][route['method']] = route['function']
     except KeyError:
-      self.routes[path['path']] = {path['method']: path['function']}
+      self.registred_paths[route['method']] = [new_route]
+      self.routes[route['path']] = {route['method']: route['function']}
 
     if self.debug:
-      print(f'  Route registered: Method "{path["method"]}" Path "{path["path"]}"')
+      print(f'  Route registered: Method "{route["method"]}" Path "{route["path"]}"')
 
   def get(self, path):
     def internal(func):
-      self.validate_path({'method': 'GET', 'path': path, 'function': func})
+      self.add_rote({'method': 'GET', 'path': path, 'function': func})
     return internal
 
   def post(self, path):
     def internal(func):
-      self.validate_path({'method': 'POST', 'path': path, 'function': func})
+      self.add_rote({'method': 'POST', 'path': path, 'function': func})
     return internal
 
   def put(self, path):
     def internal(func):
-      self.validate_path({'method': 'PUT', 'path': path, 'function': func})
+      self.add_rote({'method': 'PUT', 'path': path, 'function': func})
     return internal
 
   def delete(self, path):
     def internal(func):
-      self.validate_path({'method': 'DELETE', 'path': path, 'function': func})
+      self.add_rote({'method': 'DELETE', 'path': path, 'function': func})
     return internal
   
   def run(self, application="API", host="localhost", port=3000):
