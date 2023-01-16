@@ -1,11 +1,11 @@
 from http.server import BaseHTTPRequestHandler
 
-from classes.response import Response
-from classes.request import Request
+from PyForgeAPI.classes.response import Response
+from PyForgeAPI.classes.request import Request
 
-from classes.timer import Timer
+from PyForgeAPI.classes.timer import Timer
 
-from functions.path_validate import path_validate
+from PyForgeAPI.functions.path_validate import path_validate
 
 class Handler(BaseHTTPRequestHandler):
   def do_GET(self):

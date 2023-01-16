@@ -1,12 +1,12 @@
 from http.server import HTTPServer
 import socket
 
-from classes.handler import Handler, Debug_handler
+from PyForgeAPI.classes.handler import Handler, Debug_handler
 
-from exceptions.duplicate_route import Duplicate_route
-from exceptions.invalid_path import Invalid_path
+from PyForgeAPI.exceptions.duplicate_route import Duplicate_route
+from PyForgeAPI.exceptions.invalid_path import Invalid_path
 
-from functions.ready import ready
+from PyForgeAPI.functions.ready import ready
 
 import re
 
