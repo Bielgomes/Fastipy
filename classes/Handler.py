@@ -1,6 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 
-import contextvars
+from classes.response import Response
+from classes.request import Request
 
 import time
 
@@ -19,34 +20,17 @@ class Handler(BaseHTTPRequestHandler):
 
   def handle_request(self, method):
     for path in self.routes:
-      if path == self.path:
-        request = contextvars.ContextVar(name='color', default='red')
-
-        self.routes[path][method](request)
-
-        print(self.path)
-        print(self.command)
-        print(self.headers)
-        print(self.server_version)
-
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b'ok')
+      if path == self.path.split('?')[0] and self.routes[path][method]:
+        self.routes[path][method](Request(self), Response(self))
         break
 
 class Debug_handler(Handler):
   def handle_request(self, method):
     start = time.time()
-
     for path in self.routes:
-      if path == self.path:
-        request = contextvars.ContextVar('color', default='red')
-        self.routes[path][method](request)
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b'ok')
-
+      if path == self.path.split('?')[0] and self.routes[path][method]:
+        self.routes[path][method](Request(self), Response(self))
         end = time.time()
         elapsed_time = (end - start) * 1000
-        print(f"Debug: Elapsed time: {elapsed_time.__round__(2)} ms")
+        print(f"Debug > Function execution time: {elapsed_time.__round__(2)} ms")
         break
