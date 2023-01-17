@@ -5,7 +5,7 @@ import json
 class Response:
   def __init__(self, request: BaseHTTPRequestHandler):
     self._request = request
-    self.status_code = 200
+    self.status_code = None
     self.response = None
 
   def send_file(self, path: str, content_type: str):

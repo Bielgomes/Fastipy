@@ -16,17 +16,17 @@ pip install PyForgeAPI
 
 ## Exemples
 
-### Exemple for GET Route with form params
+### Exemple for GET Route with query params
 
 ```python
-from pyforgeapi import Routes, Response, Request
+from PyForgeAPI import Routes, Response, Request
 
 routes = Routes(debug=True)
 
 @routes.get('/')
 def home(req: Request, res: Response):
-  # Get form params age
-  age = req.form['age']
+  # Get query params age
+  age = req.query['age']
   # Recovery all persons from database with this age
   res.html("<h1>Listing all persons</h1><ul><li>A Person</li></ul>").status(200).send()
 
@@ -36,7 +36,7 @@ routes.run(application="Person API", port=1395)
 ### Exemple for GET Route with params
 
 ```python
-from pyforgeapi import Routes, Response, Request
+from PyForgeAPI import Routes, Response, Request
 
 routes = Routes()
 
@@ -54,7 +54,7 @@ routes.run(application="Person API", port=1395)
 ### Exemple for POST Route with Body
 
 ```python
-from pyforgeapi import Routes, Response, Request
+from PyForgeAPI import Routes, Response, Request
 
 routes = Routes()
 
@@ -70,7 +70,7 @@ routes.run(application="Person API", port=1395)
 ### Exemple for PUT Route with Body
 
 ```python
-from pyforgeapi import Routes, Response, Request
+from PyForgeAPI import Routes, Response, Request
 
 routes = Routes()
 
@@ -82,6 +82,19 @@ def createUser(req: Request, res: Response):
 
 routes.run(application="Person API", port=1395)
 ```
+
+# ToDo
+
+- [x] Rename Request.form to Request.query
+- [x] Print PyForgeAPI Logo again
+- [ ] Docs Page automatic
+- [ ] Error page automatic
+- [ ] If function not return response, return status code
+- [ ] If Route not exists, return status code 
+- [ ] Rename variables to improve code readability
+- [x] Remove empty spaces from a query params (%20json%20manona)
+- [ ] Fix possible infinite execution
+- [ ] Better error handling
 
 # Contributors
 

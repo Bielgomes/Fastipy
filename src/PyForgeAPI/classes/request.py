@@ -15,13 +15,13 @@ class Request():
     return self._request.path
 
   @property
-  def form(self):
+  def query(self):
     try:
       params = {}
       _params = self._request.path.split('?')[1].split('&')
       for i in _params:
         param = i.split('=')
-        params[param[0]] = param[1]
+        params[param[0]] = param[1].replace('%20', ' ')
       return params
     except:
       params = {}
