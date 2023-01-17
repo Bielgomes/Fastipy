@@ -22,7 +22,7 @@ class Handler(BaseHTTPRequestHandler):
 
   def handler_request(self, method):
     for path in self.routes:  
-      if path_validate(self.path, path):
+      if path_validate(self, path, method):
         self.full_path = path
         self.routes[path][method](Request(self), Response(self))
         break
