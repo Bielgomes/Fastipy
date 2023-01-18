@@ -15,7 +15,7 @@ class Routes:
       print('')
 
   def add_rote(self, route):
-    if not re.fullmatch(r"^(\/:?[a-zA-Z]?[a-zA-Z0-9]+)*(\/[a-zA-Z0-9]+)*$|^\/$", route['path']):
+    if not re.fullmatch(r"^(\/:?[_a-zA-Z]?[_a-zA-Z0-9]+)*(\/[a-zA-Z0-9]+)*$|^\/$", route['path']):
       raise Invalid_path(f'Invalid path: "{route["path"]}"')
     else:
       variables = re.findall(r':(\w+)', route['path'])

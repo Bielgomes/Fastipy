@@ -7,6 +7,7 @@ class Response:
     self._request = request
     self.status_code = None
     self.response = None
+    self._request.response_sent = False
 
   def send_file(self, path: str, content_type: str):
     try:
@@ -43,6 +44,7 @@ class Response:
   def sendStatus(self, code: int):
     self._request.send_response(code)
     self._request.end_headers()
+    self._request.response_sent = True
 
   def send(self):
     if self.status_code is None:
@@ -54,3 +56,4 @@ class Response:
     self._request.send_header('Content-type', self.content_type)
     self._request.end_headers()
     self._request.wfile.write(self.response.encode())
+    self._request.response_sent = True

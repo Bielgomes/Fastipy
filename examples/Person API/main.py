@@ -1,6 +1,4 @@
-from PyForgeAPI import Response
-from PyForgeAPI import Request
-from PyForgeAPI import Routes
+from PyForgeAPI import Routes, Request, Response
 
 import json
 

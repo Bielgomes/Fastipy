@@ -23,7 +23,12 @@ class Handler(BaseHTTPRequestHandler):
   def handle_request(self, method):
     for path in self.routes:  
       if path_validate(self, path, method):
+        self.full_path = path
         self.routes[path][method](Request(self), Response(self))
+
+        if not self.response_sent:
+          Response(self).sendStatus(200)
+        
         return
       
     Response(self).sendStatus(404)
@@ -36,7 +41,12 @@ class Debug_handler(Handler):
       if path_validate(self, path, method):
         self.full_path = path
         self.routes[path][method](Request(self), Response(self))
+
+        if not self.response_sent:
+          Response(self).sendStatus(200)
+          
         timer.end()
+        
         return
       
     Response(self).sendStatus(404)

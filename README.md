@@ -91,12 +91,13 @@ routes.run(application="Person API", port=1395)
 - [x] Print PyForgeAPI Logo again
 - [ ] Docs Page automatic
 - [ ] Error page automatic
-- [ ] If function not return response, return status code
+- [x] If function not return response, return status code
 - [x] If Route not exists, return status code 
 - [ ] Rename variables to improve code readability
 - [x] Remove empty spaces from a query params (%20json%20manona)
 - [x] Fix possible infinite execution
 - [ ] Better error handling
+- [x] Accept _ in params
 
 # Contributors
 
