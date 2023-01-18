@@ -1,14 +1,9 @@
-from http.server import HTTPServer
-import socket
-
-from PyForgeAPI.classes.handler import Handler, Debug_handler
-
 from PyForgeAPI.exceptions.duplicate_route import Duplicate_route
 from PyForgeAPI.exceptions.invalid_path import Invalid_path
 
-from PyForgeAPI.functions.ready import ready
-
 import re
+
+from PyForgeAPI.classes.server import Server
 
 class Routes:
   def __init__(self, debug=False):
@@ -61,18 +56,5 @@ class Routes:
       self.add_rote({'method': 'DELETE', 'path': path, 'function': func})
     return internal
   
-  def run(self, application="API", host="localhost", port=80):
-    if host == "0.0.0.0": host = socket.gethostbyname(socket.gethostname())
-
-    if not self.debug:
-      handler = Handler
-    else:
-      handler = Debug_handler
-
-    handler.routes = self.routes
-
-    httpd = HTTPServer((host, port), handler) 
-
-    ready(application, host, port, self.debug)
-
-    httpd.serve_forever()
+  def run(self, application="API", host=None, port=80):
+    Server(application, host, port, self.debug, self.routes).run()

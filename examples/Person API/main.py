@@ -1,8 +1,10 @@
-from PyForgeAPI import Routes, Request, Response
+from classes.response import Response
+from classes.request import Request
+from decorators.routes import Routes
 
 import json
 
-routes = Routes()
+routes = Routes(debug=True)
 
 @routes.get("/")
 def home(req: Request, res: Response):
@@ -13,10 +15,10 @@ def home(req: Request, res: Response):
   _person = []
 
   for i in person:
-    if i["age"] >= int(req.form['age']):
+    if i["age"] >= int(req.query['age']):
       _person.append(i)
 
-  res.json(_person).send()
+  res.status(200).json(_person).send()
 
 @routes.post("/person")
 def person(req: Request, res: Response):
@@ -29,4 +31,4 @@ def person(req: Request, res: Response):
 
   res.sendStatus(200)
 
-routes.run()
+routes.run(host="localhost", port=3000)

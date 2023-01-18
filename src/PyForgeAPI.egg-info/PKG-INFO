@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: PyForgeAPI
-Version: 1.0.1
+Version: 1.1.0
 Summary: PyForgeAPI is a fast and easy-to-use open source python library for developing RESTful APIs. It provides a clear and concise syntax for handling routes, requests, and responses, making the development of APIs faster and more efficient. With support for form parameters, body and route parameters, it is useful for handling different types of requests. Whether you are a beginner or an experienced developer, PyForgeAPI is a simple and powerful choice for creating robust and scalable APIs.
 Home-page: https://github.com/luisviniciuslv/PyForgeAPI
 Author: Viinilv
@@ -21,37 +21,37 @@ License-File: LICENSE
 
 ## What is it and what is it for
 
-[PyForgeAPI](https://github.com/luisviniciuslv/PyForgeAPI) is a fast, very simple to use and understand open source python library for developing RESTful APIs.
+[PyForgeAPI](https://pypi.org/project/PyForgeAPI/) is a fast, very simple to use and understand open source python library for developing RESTful APIs.
 
-## Installation `future`
+## Installation
 
 ```bash
-pip install pyforgeapi
+pip install PyForgeAPI
 ```
 
 ## Exemples
 
-### Exemple for GET Route with form params
+### Exemple for GET Route with Query Params
 
 ```python
-from pyforgeapi import Routes, Response, Request
+from PyForgeAPI import Routes, Response, Request
 
 routes = Routes(debug=True)
 
 @routes.get('/')
 def home(req: Request, res: Response):
-  # Get form params age
-  age = req.form['age']
+  # Get query params age
+  age = req.query['age']
   # Recovery all persons from database with this age
   res.html("<h1>Listing all persons</h1><ul><li>A Person</li></ul>").status(200).send()
 
 routes.run(application="Person API", port=1395)
 ```
 
-### Exemple for GET Route with params
+### Exemple for GET Route with Params
 
 ```python
-from pyforgeapi import Routes, Response, Request
+from PyForgeAPI import Routes, Response, Request
 
 routes = Routes()
 
@@ -59,7 +59,7 @@ routes = Routes()
 def getUser(req: Request, res: Response):
   users =["#users from database"]
   for i in users:
-    if i["id"] == req.form["id"]:
+    if i["id"] == req.params["id"]:
       return res.json(i).send()
   return res.sendStatus(404)
 
@@ -69,7 +69,7 @@ routes.run(application="Person API", port=1395)
 ### Exemple for POST Route with Body
 
 ```python
-from pyforgeapi import Routes, Response, Request
+from PyForgeAPI import Routes, Response, Request
 
 routes = Routes()
 
@@ -85,7 +85,7 @@ routes.run(application="Person API", port=1395)
 ### Exemple for PUT Route with Body
 
 ```python
-from pyforgeapi import Routes, Response, Request
+from PyForgeAPI import Routes, Response, Request
 
 routes = Routes()
 
@@ -93,10 +93,25 @@ routes = Routes()
 def createUser(req: Request, res: Response):
   user = req.body.json
   # Update user in database
-  res.sendStatus( 201 )
+  res.sendStatus(201)
 
 routes.run(application="Person API", port=1395)
 ```
+
+## See more exemples in [exemples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
+
+# ToDo
+
+- [x] Rename Request.form to Request.query
+- [x] Print PyForgeAPI Logo again
+- [ ] Docs Page automatic
+- [ ] Error page automatic
+- [ ] If function not return response, return status code
+- [x] If Route not exists, return status code 
+- [ ] Rename variables to improve code readability
+- [x] Remove empty spaces from a query params (%20json%20manona)
+- [x] Fix possible infinite execution
+- [ ] Better error handling
 
 # Contributors
 

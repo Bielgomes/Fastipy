@@ -13,7 +13,7 @@ def ready(application, host, port, debug):
   
   open_browser = f"| Open http://{host}:{port}"
   py_forge_api = "| PyForgeAPI Server Running"
-  debug_mode = "| Debug mode > True "
+  debug_mode = "| Debug mode > True"
   application_port = f"| {application} on port > {port}"
 
   if len(application_port) < len(open_browser):
@@ -30,7 +30,7 @@ def ready(application, host, port, debug):
   print(add_pipe(py_forge_api))
 
   if debug:
-      print(add_pipe(debug_mode))
+    print(add_pipe(debug_mode))
 
   print(add_pipe(application_port))
   print(add_pipe(open_browser))

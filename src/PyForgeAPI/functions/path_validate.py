@@ -2,7 +2,7 @@ def path_validate(self, path, method):
   if method not in self.routes[path]: return False
 
   full_path = self.path
-  
+
   if '?' in full_path:
     full_path = full_path.split('?')[0]
 

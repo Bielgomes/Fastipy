@@ -16,7 +16,7 @@ pip install PyForgeAPI
 
 ## Exemples
 
-### Exemple for GET Route with query params
+### Exemple for GET Route with Query Params
 
 ```python
 from PyForgeAPI import Routes, Response, Request
@@ -33,7 +33,7 @@ def home(req: Request, res: Response):
 routes.run(application="Person API", port=1395)
 ```
 
-### Exemple for GET Route with params
+### Exemple for GET Route with Params
 
 ```python
 from PyForgeAPI import Routes, Response, Request
@@ -83,6 +83,8 @@ def createUser(req: Request, res: Response):
 routes.run(application="Person API", port=1395)
 ```
 
+## See more exemples in [exemples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
+
 # ToDo
 
 - [x] Rename Request.form to Request.query
@@ -90,10 +92,10 @@ routes.run(application="Person API", port=1395)
 - [ ] Docs Page automatic
 - [ ] Error page automatic
 - [ ] If function not return response, return status code
-- [ ] If Route not exists, return status code 
+- [x] If Route not exists, return status code 
 - [ ] Rename variables to improve code readability
 - [x] Remove empty spaces from a query params (%20json%20manona)
-- [ ] Fix possible infinite execution
+- [x] Fix possible infinite execution
 - [ ] Better error handling
 
 # Contributors

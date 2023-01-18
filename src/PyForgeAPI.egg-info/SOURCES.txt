@@ -11,6 +11,7 @@ src/PyForgeAPI/classes/__init__.py
 src/PyForgeAPI/classes/handler.py
 src/PyForgeAPI/classes/request.py
 src/PyForgeAPI/classes/response.py
+src/PyForgeAPI/classes/server.py
 src/PyForgeAPI/classes/timer.py
 src/PyForgeAPI/decorators/__init__.py
 src/PyForgeAPI/decorators/routes.py
