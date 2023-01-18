@@ -97,7 +97,7 @@ routes.run(application="Person API", port=1395)
 - [x] Remove empty spaces from a query params (%20json%20manona)
 - [x] Fix possible infinite execution
 - [ ] Better error handling
-- [x] Accept _ in params
+- [x] Accept underscore in route params
 
 # Contributors
 
