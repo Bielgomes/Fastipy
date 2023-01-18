@@ -1,6 +1,6 @@
-from classes.response import Response
-from classes.request import Request
-from decorators.routes import Routes
+from PyForgeAPI import Response
+from PyForgeAPI import Request
+from PyForgeAPI import Routes
 
 import json
 
