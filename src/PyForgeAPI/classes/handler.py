@@ -46,7 +46,6 @@ class Debug_handler(Handler):
           Response(self).sendStatus(200)
           
         timer.end()
-        
         return
       
     Response(self).sendStatus(404)
