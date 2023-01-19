@@ -5,6 +5,9 @@ import json
 class Request():
   def __init__(self, request: BaseHTTPRequestHandler):
     self._request = request
+    self._body = Body(self._request)
+    self._query = self.__query()
+    self._params = self.__params()
     
   @property
   def method(self):
@@ -15,62 +18,75 @@ class Request():
     return self._request.path
 
   @property
-  def query(self):
-    try:
-      params = {}
-      _params = self._request.path.split('?')[1].split('&')
-      for i in _params:
-        param = i.split('=')
-        params[param[0]] = param[1].replace('%20', ' ')
-      return params
-    except:
-      params = {}
-
-  @property
-  def params(self):
-    original_parts = self._request.path.split("/")
-    path_parts = self._request.full_path.split("/")
-
-    params = {}
-
-    for i in range(len(original_parts)):
-      if path_parts[i].startswith(':'):
-        params[path_parts[i].replace(':', '')] = original_parts[i]
-
-    return params if params else None
-
-  @property
   def headers(self):
     return self._request.headers
   
   @property
   def body(self):
-    return Body(self._request)
+    return self._body
+  
+  @property
+  def query(self):
+    return self._query
+  
+  @property
+  def params(self):
+    return self._params
+  
+  def __query(self):
+    params = {}
+    try:
+      _params = self._request.path.split('?')[1].split('&')
+      for i in _params:
+        param = i.split('=')
+        params[param[0]] = param[1].replace('%20', ' ')
+      return params
+    except: pass
+    return params
+
+  def __params(self):
+    params = {}
+    try:
+      original_parts = self._request.path.split("/")
+      path_parts = self._request.full_path.split("/")
+
+      for i in range(len(original_parts)):
+        if path_parts[i].startswith(':'):
+          params[path_parts[i].replace(':', '')] = original_parts[i]
+    except: pass
+    return params
 
 class Body():
   def __init__(self, request: BaseHTTPRequestHandler):
     self._request = request
+    self.content_length = int(self._request.headers['Content-Length']) if 'Content-Length' in self._request.headers else 0
+    self._body = self._request.rfile.read(self.content_length).decode('utf-8')
+    self._json = self.__json()
+    self._text = self.__text()
 
   def __str__(self):
-    content_length = int(self._request.headers['Content-Length'])
-    body = self._request.rfile.read(content_length).decode('utf-8')
-    return body
-
+    return self._body
+  
+  @property
+  def length(self):
+    return self.content_length
+  
   @property
   def json(self):
-    content_length = int(self._request.headers['Content-Length'])
-    body = self._request.rfile.read(content_length).decode('utf-8')
-    content_type = self._request.headers.get('Content-Type')
-    if content_type == 'application/json':
-      return json.loads(body)  
-    return None
-
+    return self._json
+  
   @property
   def text(self):
-    content_length = int(self._request.headers['Content-Length'])
-    body = self._request.rfile.read(content_length).decode('utf-8')
-    content_type = self._request.headers.get('Content-Type')
+    return self._text
 
+  def __json(self):
+    content_type = self._request.headers.get('Content-Type')
+    if content_type == 'application/json':
+      return json.loads(self._body)
+    return {}
+
+  def __text(self):
+    content_type = self._request.headers.get('Content-Type')
     if content_type == 'text/plain':
-      return body
-    return None
+      return self._body
+    return {}

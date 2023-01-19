@@ -1,5 +1,4 @@
-from http.server import HTTPServer
-from threading import Thread
+from http.server import ThreadingHTTPServer
 import socket
 
 from PyForgeAPI.classes.handler import Handler, Debug_handler
@@ -18,16 +17,12 @@ class Server():
   def run(self):
     self.handler.routes = self.routes
 
-    httpd = HTTPServer((self.host, self.port), self.handler, False)
+    httpd = ThreadingHTTPServer((self.host, self.port), self.handler, False)
     httpd.timeout = 0.5
     httpd.allow_reuse_address = True
 
     httpd.server_bind()
     httpd.server_activate()
-
-    thread = Thread(target=httpd.serve_forever)
-    thread.setDaemon(True)
-    thread.start()
 
     ready(self.application, self.host, self.port, self.debug)
 

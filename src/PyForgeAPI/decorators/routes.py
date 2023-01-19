@@ -10,7 +10,7 @@ class Routes:
     self.routes = {}
     self.debug = debug
     self.registred_paths = {}
-    
+
     if self.debug:
       print('')
 
