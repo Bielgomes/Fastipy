@@ -94,10 +94,11 @@ routes.run(application="Person API", port=1395)
 - [x] If function not return response, return status code
 - [x] If Route not exists, return status code 
 - [ ] Rename variables to improve code readability
-- [x] Remove empty spaces from a query params (%20json%20manona)
+- [x] Remove empty spaces code from a query params
 - [x] Fix possible infinite execution
 - [ ] Better error handling
 - [x] Accept underscore in route params
+- [ ] Support html pages 
 
 # Contributors
 
