@@ -99,6 +99,7 @@ routes.run(application="Person API", port=1395)
 - [ ] Better error handling
 - [x] Accept underscore in route params
 - [ ] Support html pages 
+- [ ] CORS
 
 # Contributors
 
