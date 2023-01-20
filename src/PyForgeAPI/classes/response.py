@@ -22,21 +22,21 @@ class Response:
       self._request.send_response(404)
       self._request.end_headers()
 
-  def status(self, code: int) -> "Response":
+  def status(self, code: int):
     self._status_code = code
     return self
   
-  def json(self, response: dict) -> "Response":
+  def json(self, response: dict):
     self._response = json.dumps(response)
     self.content_type = 'application/json'
     return self
   
-  def text(self, response: str) -> "Response":
+  def text(self, response: str):
     self._response = response
     self.content_type = 'text/plain'
     return self
   
-  def html(self, response: str) -> "Response":
+  def html(self, response: str):
     self._response = response
     self.content_type = 'text/html'
     return self

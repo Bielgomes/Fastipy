@@ -1,51 +1,61 @@
 from http.server import BaseHTTPRequestHandler
+import asyncio
 
 from PyForgeAPI.classes.response import Response
 from PyForgeAPI.classes.request import Request
-
 from PyForgeAPI.classes.timer import Timer
 
 from PyForgeAPI.functions.path_validate import path_validate
 
 class Handler(BaseHTTPRequestHandler):
   def do_GET(self):
-    self.handle_request('GET')
+    asyncio.run(self.handle_request('GET'))
 
   def do_POST(self):
-    self.handle_request('POST')
+    asyncio.run(self.handle_request('POST'))
 
   def do_PUT(self):
-    self.handle_request('PUT')
+    asyncio.run(self.handle_request('PUT'))
 
   def do_DELETE(self):
-    self.handle_request('DELETE')
+    asyncio.run(self.handle_request('DELETE'))
 
-  def handle_request(self, method):
+  def end_headers(self):
+    self.send_header('Access-Control-Allow-Origin', '*')
+    self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
+    self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+    BaseHTTPRequestHandler.end_headers(self)
+
+  async def handle_request(self, method):
     for path in self.routes:  
       if path_validate(self, path, method):
         self.full_path = path
-        self.routes[path][method](Request(self), Response(self))
-
+        await self.routes[path][method](Request(self), Response(self))
         if not self.response_sent:
           Response(self).sendStatus(200)
-        
         return
       
     Response(self).sendStatus(404)
 
-class Debug_handler(Handler):
-  def handle_request(self, method):
+class DebugHandler(Handler):
+  async def handle_request(self, method):
     timer = Timer()
 
     for path in self.routes:  
       if path_validate(self, path, method):
         self.full_path = path
-        self.routes[path][method](Request(self), Response(self))
-
+        await self.routes[path][method](Request(self), Response(self))
         if not self.response_sent:
           Response(self).sendStatus(200)
-          
         timer.end()
         return
       
     Response(self).sendStatus(404)
+  
+class HandlerFactory():
+  @staticmethod
+  def build_handler(handler):
+    if handler == 'Handler':
+      return Handler
+    elif handler == 'DebugHandler':
+      return DebugHandler

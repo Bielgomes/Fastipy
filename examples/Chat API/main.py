@@ -6,7 +6,7 @@ import datetime
 routes = Routes(debug=True)
 
 @routes.get("/")
-def index(req: Request, res: Response):
+async def index(req: Request, res: Response):
   try:
     with open('chat.json', 'r+') as file:
       data = json.load(file)
@@ -16,7 +16,7 @@ def index(req: Request, res: Response):
     res.sendStatus(500)
 
 @routes.get("/chat/:chat_id")
-def index(req: Request, res: Response):
+async def index(req: Request, res: Response):
   with open('chat.json', 'r+') as file:
     data = json.load(file)
 
@@ -28,7 +28,7 @@ def index(req: Request, res: Response):
   res.sendStatus(404)
 
 @routes.post("/chat")
-def index(req: Request, res: Response):
+async def index(req: Request, res: Response):
   with open('chat.json', 'r') as file:
     data = json.load(file)
 
@@ -37,7 +37,8 @@ def index(req: Request, res: Response):
       res.sendStatus(409)
       return
 
-  chat = req.body.json
+  chat = {}
+  chat['id'] = req.body.json['id']
   chat['messages'] = []
 
   data.append(chat)
@@ -48,16 +49,17 @@ def index(req: Request, res: Response):
   res.sendStatus(200)
 
 @routes.post("/chat/:chat_id")
-def index(req: Request, res: Response):
+async def index(req: Request, res: Response):
   with open('chat.json', 'r') as file:
     data = json.load(file)
 
   for i in data:
     if i['id'] == req.params['chat_id']:
-      message = req.body.json
+      message = {}
+      message['content'] = req.body.json['content']
       message['datetime'] = str(datetime.datetime.now())
 
-      i['messages'].append(req.body.json)
+      i['messages'].append(message)
 
       with open('chat.json', 'w') as file:
         json.dump(data, file)

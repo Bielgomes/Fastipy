@@ -21,16 +21,17 @@ pip install PyForgeAPI
 ```python
 from PyForgeAPI import Routes, Response, Request
 
+# Debug mode is False by default
 routes = Routes(debug=True)
 
 @routes.get('/')
-def home(req: Request, res: Response):
+async def home(req: Request, res: Response):
   # Get query params age
   age = req.query['age']
   # Recovery all persons from database with this age
   res.html("<h1>Listing all persons</h1><ul><li>A Person</li></ul>").status(200).send()
 
-routes.run(application="Person API", port=1395)
+routes.run(application="Person API", host="localhost", port=3000)
 ```
 
 ### Exemple for GET Route with Params
@@ -41,14 +42,15 @@ from PyForgeAPI import Routes, Response, Request
 routes = Routes()
 
 @routes.get('/user/:id')
-def getUser(req: Request, res: Response):
-  users =["#users from database"]
+async def getUser(req: Request, res: Response):
+  # get users from database
   for i in users:
     if i["id"] == req.params["id"]:
-      return res.json(i).send()
-  return res.sendStatus(404)
+      res.json(i).send()
+      return
+  res.sendStatus(404)
 
-routes.run(application="Person API", port=1395)
+routes.run(application="Person API", host="localhost", port=3000)
 ```
 
 ### Exemple for POST Route with Body
@@ -59,12 +61,12 @@ from PyForgeAPI import Routes, Response, Request
 routes = Routes()
 
 @routes.post('/user')
-def createUser(req: Request, res: Response):
+async def createUser(req: Request, res: Response):
   user = req.body.json
   # Save user in database
-  res.sendStatus( 201 )
+  res.text("Created").status(201).send()
 
-routes.run(application="Person API", port=1395)
+routes.run(application="Person API", host="localhost", port=3000)
 ```
 
 ### Exemple for PUT Route with Body
@@ -75,31 +77,24 @@ from PyForgeAPI import Routes, Response, Request
 routes = Routes()
 
 @routes.put('/user')
-def createUser(req: Request, res: Response):
+async def createUser(req: Request, res: Response):
   user = req.body.json
   # Update user in database
-  res.sendStatus(201)
+  res.html('<h1>Created</h1>').status(201).send()
 
-routes.run(application="Person API", port=1395)
+routes.run(application="Person API", host="localhost", port=3000)
 ```
 
 ## See more exemples in [exemples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
 
 # ToDo
 
-- [x] Rename Request.form to Request.query
-- [x] Print PyForgeAPI Logo again
+- [x] Support async functions
+- [x] CORS
 - [ ] Docs Page automatic
 - [ ] Error page automatic
-- [x] If function not return response, return status code
-- [x] If Route not exists, return status code 
-- [ ] Rename variables to improve code readability
-- [x] Remove empty spaces code from a query params
-- [x] Fix possible infinite execution
-- [ ] Better error handling
-- [x] Accept underscore in route params
-- [ ] Support html pages 
-- [ ] CORS
+- [ ] Support html pages
+- [ ] Automatic reload
 
 # Contributors
 

@@ -5,7 +5,7 @@ import json
 routes = Routes(debug=True)
 
 @routes.get("/")
-def home(req: Request, res: Response):
+async def home(req: Request, res: Response):
   with open("person.json", "r+") as f:
     person = json.load(f)
     f.close()
@@ -19,7 +19,7 @@ def home(req: Request, res: Response):
   res.status(200).json(_person).send()
 
 @routes.post("/person")
-def person(req: Request, res: Response):
+async def person(req: Request, res: Response):
   with open("person.json", "r+") as f:
     person = json.load(f)
     person.append(req.body.json)

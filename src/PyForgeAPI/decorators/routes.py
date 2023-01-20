@@ -1,5 +1,5 @@
-from PyForgeAPI.exceptions.duplicate_route import Duplicate_route
-from PyForgeAPI.exceptions.invalid_path import Invalid_path
+from PyForgeAPI.exceptions.duplicate_route import DuplicateRoute
+from PyForgeAPI.exceptions.invalid_path import InvalidPath
 
 import re
 
@@ -11,16 +11,13 @@ class Routes:
     self.debug = debug
     self.registred_paths = {}
 
-    if self.debug:
-      print('')
-
   def add_rote(self, route):
-    if not re.fullmatch(r"^(\/:?[_a-zA-Z]?[_a-zA-Z0-9]+)*(\/[a-zA-Z0-9]+)*$|^\/$", route['path']):
-      raise Invalid_path(f'Invalid path: "{route["path"]}"')
+    if not re.fullmatch(r"^(\/:?[_a-zA-Z0-9]+)*$|^\/$", route['path']):
+      raise InvalidPath(f'Invalid path: "{route["path"]}"')
     else:
       variables = re.findall(r':(\w+)', route['path'])
       if len(variables) != len(set(variables)):
-        raise Invalid_path(f'Invalid path: "{route["path"]}"')
+        raise InvalidPath(f'Invalid path: "{route["path"]}"')
 
     new_route = re.sub(r':(\w+)', 'variable', route['path'])    
 
@@ -28,7 +25,7 @@ class Routes:
     self.routes[route['path']] = self.routes.get(route['path'], {})
 
     if new_route in self.registred_paths[route['method']]:
-      raise Duplicate_route(f'Duplicate route: Method "{route["method"]}" Path "{route["path"]}"')
+      raise DuplicateRoute(f'Duplicate route: Method "{route["method"]}" Path "{route["path"]}"')
 
     self.registred_paths[route['method']].append(new_route)
     self.routes[route['path']][route['method']] = route['function']
@@ -38,7 +35,7 @@ class Routes:
 
   def get(self, path):
     def internal(func):
-      self.add_rote({'method': 'GET', 'path': path, 'function': func})
+        self.add_rote({'method': 'GET', 'path': path, 'function': func})
     return internal
 
   def post(self, path):

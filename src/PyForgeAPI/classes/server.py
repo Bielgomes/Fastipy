@@ -1,7 +1,7 @@
 from http.server import ThreadingHTTPServer
 import socket
 
-from PyForgeAPI.classes.handler import Handler, Debug_handler
+from PyForgeAPI.classes.handler import HandlerFactory
 
 from PyForgeAPI.functions.ready import ready
 
@@ -12,7 +12,7 @@ class Server():
     self.port = port
     self.debug = debug
     self.routes = routes
-    self.handler = Debug_handler if self.debug else Handler
+    self.handler = HandlerFactory.build_handler('DebugHandler' if self.debug else 'Handler')
   
   def run(self):
     self.handler.routes = self.routes
