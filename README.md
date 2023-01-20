@@ -16,7 +16,7 @@ pip install PyForgeAPI
 
 ## Exemples
 
-### Exemple for GET Route with Query Params
+### Exemple for GET Route with Query Params and debug mode
 
 ```python
 from PyForgeAPI import Routes, Response, Request
@@ -34,14 +34,15 @@ async def home(req: Request, res: Response):
 routes.run(application="Person API", host="localhost", port=3000)
 ```
 
-### Exemple for GET Route with Params
+### Exemple for GET Route with Params, CORS and multiple methods
 
 ```python
 from PyForgeAPI import Routes, Response, Request
 
-routes = Routes()
+routes = Routes().cors()
 
 @routes.get('/user/:id')
+@routes.post('/user/:id')
 async def getUser(req: Request, res: Response):
   # get users from database
   for i in users:
@@ -87,14 +88,24 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 ## See more exemples in [exemples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
 
-# ToDo
+## ToDo
 
-- [x] Support async functions
-- [x] CORS
+- [ ] Response support send files 
 - [ ] Docs Page automatic
 - [ ] Error page automatic
 - [ ] Support html pages
 - [ ] Automatic reload
+- [ ] Better error handling
+
+## Added
+
+- [x] Support for `async` functions
+- [x] Routes with multiple methods
+- [x] CORS configuration
+
+## Fixed
+
+- [x] Previously it was possible to send more than one response
 
 # Contributors
 

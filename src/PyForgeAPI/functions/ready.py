@@ -15,7 +15,7 @@ def ready(application, host, port, debug):
   def add_pipe(string):
     return string + " "*(longest - len(string) + 1) + "|"
   
-  print(top_down)
+  print('\n'+top_down)
   print(add_pipe(py_forge_api))
 
   if debug:
@@ -27,4 +27,4 @@ def ready(application, host, port, debug):
   print(add_pipe("|"))
   print(add_pipe(finish))
 
-  print(top_down)
+  print(top_down+'\n')

@@ -8,6 +8,7 @@ src/PyForgeAPI.egg-info/SOURCES.txt
 src/PyForgeAPI.egg-info/dependency_links.txt
 src/PyForgeAPI.egg-info/top_level.txt
 src/PyForgeAPI/classes/__init__.py
+src/PyForgeAPI/classes/cors.py
 src/PyForgeAPI/classes/handler.py
 src/PyForgeAPI/classes/request.py
 src/PyForgeAPI/classes/response.py

@@ -3,7 +3,7 @@ from PyForgeAPI import Routes, Request, Response
 import json
 import datetime
 
-routes = Routes(debug=True)
+routes = Routes(debug=True).cors()
 
 @routes.get("/")
 async def index(req: Request, res: Response):
@@ -13,7 +13,7 @@ async def index(req: Request, res: Response):
 
     res.json(data).status(200).send()
   except:
-    res.sendStatus(500)
+    res.send_status(500)
 
 @routes.get("/chat/:chat_id")
 async def index(req: Request, res: Response):
@@ -25,7 +25,7 @@ async def index(req: Request, res: Response):
       res.json(i).status(200).send()
       return
   
-  res.sendStatus(404)
+  res.send_status(404)
 
 @routes.post("/chat")
 async def index(req: Request, res: Response):
@@ -34,7 +34,7 @@ async def index(req: Request, res: Response):
 
   for i in data:
     if i['id'] == req.body.json['id']:
-      res.sendStatus(409)
+      res.send_status(409)
       return
 
   chat = {}
@@ -46,7 +46,7 @@ async def index(req: Request, res: Response):
   with open('chat.json', 'w') as file:
     json.dump(data, file)
 
-  res.sendStatus(200)
+  res.send_status(200)
 
 @routes.post("/chat/:chat_id")
 async def index(req: Request, res: Response):
@@ -66,6 +66,6 @@ async def index(req: Request, res: Response):
 
       return
     
-  res.sendStatus(404)
+  res.send_status(404)
     
 routes.run(application="Chat API", host="localhost", port=3000)

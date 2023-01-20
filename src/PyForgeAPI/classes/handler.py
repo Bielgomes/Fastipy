@@ -21,10 +21,11 @@ class Handler(BaseHTTPRequestHandler):
     asyncio.run(self.handle_request('DELETE'))
 
   def end_headers(self):
-    self.send_header('Access-Control-Allow-Origin', '*')
-    self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE')
-    self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-    BaseHTTPRequestHandler.end_headers(self)
+    if self.cors:
+      headers = self.cors.generate_headers()
+      for header in headers:
+        self.send_header(header, headers[header])
+      BaseHTTPRequestHandler.end_headers(self)
 
   async def handle_request(self, method):
     for path in self.routes:  
@@ -32,10 +33,10 @@ class Handler(BaseHTTPRequestHandler):
         self.full_path = path
         await self.routes[path][method](Request(self), Response(self))
         if not self.response_sent:
-          Response(self).sendStatus(200)
+          Response(self).send_status(200)
         return
       
-    Response(self).sendStatus(404)
+    Response(self).send_status(404)
 
 class DebugHandler(Handler):
   async def handle_request(self, method):
@@ -46,11 +47,11 @@ class DebugHandler(Handler):
         self.full_path = path
         await self.routes[path][method](Request(self), Response(self))
         if not self.response_sent:
-          Response(self).sendStatus(200)
+          Response(self).send_status(200)
         timer.end()
         return
       
-    Response(self).sendStatus(404)
+    Response(self).send_status(404)
   
 class HandlerFactory():
   @staticmethod
