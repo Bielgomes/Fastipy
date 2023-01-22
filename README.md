@@ -14,9 +14,9 @@
 pip install PyForgeAPI
 ```
 
-## Exemples
+## Examples
 
-### Exemple for GET Route with Query Params and debug mode
+### Example for GET Route with Query Params and debug mode
 
 ```python
 from PyForgeAPI import Routes, Response, Request
@@ -34,7 +34,7 @@ async def home(req: Request, res: Response):
 routes.run(application="Person API", host="localhost", port=3000)
 ```
 
-### Exemple for GET Route with Params, CORS and multiple methods
+### Example for GET Route with Params, CORS and multiple methods
 
 ```python
 from PyForgeAPI import Routes, Response, Request
@@ -54,7 +54,7 @@ async def getUser(req: Request, res: Response):
 routes.run(application="Person API", host="localhost", port=3000)
 ```
 
-### Exemple for POST Route with Body
+### Example for POST Route with Body
 
 ```python
 from PyForgeAPI import Routes, Response, Request
@@ -70,7 +70,7 @@ async def createUser(req: Request, res: Response):
 routes.run(application="Person API", host="localhost", port=3000)
 ```
 
-### Exemple for PUT Route with Body
+### Example for PUT Route with Body
 
 ```python
 from PyForgeAPI import Routes, Response, Request
@@ -86,7 +86,7 @@ async def createUser(req: Request, res: Response):
 routes.run(application="Person API", host="localhost", port=3000)
 ```
 
-## See more exemples in [exemples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
+## See more examples in [examples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
 
 # Change Log
 
