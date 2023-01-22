@@ -88,24 +88,34 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 ## See more exemples in [exemples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
 
-## ToDo
+# Change Log
 
-- [ ] Response support send files 
-- [ ] Docs Page automatic
-- [ ] Error page automatic
-- [ ] Support html pages
+## [1.3.0]
+
+### ToDo
+
+- [ ] Automatic docs Page
+- [ ] Error page
 - [ ] Automatic reload
 - [ ] Better error handling
+- [ ] Being able to create routes in multiple files
 
-## Added
+##### Added
 
-- [x] Support for `async` functions
-- [x] Routes with multiple methods
-- [x] CORS configuration
+- [x] Add send files to response 
+- [x] Recieve files from request 
+- [x] Add Support to html pages
+- [x] Response can create cookies
+- [x] Request can get cookies
 
-## Fixed
+### Changed
 
-- [x] Previously it was possible to send more than one response
+- [x] Request and Body are now separated classes
+
+### Fixed up
+
+- [x] fix typo Router method `add_rote` to `add_route`
+- [x] the method property of the request was undefined
 
 # Contributors
 

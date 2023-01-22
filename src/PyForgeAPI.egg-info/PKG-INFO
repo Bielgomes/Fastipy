@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: PyForgeAPI
-Version: 1.2.2
+Version: 1.3.0
 Summary: PyForgeAPI is a fast and easy-to-use open source python library for developing RESTful APIs. It provides a clear and concise syntax for handling routes, requests, and responses, making the development of APIs faster and more efficient. With support for form parameters, body and route parameters, it is useful for handling different types of requests. Whether you are a beginner or an experienced developer, PyForgeAPI is a simple and powerful choice for creating robust and scalable APIs.
 Home-page: https://github.com/luisviniciuslv/PyForgeAPI
 Author: Viinilv
@@ -103,24 +103,34 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 ## See more exemples in [exemples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
 
-## ToDo
+# Change Log
 
-- [ ] Response support send files 
-- [ ] Docs Page automatic
-- [ ] Error page automatic
-- [ ] Support html pages
+## [1.3.0]
+
+### ToDo
+
+- [ ] Automatic docs Page
+- [ ] Error page
 - [ ] Automatic reload
 - [ ] Better error handling
+- [ ] Being able to create routes in multiple files
 
-## Added
+##### Added
 
-- [x] Support for `async` functions
-- [x] Routes with multiple methods
-- [x] CORS configuration
+- [x] Add send files to response 
+- [x] Recieve files from request 
+- [x] Add Support to html pages
+- [x] Response can create cookies
+- [x] Request can get cookies
 
-## Fixed
+### Changed
 
-- [x] Previously it was possible to send more than one response
+- [x] Request and Body are now separated classes
+
+### Fixed up
+
+- [x] fix typo Router method `add_rote` to `add_route`
+- [x] the method property of the request was undefined
 
 # Contributors
 
