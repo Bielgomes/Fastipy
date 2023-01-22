@@ -1,7 +1,7 @@
 # PyForgeAPI
 
 <div>
-  <img src="https://media.discordapp.net/attachments/1044673680145383485/1064406961455648789/PyForgeAPI_Logo.png" width="250px" height="100px">
+  <img src="https://media.discordapp.net/attachments/1044673680145383485/1064406961455648789/PyForgeAPI_Logo.png#vitrinedev" width="250px" height="100px">
 </div>
 
 ## What is it and what is it for
