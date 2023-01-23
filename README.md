@@ -90,7 +90,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 # Change Log
 
-## Version [1.3.2](https://pypi.org/project/PyForgeAPI/1.3.2/)
+## Version [1.3.3](https://pypi.org/project/PyForgeAPI/1.3.3/)
 
 ### ToDo
 
@@ -100,13 +100,9 @@ routes.run(application="Person API", host="localhost", port=3000)
 - [ ] Better error handling
 - [ ] Being able to create routes in multiple files
 
-### Changed
+### Added
 
-- [x] When giving render page the program will try to get it using strict_path in the passed path
-
-### Fixed up
-
-- [x] When submitting a form with the `application/x-www-form-urlencoded` type, the content was not saved by Body.Form
+- [x] Method do_OPTIONS
 
 # Contributors
 

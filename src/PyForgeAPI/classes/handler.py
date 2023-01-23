@@ -30,6 +30,10 @@ class Handler(BaseHTTPRequestHandler):
   def do_DELETE(self):
     asyncio.run(self.handle_request('DELETE'))
 
+  def do_OPTIONS(self):
+    self.send_response(200)
+    self.end_headers()
+
   def end_headers(self):
     if self.cors:
       headers = self.cors.generate_headers()

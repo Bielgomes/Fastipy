@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: PyForgeAPI
-Version: 1.3.2
+Version: 1.3.3
 Summary: PyForgeAPI is a fast and easy-to-use open source python library for developing RESTful APIs. It provides a clear and concise syntax for handling routes, requests, and responses, making the development of APIs faster and more efficient. With support for form parameters, body and route parameters, it is useful for handling different types of requests. Whether you are a beginner or an experienced developer, PyForgeAPI is a simple and powerful choice for creating robust and scalable APIs.
 Home-page: https://github.com/luisviniciuslv/PyForgeAPI
 Author: Viinilv
@@ -64,7 +64,7 @@ async def getUser(req: Request, res: Response):
     if i["id"] == req.params["id"]:
       res.json(i).send()
       return
-  res.sendStatus(404)
+  res.send_status(404)
 
 routes.run(application="Person API", host="localhost", port=3000)
 ```
@@ -105,7 +105,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 # Change Log
 
-## Version [1.3.2](https://pypi.org/project/PyForgeAPI/1.3.1/)
+## Version [1.3.3](https://pypi.org/project/PyForgeAPI/1.3.3/)
 
 ### ToDo
 
@@ -115,13 +115,9 @@ routes.run(application="Person API", host="localhost", port=3000)
 - [ ] Better error handling
 - [ ] Being able to create routes in multiple files
 
-### Changed
+### Added
 
-- [x] When giving render page the program will try to get it using strict_path in the passed path
-
-### Fixed up
-
-- [x] When submitting a form with the `application/x-www-form-urlencoded` type, the content was not saved by Body.Form
+- [x] Method do_OPTIONS
 
 # Contributors
 
