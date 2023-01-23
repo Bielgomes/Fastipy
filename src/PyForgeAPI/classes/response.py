@@ -56,7 +56,7 @@ class Response:
 
   def send_file(self, path: str):
     try:
-      with open(path, 'rb') as file:
+      with io.open(path, 'rb') as file:
         file_size = os.path.getsize(path)
         content_type = self._get_content_type(path)
         self._request.send_response(200)
@@ -71,8 +71,14 @@ class Response:
       self._request.end_headers()
 
   def render_page(self, path: str):
-    with open(path, 'r') as file:
-        self._response = file.read()
+    if not path.endswith('.html'):
+      raise ValueError('The path must lead to an HTML file')
+
+    if self._request.static_path:
+      path = f"{self._request.static_path}/{path}"
+
+    with io.open(f"{path}", 'r') as file:
+      self._response = file.read()
     self.content_type = 'text/html'
     return self
 
@@ -87,16 +93,16 @@ class Response:
   
   def send_status(self, code: int):
     if self._request.response_sent:
-      raise ValueError('response already sent')
+      raise ValueError('Response already sent')
     self._request.send_response(code)
     self._request.end_headers()
     self._request.response_sent = True
 
   def send_cookies(self):
     if self._request.response_sent:
-      raise ValueError('response already sent')
+      raise ValueError('Response already sent')
     if self._status_code is None:
-      raise ValueError('status code is not set')
+      raise ValueError('Status code is not set')
     
     self._request.send_response(self._status_code)
 
@@ -108,11 +114,11 @@ class Response:
 
   def send(self):
     if self._request.response_sent:
-      raise ValueError('response already sent')
+      raise ValueError('Response already sent')
     if self._status_code is None:
-      raise ValueError('status code is not set')
+      raise ValueError('Status code is not set')
     if self._response is None:
-      raise ('response is not set')
+      raise ('Response is not set')
 
     self._request.send_response(self._status_code)
     self._request.send_header('Content-type', self.content_type)

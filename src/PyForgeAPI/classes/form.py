@@ -30,3 +30,10 @@ class Form:
           self._files[name] = File(name, filename, filetype, data)
         else:
           self._fields[name] = data.decode()
+    elif self._request.content_type == 'application/x-www-form-urlencoded':
+      body_parts = self._request._body.split('&')
+      for i in body_parts:
+        name = i.split('=')[0]
+        value = i.split('=')[1]
+        self._fields[name] = value
+        self._fields[name] = value

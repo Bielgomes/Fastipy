@@ -90,7 +90,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 # Change Log
 
-## Version [1.3.1](https://pypi.org/project/PyForgeAPI/1.3.1/)
+## Version [1.3.2](https://pypi.org/project/PyForgeAPI/1.3.1/)
 
 ### ToDo
 
@@ -102,11 +102,11 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 ### Changed
 
-- [x] Now files and fields are stored in Body.Form
+- [x] When giving render page the program will try to get it using strict_path in the passed path
 
 ### Fixed up
 
-- [x] Fixed error `ERR_INVALID_HTTP_RESPONSE` when not using CORS
+- [x] When submitting a form with the `application/x-www-form-urlencoded` type, the content was not saved by Body.Form
 
 # Contributors
 
