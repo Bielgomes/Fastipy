@@ -1,0 +1,134 @@
+Metadata-Version: 2.1
+Name: PyForgeAPI
+Version: 1.3.1
+Summary: PyForgeAPI is a fast and easy-to-use open source python library for developing RESTful APIs. It provides a clear and concise syntax for handling routes, requests, and responses, making the development of APIs faster and more efficient. With support for form parameters, body and route parameters, it is useful for handling different types of requests. Whether you are a beginner or an experienced developer, PyForgeAPI is a simple and powerful choice for creating robust and scalable APIs.
+Home-page: https://github.com/luisviniciuslv/PyForgeAPI
+Author: Viinilv
+Author-email: luisvpersy@gmail.com
+Project-URL: Bug Tracker, https://github.com/luisviniciuslv/PyForgeAPI/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU Affero General Public License v3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# PyForgeAPI
+
+<div>
+  <img src="https://media.discordapp.net/attachments/1044673680145383485/1064406961455648789/PyForgeAPI_Logo.png#vitrinedev" width="250px" height="100px">
+</div>
+
+## What is it and what is it for
+
+[PyForgeAPI](https://pypi.org/project/PyForgeAPI/) is a fast, very simple to use and understand open source python library for developing RESTful APIs.
+
+## Installation
+
+```bash
+pip install PyForgeAPI
+```
+
+## Examples
+
+### Example for GET Route with Query Params and debug mode
+
+```python
+from PyForgeAPI import Routes, Response, Request
+
+# Debug mode is False by default
+routes = Routes(debug=True)
+
+@routes.get('/')
+async def home(req: Request, res: Response):
+  # Get query params age
+  age = req.query['age']
+  # Recovery all persons from database with this age
+  res.html("<h1>Listing all persons</h1><ul><li>A Person</li></ul>").status(200).send()
+
+routes.run(application="Person API", host="localhost", port=3000)
+```
+
+### Example for GET Route with Params, CORS and multiple methods
+
+```python
+from PyForgeAPI import Routes, Response, Request
+
+routes = Routes().cors()
+
+@routes.get('/user/:id')
+@routes.post('/user/:id')
+async def getUser(req: Request, res: Response):
+  # get users from database
+  for i in users:
+    if i["id"] == req.params["id"]:
+      res.json(i).send()
+      return
+  res.sendStatus(404)
+
+routes.run(application="Person API", host="localhost", port=3000)
+```
+
+### Example for POST Route with Body
+
+```python
+from PyForgeAPI import Routes, Response, Request
+
+routes = Routes()
+
+@routes.post('/user')
+async def createUser(req: Request, res: Response):
+  user = req.body.json
+  # Save user in database
+  res.text("Created").status(201).send()
+
+routes.run(application="Person API", host="localhost", port=3000)
+```
+
+### Example for PUT Route with Body
+
+```python
+from PyForgeAPI import Routes, Response, Request
+
+routes = Routes()
+
+@routes.put('/user')
+async def createUser(req: Request, res: Response):
+  user = req.body.json
+  # Update user in database
+  res.html('<h1>Created</h1>').status(201).send()
+
+routes.run(application="Person API", host="localhost", port=3000)
+```
+
+## See more examples in [examples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
+
+# Change Log
+
+## Version [1.3.1](https://pypi.org/project/PyForgeAPI/1.3.1/)
+
+### ToDo
+
+- [ ] Automatic docs Page
+- [ ] Error page
+- [ ] Automatic reload
+- [ ] Better error handling
+- [ ] Being able to create routes in multiple files
+
+### Changed
+
+- [x] Now files and fields are stored in Body.Form
+
+### Fixed up
+
+- [x] Fixed error `ERR_INVALID_HTTP_RESPONSE` when not using CORS
+
+# Contributors
+
+<a href="https://github.com/luisviniciuslv/PyForgeAPI/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=luisviniciuslv/PyForgeAPI"/>
+</a>
+
+## How to Contributing
+
+Open pull request 😎
