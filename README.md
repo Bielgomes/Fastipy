@@ -49,7 +49,7 @@ async def getUser(req: Request, res: Response):
     if i["id"] == req.params["id"]:
       res.json(i).send()
       return
-  res.sendStatus(404)
+  res.send_status(404)
 
 routes.run(application="Person API", host="localhost", port=3000)
 ```
