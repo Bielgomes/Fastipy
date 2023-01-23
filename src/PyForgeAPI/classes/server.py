@@ -6,14 +6,14 @@ from PyForgeAPI.functions.ready import ready
 
 class Server():
   def __init__(self, cors, static_path, application, host, port, debug, routes):
-    self.cors = cors
-    self.static_path = static_path
-    self.application = application
-    self.host = host if host else socket.gethostbyname(socket.gethostname())
-    self.port = port
-    self.debug = debug
-    self.routes = routes
-    self.handler = HandlerFactory.build_handler('DebugHandler' if self.debug else 'Handler')
+    self.cors         = cors
+    self.static_path  = static_path
+    self.application  = application
+    self.host         = host if host else socket.gethostbyname(socket.gethostname())
+    self.port         = port
+    self.debug        = debug
+    self.routes       = routes
+    self.handler      = HandlerFactory.build_handler('DebugHandler' if self.debug else 'Handler')
   
   def run(self):
     self.handler.routes = self.routes

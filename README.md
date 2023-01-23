@@ -90,7 +90,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 # Change Log
 
-## [1.3.0]
+## Version [1.3.1](https://pypi.org/project/PyForgeAPI/1.3.1/)
 
 ### ToDo
 
@@ -100,22 +100,13 @@ routes.run(application="Person API", host="localhost", port=3000)
 - [ ] Better error handling
 - [ ] Being able to create routes in multiple files
 
-### Added
-
-- [x] Add send files to response 
-- [x] Recieve files from request 
-- [x] Add Support to html pages
-- [x] Response can create cookies
-- [x] Request can get cookies
-
 ### Changed
 
-- [x] Request and Body are now separated classes
+- [x] Now files and fields are stored in Body.Form
 
 ### Fixed up
 
-- [x] fix typo Router method `add_rote` to `add_route`
-- [x] the method property of the request was undefined
+- [x] Fixed error `ERR_INVALID_HTTP_RESPONSE` when not using CORS
 
 # Contributors
 

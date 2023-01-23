@@ -7,6 +7,8 @@ from PyForgeAPI.classes.timer import Timer
 
 from PyForgeAPI.functions.path_validate import path_validate
 
+import traceback
+
 class HandlerFactory():
   @staticmethod
   def build_handler(handler):
@@ -33,7 +35,7 @@ class Handler(BaseHTTPRequestHandler):
       headers = self.cors.generate_headers()
       for header in headers:
         self.send_header(header, headers[header])
-      BaseHTTPRequestHandler.end_headers(self)
+    BaseHTTPRequestHandler.end_headers(self)
 
   async def handle_request(self, method):
     if '.' in self.path:
@@ -43,7 +45,13 @@ class Handler(BaseHTTPRequestHandler):
     for path in self.routes:  
       if path_validate(self, path, method):
         self.full_path, self.method = path, method
-        await self.routes[path][method](Request(self), Response(self))
+        try:
+          await self.routes[path][method](Request(self), Response(self))
+        except Exception:
+          Response(self).send_status(500)
+          print(traceback.format_exc())
+          return
+        
         if not self.response_sent:
           Response(self).send_status(200)
         return
@@ -62,7 +70,13 @@ class DebugHandler(Handler):
     for path in self.routes:  
       if path_validate(self, path, method):
         self.full_path, self.method = path, method
-        await self.routes[path][method](Request(self), Response(self))
+        try:
+          await self.routes[path][method](Request(self), Response(self))
+        except Exception:
+          Response(self).send_status(500)
+          print(traceback.format_exc())
+          return
+
         if not self.response_sent:
           Response(self).send_status(200)
         timer.end()

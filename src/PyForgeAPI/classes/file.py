@@ -38,12 +38,7 @@ class File():
 
   def save(self, path=None):
     if path is None:
-      if self._filename:
-        path = self._filename
-      elif self._name:
-        path = self._name
-      else:
-        return 'file'
+      path = self._filename
 
     with io.open(path, 'wb') as file:
       file.write(self._data)

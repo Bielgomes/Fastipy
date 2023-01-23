@@ -10,12 +10,12 @@ import io
 
 class Response:
   def __init__(self, request: BaseHTTPRequestHandler):
-    self._request = request
-    self._status_code = 200
-    self._response = None
+    self._request               = request
+    self._status_code           = 200
+    self._response              = None
     self._request.response_sent = False
-    self._headers = {}
-    self._cookies = SimpleCookie()
+    self._headers               = {}
+    self._cookies               = SimpleCookie()
 
   def status(self, code: int):
     self._status_code = code

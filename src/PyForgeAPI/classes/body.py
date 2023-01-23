@@ -1,9 +1,8 @@
 from http.server import BaseHTTPRequestHandler
 
-from PyForgeAPI.classes.file import File
+from PyForgeAPI.classes.form import Form
 
 import json
-from typing import Dict
 
 class Body():
   def __init__(self, request: BaseHTTPRequestHandler):
@@ -13,7 +12,7 @@ class Body():
     self.__handler_files()
     self.__json()
     self.__text()
-    self.__files()
+    self._form = Form(self)
 
   def __str__(self):
     return self._body
@@ -31,8 +30,8 @@ class Body():
     return self._text
   
   @property
-  def files(self) -> Dict[str, File]:
-    return self._files
+  def form(self):
+    return self._form
 
   def __json(self):
     if self.content_type == 'application/json':
@@ -45,20 +44,6 @@ class Body():
       self._text = self._body
       return
     self._text = None
-  
-  def __files(self):
-    if self.content_type == 'multipart/form-data':
-      files = {}
-      body_parts = self._body.split(b'Content-Disposition: form-data; name="')
-      for i in range(1, len(body_parts)):
-        name = body_parts[i].split(b'"')[0].decode()
-        filename = body_parts[i].split(b'filename="')[1].split(b'"')[0].decode() if b'filename="' in body_parts[i] else None
-        filetype = body_parts[i].split(b'Content-Type: ')[1].split(b'\r\n')[0].decode() if b'Content-Type: ' in body_parts[i] else None
-        data = body_parts[i].split(b'\r\n\r\n')[1].split(b'\r\n----------------------------')[0]
-        files[name] = File(name, filename, filetype, data)
-      self._files = files
-    else:
-      self._files = {}
 
   def __handler_files(self):
     if self.content_type == 'multipart/form-data':
