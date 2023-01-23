@@ -90,7 +90,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 # Change Log
 
-## Version [1.3.2](https://pypi.org/project/PyForgeAPI/1.3.1/)
+## Version [1.3.2](https://pypi.org/project/PyForgeAPI/1.3.2/)
 
 ### ToDo
 
