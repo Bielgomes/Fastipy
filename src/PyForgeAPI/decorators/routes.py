@@ -93,7 +93,7 @@ class Routes:
       return func
     return internal
   
-  def run(self, application="API", host=None, port=80):
+  def run(self, application="API", host="localhost", port=5000):
     Server(
       self._cors,
       self.static_path,
