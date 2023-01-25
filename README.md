@@ -141,7 +141,7 @@ routes.run(host='localhost')
 
 # Change Log
 
-## Version [1.3.4](https://pypi.org/project/PyForgeAPI/1.3.4/)
+## Version [1.3.5](https://pypi.org/project/PyForgeAPI/1.3.5/)
 
 ### ToDo
 
