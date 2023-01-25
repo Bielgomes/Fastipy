@@ -12,34 +12,34 @@ class Request():
     self.__params()
   
   @property
-  def method(self):
+  def method(self) -> str:
     return self._request.method
 
   @property
-  def path(self):
+  def path(self) -> str:
     return self._request.path
   
   @property
-  def cookies(self):
+  def cookies(self) -> SimpleCookie:
     return self._cookies
   
   @property
-  def query(self):
+  def query(self) -> dict:
     return self._query
   
   @property
-  def params(self):
+  def params(self) -> dict:
     return self._params
 
   @property
-  def headers(self):
+  def headers(self) -> dict:
     return self._request.headers
   
   @property
   def body(self):
     return self._body
   
-  def __query(self):
+  def __query(self) -> None:
     params = {}
     try:
       _params = self._request.path.split('?')[1].split('&')
@@ -49,7 +49,7 @@ class Request():
     except: pass
     self._query = params
 
-  def __params(self):
+  def __params(self) -> None:
     params = {}
     try:
       original_parts = self._request.path.split("/")

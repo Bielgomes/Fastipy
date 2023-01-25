@@ -10,14 +10,14 @@ class Form:
     self.__get_variables()
 
   @property
-  def fields(self):
+  def fields(self) -> Dict[str, str]:
     return self._fields
   
   @property
   def files(self) -> Dict[str, File]:
     return self._files
   
-  def __get_variables(self):
+  def __get_variables(self) -> None:
     if self._request.content_type == 'multipart/form-data':
       body_parts = self._request._body.split(b'Content-Disposition: form-data; name="')
       for i in range(1, len(body_parts)):

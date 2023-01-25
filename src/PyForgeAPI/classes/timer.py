@@ -4,7 +4,7 @@ class Timer():
   def __init__(self):
     self.start = time.time()
 
-  def end(self):
+  def end(self) -> None:
     self.end = time.time()
 
     elapsed_time = (self.end - self.start) * 1000

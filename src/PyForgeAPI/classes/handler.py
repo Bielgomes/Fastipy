@@ -4,6 +4,7 @@ import asyncio
 from PyForgeAPI.classes.response import Response
 from PyForgeAPI.classes.request import Request
 from PyForgeAPI.classes.timer import Timer
+from PyForgeAPI.classes.handler_exception import HandlerException
 
 from PyForgeAPI.functions.path_validate import path_validate
 
@@ -11,7 +12,7 @@ import traceback
 
 class HandlerFactory():
   @staticmethod
-  def build_handler(handler):
+  def build_handler(handler) -> BaseHTTPRequestHandler:
     if handler == 'Handler':
       return Handler
     elif handler == 'DebugHandler':
@@ -43,7 +44,7 @@ class Handler(BaseHTTPRequestHandler):
 
   async def handle_request(self, method):
     if '.' in self.path:
-      Response(self)._send_archive(path=f"{self.static_path}{self.path}")
+      Response(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
       return
     
     for path in self.routes:  
@@ -67,7 +68,7 @@ class DebugHandler(Handler):
     timer = Timer()
 
     if '.' in self.path:
-      Response(self)._send_archive(path=f"{self.static_path}{self.path}")
+      Response(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
       timer.end()
       return
 
@@ -76,8 +77,9 @@ class DebugHandler(Handler):
         self.full_path, self.method = path, method
         try:
           await self.routes[path][method](Request(self), Response(self))
-        except Exception:
-          Response(self).send_status(500)
+        except Exception as e:
+          timer.end()
+          Response(self).status(500).html(HandlerException(e).__html__()).send()
           print(traceback.format_exc())
           return
 
@@ -87,3 +89,4 @@ class DebugHandler(Handler):
         return
 
     Response(self).send_status(404)
+    timer.end()

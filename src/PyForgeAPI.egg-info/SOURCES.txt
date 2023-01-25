@@ -13,6 +13,7 @@ src/PyForgeAPI/classes/cors.py
 src/PyForgeAPI/classes/file.py
 src/PyForgeAPI/classes/form.py
 src/PyForgeAPI/classes/handler.py
+src/PyForgeAPI/classes/handler_exception.py
 src/PyForgeAPI/classes/request.py
 src/PyForgeAPI/classes/response.py
 src/PyForgeAPI/classes/server.py
@@ -20,10 +21,13 @@ src/PyForgeAPI/classes/timer.py
 src/PyForgeAPI/constants/__init__.py
 src/PyForgeAPI/constants/content_type.py
 src/PyForgeAPI/decorators/__init__.py
+src/PyForgeAPI/decorators/module.py
 src/PyForgeAPI/decorators/routes.py
 src/PyForgeAPI/exceptions/__init__.py
 src/PyForgeAPI/exceptions/duplicate_route.py
+src/PyForgeAPI/exceptions/file.py
 src/PyForgeAPI/exceptions/invalid_path.py
+src/PyForgeAPI/exceptions/response.py
 src/PyForgeAPI/functions/__init__.py
 src/PyForgeAPI/functions/path_validate.py
 src/PyForgeAPI/functions/ready.py

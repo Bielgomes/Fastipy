@@ -7,7 +7,7 @@ class CORSGenerator:
     self.expose_headers     = expose_headers
     self.max_age            = max_age
 
-  def generate_headers(self):
+  def generate_headers(self) -> dict:
     headers = {
       "Access-Control-Allow-Origin": self.allow_origin,
       "Access-Control-Allow-Headers": self.allow_headers,

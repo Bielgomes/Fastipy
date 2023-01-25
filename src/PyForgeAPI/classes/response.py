@@ -3,6 +3,9 @@ from http.cookies import SimpleCookie
 
 from PyForgeAPI.constants.content_type import CONTENT_TYPES
 
+from PyForgeAPI.exceptions.file import FileException
+from PyForgeAPI.exceptions.response import ResponseException
+
 import mimetypes
 import os
 import json
@@ -17,21 +20,30 @@ class Response:
     self._headers               = {}
     self._cookies               = SimpleCookie()
 
-  def status(self, code: int):
+  def status(self, code: int) -> 'Response':
     self._status_code = code
     return self
   
-  def json(self, response: dict):
+  def json(self, response: dict) -> 'Response':
     self._response = json.dumps(response)
     self.content_type = 'application/json'
     return self
   
-  def text(self, response: str):
+  def text(self, response: str) -> 'Response':
     self._response = response
     self.content_type = 'text/plain'
     return self
   
-  def cookie(self, name: str, value: str, path="/", expires=None, domain: str = None, secure: bool = False, httponly: bool = False):
+  def cookie(
+    self,
+    name: str,
+    value: str,
+    path="/",
+    expires=None,
+    domain: str = None,
+    secure: bool = False,
+    httponly: bool = False
+  ) -> 'Response':
     self._cookies[name] = value
     self._cookies[name]['path'] = path
     self._cookies[name]['secure'] = secure
@@ -42,7 +54,7 @@ class Response:
       self._cookies[name]['domain'] = domain
     return self
     
-  def _send_archive(self, path: str = None):
+  def _send_archive(self, path: str = None) -> None:
     self.content_type = self._get_content_type(path)
 
     try:
@@ -51,10 +63,10 @@ class Response:
     except FileNotFoundError:
       self.send_status(404)
       return
-
+      
     self.send()
 
-  def send_file(self, path: str):
+  def send_file(self, path: str) -> 'Response':
     try:
       with io.open(path, 'rb') as file:
         file_size = os.path.getsize(path)
@@ -67,12 +79,11 @@ class Response:
         self._request.wfile.write(file.read())
         self._request.response_sent = True
     except FileNotFoundError:
-      self._request.send_response(404)
-      self._request.end_headers()
+      raise FileException(f'File not found: Path "{path}"')
 
-  def render_page(self, path: str):
+  def render_page(self, path: str) -> 'Response':
     if not path.endswith('.html'):
-      raise ValueError('The path must lead to an HTML file')
+      raise FileException('The path must lead to an HTML file')
 
     if self._request.static_path:
       path = f"{self._request.static_path}/{path}"
@@ -82,27 +93,27 @@ class Response:
     self.content_type = 'text/html'
     return self
 
-  def html(self, response: str):
+  def html(self, response: str) -> 'Response':
     self._response = response
     self.content_type = 'text/html'
     return self
   
-  def header(self, name: str, value):
+  def header(self, name: str, value) -> 'Response':
     self._headers[name] = value
     return self
   
-  def send_status(self, code: int):
+  def send_status(self, code: int) -> None:
     if self._request.response_sent:
-      raise ValueError('Response already sent')
+      raise ResponseException('Response already sent')
     self._request.send_response(code)
     self._request.end_headers()
     self._request.response_sent = True
 
-  def send_cookies(self):
+  def send_cookies(self) -> None:
     if self._request.response_sent:
-      raise ValueError('Response already sent')
+      raise ResponseException('Response already sent')
     if self._status_code is None:
-      raise ValueError('Status code is not set')
+      raise ResponseException('Status code is not set')
     
     self._request.send_response(self._status_code)
 
@@ -112,13 +123,13 @@ class Response:
     self._request.end_headers()
     self._request.response_sent = True
 
-  def send(self):
+  def send(self) -> None:
     if self._request.response_sent:
-      raise ValueError('Response already sent')
+      raise ResponseException('Response already sent')
     if self._status_code is None:
-      raise ValueError('Status code is not set')
+      raise ResponseException('Status code is not set')
     if self._response is None:
-      raise ('Response is not set')
+      raise ResponseException('Response is not set')
 
     self._request.send_response(self._status_code)
     self._request.send_header('Content-type', self.content_type)

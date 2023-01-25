@@ -14,38 +14,38 @@ class Body():
     self.__text()
     self._form = Form(self)
 
-  def __str__(self):
+  def __str__(self) -> str:
     return self._body
   
   @property
-  def length(self):
+  def length(self) -> int:
     return self.content_length
   
   @property
-  def json(self):
+  def json(self) -> dict:
     return self._json
   
   @property
-  def text(self):
+  def text(self) -> str:
     return self._text
   
   @property
-  def form(self):
+  def form(self) -> Form:
     return self._form
 
-  def __json(self):
+  def __json(self) -> None:
     if self.content_type == 'application/json':
       self._json = json.loads(self._body)
       return
     self._json = None
 
-  def __text(self):
+  def __text(self) -> None:
     if self.content_type == 'text/plain':
       self._text = self._body
       return
     self._text = None
 
-  def __handler_files(self):
+  def __handler_files(self) -> None:
     if self.content_type == 'multipart/form-data':
       self._body = self._request.rfile.read(self.content_length)
       return

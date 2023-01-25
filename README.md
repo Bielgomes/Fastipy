@@ -86,23 +86,73 @@ async def createUser(req: Request, res: Response):
 routes.run(application="Person API", host="localhost", port=3000)
 ```
 
+## Using modules
+
+```py
+# chat.py
+from classes.response import Response
+from classes.request import Request
+from decorators.module import Module
+
+chat = Module('chat', '/chat')
+
+@chat.get('/')
+async def index(req: Request, res: Response):
+  res.send_status(200)
+
+@chat.get('/chat')
+async def test(req: Request, res: Response):
+  res.send_status(200)
+```
+
+```py
+# message.py
+from classes.response import Response
+from classes.request import Request
+from decorators.module import Module
+
+message = Module('message', '/message')
+
+@message.get('/')
+async def index(req: Request, res: Response):
+  res.send_status(200)
+
+@message.get('/message')
+async def test(req: Request, res: Response):
+  res.send_status(200)
+```
+
+```py
+# main.py
+from decorators.routes import Routes
+
+from message import message
+from chat import chat
+
+routes = Routes(debug=True).cors()
+
+routes.bind(message)
+routes.bind(chat)
+
+routes.run(host='localhost')
+```
+
 ## See more examples in [examples](https://github.com/luisviniciuslv/PyForgeAPI/tree/main/examples) folder
 
 # Change Log
 
-## Version [1.3.3](https://pypi.org/project/PyForgeAPI/1.3.3/)
+## Version [1.3.4](https://pypi.org/project/PyForgeAPI/1.3.4/)
 
 ### ToDo
 
 - [ ] Automatic docs Page
-- [ ] Error page
 - [ ] Automatic reload
-- [ ] Better error handling
-- [ ] Being able to create routes in multiple files
 
 ### Added
 
-- [x] Method do_OPTIONS
+- [x] Modules (Routes in multiple files)
+- [x] Better error handling
+- [x] Error page on debug mode
 
 # Contributors
 

@@ -15,7 +15,7 @@ class Server():
     self.routes       = routes
     self.handler      = HandlerFactory.build_handler('DebugHandler' if self.debug else 'Handler')
   
-  def run(self):
+  def run(self) -> None:
     self.handler.routes = self.routes
     self.handler.cors = self.cors
     self.handler.static_path = self.static_path

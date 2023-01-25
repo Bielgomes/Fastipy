@@ -1,4 +1,4 @@
-def path_validate(self, path, method):
+def path_validate(self, path, method) -> bool:
   if method not in self.routes[path]: return False
 
   full_path = self.path
