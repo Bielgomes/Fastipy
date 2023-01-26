@@ -9,7 +9,7 @@ class Server():
     self.cors         = cors
     self.static_path  = static_path
     self.application  = application
-    self.host         = host if host else socket.gethostbyname(socket.gethostname())
+    self.host         = host if host != "0.0.0.0" else socket.gethostbyname(socket.gethostname())
     self.port         = port
     self.debug        = debug
     self.routes       = routes
