@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: PyForgeAPI
-Version: 1.3.5
+Version: 1.4.0
 Summary: PyForgeAPI is a fast and easy-to-use open source python library for developing RESTful APIs. It provides a clear and concise syntax for handling routes, requests, and responses, making the development of APIs faster and more efficient. With support for form parameters, body and route parameters, it is useful for handling different types of requests. Whether you are a beginner or an experienced developer, PyForgeAPI is a simple and powerful choice for creating robust and scalable APIs.
 Home-page: https://github.com/luisviniciuslv/PyForgeAPI
 Author: Viinilv
@@ -105,9 +105,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 ```py
 # chat.py
-from classes.response import Response
-from classes.request import Request
-from decorators.module import Module
+from PyForgeAPI import Request, Response, Module
 
 chat = Module('chat', '/chat')
 
@@ -122,9 +120,7 @@ async def test(req: Request, res: Response):
 
 ```py
 # message.py
-from classes.response import Response
-from classes.request import Request
-from decorators.module import Module
+from PyForgeAPI import Request, Response, Module
 
 message = Module('message', '/message')
 
@@ -156,18 +152,23 @@ routes.run(host='localhost')
 
 # Change Log
 
-## Version [1.3.4](https://pypi.org/project/PyForgeAPI/1.3.4/)
+## Version [1.4.0](https://pypi.org/project/PyForgeAPI/1.4.0/)
 
 ### ToDo
 
 - [ ] Automatic docs Page
-- [ ] Automatic reload
 
 ### Added
 
-- [x] Modules (Routes in multiple files)
-- [x] Better error handling
-- [x] Error page on debug mode
+- [x] Automatic reload in development mode (EXPERIMENTAL)
+- [x] Request method PATCH
+- [x] More security in CORS
+- [x] JSON Database module
+
+### Changed
+
+- [x] Better params and query params recovery in routes
+- [x] Improved route logging
 
 # Contributors
 

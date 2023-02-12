@@ -6,7 +6,7 @@ from PyForgeAPI.classes.request import Request
 from PyForgeAPI.classes.timer import Timer
 from PyForgeAPI.classes.handler_exception import HandlerException
 
-from PyForgeAPI.functions.path_validate import path_validate
+from PyForgeAPI.functions.build_route_path import build_route_path
 
 import traceback
 
@@ -28,11 +28,17 @@ class Handler(BaseHTTPRequestHandler):
   def do_PUT(self):
     asyncio.run(self.handle_request('PUT'))
 
+  def do_PATCH(self):
+    asyncio.run(self.handle_request('PATCH'))
+
   def do_DELETE(self):
     asyncio.run(self.handle_request('DELETE'))
 
   def do_OPTIONS(self):
+    headers = self.generate_headers()
     self.send_response(200)
+    for header, value in headers.items():
+        self.send_header(header, value)
     self.end_headers()
 
   def end_headers(self):
@@ -47,8 +53,8 @@ class Handler(BaseHTTPRequestHandler):
       Response(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
       return
     
-    for path in self.routes:  
-      if path_validate(self, path, method):
+    for path in self.routes:
+      if build_route_path(self, path, method):
         self.full_path, self.method = path, method
         try:
           await self.routes[path][method](Request(self), Response(self))
@@ -73,7 +79,7 @@ class DebugHandler(Handler):
       return
 
     for path in self.routes:  
-      if path_validate(self, path, method):
+      if build_route_path(self, path, method):
         self.full_path, self.method = path, method
         try:
           await self.routes[path][method](Request(self), Response(self))

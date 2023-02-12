@@ -90,9 +90,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 ```py
 # chat.py
-from classes.response import Response
-from classes.request import Request
-from decorators.module import Module
+from PyForgeAPI import Request, Response, Module
 
 chat = Module('chat', '/chat')
 
@@ -107,9 +105,7 @@ async def test(req: Request, res: Response):
 
 ```py
 # message.py
-from classes.response import Response
-from classes.request import Request
-from decorators.module import Module
+from PyForgeAPI import Request, Response, Module
 
 message = Module('message', '/message')
 
@@ -141,18 +137,23 @@ routes.run(host='localhost')
 
 # Change Log
 
-## Version [1.3.5](https://pypi.org/project/PyForgeAPI/1.3.5/)
+## Version [1.4.0](https://pypi.org/project/PyForgeAPI/1.4.0/)
 
 ### ToDo
 
 - [ ] Automatic docs Page
-- [ ] Automatic reload
 
 ### Added
 
-- [x] Modules (Routes in multiple files)
-- [x] Better error handling
-- [x] Error page on debug mode
+- [x] Automatic reload in development mode (EXPERIMENTAL)
+- [x] Request method PATCH
+- [x] More security in CORS
+- [x] JSON Database module
+
+### Changed
+
+- [x] Better params and query params recovery in routes
+- [x] Improved route logging
 
 # Contributors
 

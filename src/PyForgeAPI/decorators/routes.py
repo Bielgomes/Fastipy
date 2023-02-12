@@ -9,7 +9,6 @@ import re
 class Routes:
   def __init__(self, debug=False, static_path=None):
     self.routes           = {}
-    self.registred_paths  = {}
     self.debug            = debug
     self._cors            = None
     self.static_path      = static_path
@@ -48,23 +47,15 @@ class Routes:
     return self
 
   def add_route(self, route) -> None:
-    if not re.fullmatch(r"^(\/:?[_a-zA-Z0-9]+)*$|^\/$", route['path']):
+    if (not re.fullmatch(r"^(\/:?[_a-zA-Z0-9]+)*$|^\/$", route['path']) or
+      re.search(r':(\d)\w+', route['path']) or
+      len(re.findall(r':(\w+)', route['path'])) != len(set(re.findall(r':(\w+)', route['path'])))):
       raise InvalidPath(f'Invalid path: "{route["path"]}"')
-    else:
-      variables = re.findall(r':(\w+)', route['path'])
-      if len(variables) != len(set(variables)):
-        raise InvalidPath(f'Invalid path: "{route["path"]}"')
 
-    new_route = re.sub(r':(\w+)', 'variable', route['path'])    
-
-    self.registred_paths[route['method']] = self.registred_paths.get(route['method'], [])
-    self.routes[route['path']] = self.routes.get(route['path'], {})
-
-    if new_route in self.registred_paths[route['method']]:
+    if route['path'] in self.routes:
       raise DuplicateRoute(f'Duplicate route: Method "{route["method"]}" Path "{route["path"]}"')
 
-    self.registred_paths[route['method']].append(new_route)
-    self.routes[route['path']][route['method']] = route['function']
+    self.routes[route['path']] = {route['method']: route['function']}
 
     if self.debug:
       print(f'| Route registered: Method "{route["method"]}" Path "{route["path"]}"')
@@ -84,6 +75,12 @@ class Routes:
   def put(self, path) -> None:
     def internal(func) -> None:
       self.add_route({'method': 'PUT', 'path': path, 'function': func})
+      return func
+    return internal
+  
+  def patch(self, path) -> None:
+    def internal(func) -> None:
+      self.add_route({'method': 'PATCH', 'path': path, 'function': func})
       return func
     return internal
 

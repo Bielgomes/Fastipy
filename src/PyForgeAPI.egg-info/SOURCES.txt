@@ -10,6 +10,7 @@ src/PyForgeAPI.egg-info/top_level.txt
 src/PyForgeAPI/classes/__init__.py
 src/PyForgeAPI/classes/body.py
 src/PyForgeAPI/classes/cors.py
+src/PyForgeAPI/classes/database.py
 src/PyForgeAPI/classes/file.py
 src/PyForgeAPI/classes/form.py
 src/PyForgeAPI/classes/handler.py
@@ -29,5 +30,5 @@ src/PyForgeAPI/exceptions/file.py
 src/PyForgeAPI/exceptions/invalid_path.py
 src/PyForgeAPI/exceptions/response.py
 src/PyForgeAPI/functions/__init__.py
-src/PyForgeAPI/functions/path_validate.py
+src/PyForgeAPI/functions/build_route_path.py
 src/PyForgeAPI/functions/ready.py

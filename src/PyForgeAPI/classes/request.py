@@ -40,22 +40,18 @@ class Request():
     return self._body
   
   def __query(self) -> None:
-    params = {}
-    try:
-      _params = self._request.path.split('?')[1].split('&')
-      for i in _params:
-        param = i.split('=')
-        params[param[0]] = param[1].replace('%20', ' ')
-    except: pass
-    self._query = params
+    if self._request.route_params.get('query') is None:
+      self._query = {}
+      return
+
+    query_ = self._request.route_params.get('query') or ''
+    query_ = query_.replace('?', '').split('&')
+    query_ = {i.split('=')[0]: i.split('=')[1] for i in query_}
+
+    self._query = query_
 
   def __params(self) -> None:
-    params = {}
-    try:
-      original_parts = self._request.path.split("/")
-      path_parts = self._request.full_path.split("/")
-      for i in range(len(original_parts)):
-        if path_parts[i].startswith(':'):
-          params[path_parts[i].replace(':', '')] = original_parts[i]
-    except: pass
-    self._params = params
+    params_ = self._request.route_params
+    params_.pop('query')
+    
+    self._params = params_
