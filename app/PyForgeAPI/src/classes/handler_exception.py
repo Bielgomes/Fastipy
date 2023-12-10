@@ -1,10 +1,10 @@
 import traceback
 
 class HandlerException:
-  def __init__(self, error):
-    self._error = error
-    self._error_type = type(error).__name__
-    self._error_message = str(error)
+  def __init__(self, error: Exception):
+    self._error           = error
+    self._error_type      = type(error).__name__
+    self._error_message   = str(error)
     self._error_traceback = traceback.format_exc()
 
   def __str__(self) -> str:

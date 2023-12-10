@@ -137,11 +137,18 @@ routes.run(host='localhost')
 
 # Change Log
 
-## Version [1.4.0](https://pypi.org/project/PyForgeAPI/1.4.0/)
+## Development Version 1.4.1
 
 ### ToDo
 
-- [ ] Automatic docs Page
+- [ ] Automatic Docs Page
+- [ ] Better Cookies
+- [ ] Add template engine
+- [ ] Add integration to test libraries
+- [ ] Finish automatic reload in development mode
+- [ ] Add mail module
+- [ ] Add support to plugins
+- [ ] Refactor code
 
 ### Added
 

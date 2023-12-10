@@ -1,10 +1,9 @@
-import json
-import io
+import json, io
 
-from PyForgeAPI.exceptions.file import FileException
+from exceptions.file_exception import FileException
 
 class File():
-  def __init__(self, name, filename, filetype, data):
+  def __init__(self, name: str, filename: str, filetype: str, data: bytes):
     self._name     = name
     self._filename = filename
     self._filetype = filetype

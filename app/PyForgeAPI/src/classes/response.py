@@ -1,15 +1,11 @@
 from http.server import BaseHTTPRequestHandler
 from http.cookies import SimpleCookie
+import mimetypes, os, json, io
 
-from PyForgeAPI.constants.content_type import CONTENT_TYPES
+from constants.content_type import CONTENT_TYPES
 
-from PyForgeAPI.exceptions.file import FileException
-from PyForgeAPI.exceptions.response import ResponseException
-
-import mimetypes
-import os
-import json
-import io
+from exceptions.file_exception import FileException
+from exceptions.response_exception import ResponseException
 
 class Response:
   def __init__(self, request: BaseHTTPRequestHandler):
@@ -48,10 +44,12 @@ class Response:
     self._cookies[name]['path'] = path
     self._cookies[name]['secure'] = secure
     self._cookies[name]['httponly'] = httponly
+
     if expires is not None:
       self._cookies[name]['expires'] = expires
     if domain is not None:
       self._cookies[name]['domain'] = domain
+
     return self
     
   def _send_archive(self, path: str = None) -> None:
@@ -105,6 +103,7 @@ class Response:
   def send_status(self, code: int) -> None:
     if self._request.response_sent:
       raise ResponseException('Response already sent')
+    
     self._request.send_response(code)
     self._request.end_headers()
     self._request.response_sent = True

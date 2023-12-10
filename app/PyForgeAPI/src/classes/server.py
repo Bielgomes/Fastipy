@@ -1,18 +1,11 @@
+import socket, sys, os, traceback
 from http.server import ThreadingHTTPServer
-import socket
-
-from PyForgeAPI.classes.handler import HandlerFactory
-from PyForgeAPI.functions.ready import ready
-
-import sys
-import os
-
-import traceback
-
 from threading import Thread
-
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+
+from .handler import HandlerFactory
+from utils.ready import ready
 
 class RestartServerHandler(FileSystemEventHandler):
   def on_modified(self, event):
@@ -25,7 +18,7 @@ class RestartServerHandler(FileSystemEventHandler):
         print(traceback.format_exc())
 
 class Server():
-  def __init__(self, cors, static_path, application, host, port, debug, routes):
+  def __init__(self, cors: dict, static_path: str, application: str, host: str, port: int, debug: bool, routes: dict):
     self.cors         = cors
     self.static_path  = static_path
     self.application  = application

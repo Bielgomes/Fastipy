@@ -1,12 +1,14 @@
-from PyForgeAPI.classes.file import File
-
 from typing import Dict
 
+from .file import File
+from .body import Body
+
 class Form:
-  def __init__(self, request):
-    self._request = request
+  def __init__(self, body: Body):
+    self._body    = body
     self._fields  = {}
     self._files   = {}
+    
     self.__get_variables()
 
   @property
@@ -18,8 +20,8 @@ class Form:
     return self._files
   
   def __get_variables(self) -> None:
-    if self._request.content_type == 'multipart/form-data':
-      body_parts = self._request._body.split(b'Content-Disposition: form-data; name="')
+    if self._body.content_type == 'multipart/form-data':
+      body_parts = self._body._content.split(b'Content-Disposition: form-data; name="')
       for i in range(1, len(body_parts)):
         name = body_parts[i].split(b'"')[0].decode()
         filename = body_parts[i].split(b'filename="')[1].split(b'"')[0].decode() if b'filename="' in body_parts[i] else None
@@ -30,10 +32,12 @@ class Form:
           self._files[name] = File(name, filename, filetype, data)
         else:
           self._fields[name] = data.decode()
-    elif self._request.content_type == 'application/x-www-form-urlencoded':
-      body_parts = self._request._body.split('&')
+
+    elif self._body.content_type == 'application/x-www-form-urlencoded':
+      body_parts = self._body._content.split('&')
       for i in body_parts:
         name = i.split('=')[0]
         value = i.split('=')[1]
         self._fields[name] = value
-        self._fields[name] = value
+
+    raise Exception(f'Content-Type {self._body.content_type} not supported yet')

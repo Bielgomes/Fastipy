@@ -1,4 +1,4 @@
-def ready(application, host, port, debug) -> None:
+def ready(application, host: str, port: int, debug: bool) -> None:
   open_browser = f"| Open http://{host}:{port}"
   py_forge_api = "| PyForgeAPI Server Running"
   debug_mode = "| Debug mode > True"

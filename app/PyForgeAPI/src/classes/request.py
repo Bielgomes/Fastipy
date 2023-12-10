@@ -1,13 +1,14 @@
 from http.server import BaseHTTPRequestHandler
 from http.cookies import SimpleCookie
 
-from PyForgeAPI.classes.body import Body
+from .body import Body
 
 class Request():
   def __init__(self, request: BaseHTTPRequestHandler):
-    self._request  = request
-    self._body     = Body(self._request)
-    self._cookies  = SimpleCookie(self._request.headers.get('Cookie')) if self._request.headers.get('Cookie') else None
+    self._request     = request
+    self._body: Body  = Body(self._request)
+    self._cookies     = SimpleCookie(self._request.headers.get('Cookie', None))
+
     self.__query()
     self.__params()
   
@@ -44,14 +45,14 @@ class Request():
       self._query = {}
       return
 
-    query_ = self._request.route_params.get('query') or ''
-    query_ = query_.replace('?', '').split('&')
-    query_ = {i.split('=')[0]: i.split('=')[1] for i in query_}
+    querys = self._request.route_params.get('query', '')
+    querys = querys.replace('?', '').split('&')
+    querys = {i.split('=')[0]: i.split('=')[1] for i in querys}
 
-    self._query = query_
+    self._query = querys
 
   def __params(self) -> None:
-    params_ = self._request.route_params
-    params_.pop('query')
+    params = self._request.route_params
+    params.pop('query')
     
-    self._params = params_
+    self._params = params

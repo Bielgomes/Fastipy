@@ -1,22 +1,20 @@
 from http.server import BaseHTTPRequestHandler
-import asyncio
+import asyncio, traceback
 
-from PyForgeAPI.classes.response import Response
-from PyForgeAPI.classes.request import Request
-from PyForgeAPI.classes.timer import Timer
-from PyForgeAPI.classes.handler_exception import HandlerException
+from .response import Response
+from .request import Request
+from .handler_exception import HandlerException
 
-from PyForgeAPI.functions.build_route_path import build_route_path
-
-import traceback
+from helpers.build_route_path import build_route_path
+from utils.timer import Timer
 
 class HandlerFactory():
   @staticmethod
   def build_handler(handler) -> BaseHTTPRequestHandler:
-    if handler == 'Handler':
-      return Handler
-    elif handler == 'DebugHandler':
+    if handler == 'DebugHandler':
       return DebugHandler
+    
+    return Handler
 
 class Handler(BaseHTTPRequestHandler):
   def do_GET(self):
@@ -33,6 +31,9 @@ class Handler(BaseHTTPRequestHandler):
 
   def do_DELETE(self):
     asyncio.run(self.handle_request('DELETE'))
+
+  def do_HEAD(self):
+    asyncio.run(self.handle_request('HEAD'))
 
   def do_OPTIONS(self):
     headers = self.generate_headers()

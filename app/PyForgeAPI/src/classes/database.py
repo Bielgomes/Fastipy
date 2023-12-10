@@ -1,12 +1,11 @@
-import json
-import uuid
-
 from pathlib import Path
+import json, uuid
 
 class Database:
   def __init__(self):
     self.database = {}
-    self.path = Path(__file__).parent.parent / 'db.json'
+    self.path     = Path(__file__).parent.parent / 'db.json'
+    
     self.__load()
 
   def __load(self) -> None:

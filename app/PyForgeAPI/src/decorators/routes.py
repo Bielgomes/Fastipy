@@ -1,13 +1,14 @@
-from PyForgeAPI.exceptions.duplicate_route import DuplicateRoute
-from PyForgeAPI.exceptions.invalid_path import InvalidPath
-
-from PyForgeAPI.classes.server import Server
-from PyForgeAPI.classes.cors import CORSGenerator
-
 import re
+from typing import Optional
+
+from exceptions.invalid_path_exception import InvalidPathException
+from exceptions.duplicate_route_exception import DuplicateRouteException
+
+from classes.server import Server
+from classes.cors import CORSGenerator
 
 class Routes:
-  def __init__(self, debug=False, static_path=None):
+  def __init__(self, debug: bool = False, static_path: str = None):
     self.routes           = {}
     self.debug            = debug
     self._cors            = None
@@ -29,12 +30,14 @@ class Routes:
 
   def cors(
     self,
-    allow_origin='*',
-    allow_headers='*',
-    allow_methods='*',
-    allow_credentials=True,
-    expose_headers=None,
-    max_age=None
+    allow_origin: str = '*',
+    allow_headers: str = '*',
+    allow_methods: str = '*',
+    allow_credentials: bool = True,
+    expose_headers: Optional[str] = None,
+    max_age: Optional[int] = None,
+    content_security_policy: str = "default-src 'self'",
+    custom_headers: dict = {}
   ) -> 'Routes':
     self._cors = CORSGenerator(
       allow_origin,
@@ -42,7 +45,9 @@ class Routes:
       allow_methods,
       allow_credentials,
       expose_headers,
-      max_age
+      max_age,
+      content_security_policy,
+      custom_headers
     )
     return self
 
@@ -50,10 +55,10 @@ class Routes:
     if (not re.fullmatch(r"^(\/:?[_a-zA-Z0-9]+)*$|^\/$", route['path']) or
       re.search(r':(\d)\w+', route['path']) or
       len(re.findall(r':(\w+)', route['path'])) != len(set(re.findall(r':(\w+)', route['path'])))):
-      raise InvalidPath(f'Invalid path: "{route["path"]}"')
+      raise InvalidPathException(f'Invalid path: "{route["path"]}"')
 
     if route['path'] in self.routes:
-      raise DuplicateRoute(f'Duplicate route: Method "{route["method"]}" Path "{route["path"]}"')
+      raise DuplicateRouteException(f'Duplicate route: Method "{route["method"]}" Path "{route["path"]}"')
 
     self.routes[route['path']] = {route['method']: route['function']}
 
@@ -90,7 +95,13 @@ class Routes:
       return func
     return internal
   
-  def run(self, application="API", host="localhost", port=5000):
+  def head(self, path) -> None:
+    def internal(func) -> None:
+      self.add_route({'method': 'HEAD', 'path': path, 'function': func})
+      return func
+    return internal
+  
+  def run(self, application="My API", host="localhost", port=5000):
     Server(
       self._cors,
       self.static_path,

@@ -1,7 +1,7 @@
-from PyForgeAPI.decorators.routes import Routes
+from .routes import Routes
 
 class Module(Routes):
-  def __init__(self, name, prefix):
+  def __init__(self, name: str, prefix: str):
     super().__init__()
     self._name   = name
     self._prefix = prefix

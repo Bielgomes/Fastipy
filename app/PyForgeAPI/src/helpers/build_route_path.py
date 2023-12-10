@@ -1,6 +1,6 @@
 import re
 
-def build_route_path(self, route_path, method) -> bool:
+def build_route_path(self, route_path: str, method: str) -> bool:
   if method not in self.routes[route_path]: return False
 
   route_params_regex = re.compile(r':([a-zA-Z]+)')
