@@ -11,7 +11,7 @@
 ## Installation
 
 ```bash
-pip install Fastipy
+pip install fastipy
 ```
 
 ## Examples
@@ -19,7 +19,7 @@ pip install Fastipy
 ### Example for GET Route with Query Params and debug mode
 
 ```python
-from Fastipy import Routes, Request, Reply
+from fastipy import Routes, Request, Reply
 
 # Debug mode is False by default
 routes = Routes(debug=True)
@@ -37,7 +37,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 ### Example for GET Route with Params, CORS and multiple methods
 
 ```python
-from Fastipy import Routes, Request, Reply
+from fastipy import Routes, Request, Reply
 
 routes = Routes().cors()
 
@@ -57,7 +57,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 ### Example for POST Route with Body
 
 ```python
-from Fastipy import Routes, Request, Reply
+from fastipy import Routes, Request, Reply
 
 routes = Routes()
 
@@ -73,7 +73,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 ### Example for PUT Route with Body
 
 ```python
-from Fastipy import Routes, Request, Reply
+from fastipy import Routes, Request, Reply
 
 routes = Routes()
 
@@ -90,7 +90,7 @@ routes.run(application="Person API", host="localhost", port=3000)
 
 ```py
 # chat.py
-from Fastipy import Request, Reply, Module
+from fastipy import Request, Reply, Module
 
 chat = Module('chat', '/chat')
 
@@ -105,7 +105,7 @@ async def test(req: Request, reply: Reply):
 
 ```py
 # message.py
-from Fastipy import Request, Reply, Module
+from fastipy import Request, Reply, Module
 
 message = Module('message', '/message')
 
@@ -120,7 +120,7 @@ async def test(req: Request, reply: Reply):
 
 ```py
 # main.py
-from Fastipy import Routes
+from fastipy import Routes
 
 from message import message
 from chat import chat

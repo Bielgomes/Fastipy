@@ -4,7 +4,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(
-    name="Fastipy",
+    name="fastipy",
     version="1.4.1",
     description="Fastipy is a fast and easy-to-use open source python library for developing RESTful APIs. It provides a clear and concise syntax for handling routes, requests, and responses, making the development of APIs faster and more efficient. With support for form parameters, body and route parameters, it is useful for handling different types of requests. Whether you are a beginner or an experienced developer, Fastipy is a simple and powerful choice for creating robust and scalable APIs.",
     package_dir={"": "app"},
