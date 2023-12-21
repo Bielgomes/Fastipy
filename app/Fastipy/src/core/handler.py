@@ -1,16 +1,17 @@
 from http.server import BaseHTTPRequestHandler
+from typing import Union
 import asyncio, traceback
 
-from .response import Response
+from .reply import Reply
 from .request import Request
-from .handler_exception import HandlerException
+from exceptions.exception_handler import ExceptionHandler
 
 from helpers.build_route_path import build_route_path
 from utils.timer import Timer
 
 class HandlerFactory():
   @staticmethod
-  def build_handler(handler) -> BaseHTTPRequestHandler:
+  def build_handler(handler) -> Union['Handler', 'DebugHandler']:
     if handler == 'DebugHandler':
       return DebugHandler
     
@@ -50,32 +51,32 @@ class Handler(BaseHTTPRequestHandler):
     BaseHTTPRequestHandler.end_headers(self)
 
   async def handle_request(self, method):
-    if '.' in self.path:
-      Response(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
+    if '.' in self.path.split('/')[-1]:
+      Reply(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
       return
     
     for path in self.routes:
       if build_route_path(self, path, method):
         self.full_path, self.method = path, method
         try:
-          await self.routes[path][method](Request(self), Response(self))
+          await self.routes[path][method](Request(self), Reply(self))
         except Exception:
-          Response(self).send_status(500)
+          Reply(self).send_status(500)
           print(traceback.format_exc())
           return
         
         if not self.response_sent:
-          Response(self).send_status(200)
+          Reply(self).send_status(200)
         return
       
-    Response(self).send_status(404)
+    Reply(self).send_status(404)
 
 class DebugHandler(Handler):
   async def handle_request(self, method):
     timer = Timer()
 
-    if '.' in self.path:
-      Response(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
+    if '.' in self.path.split('/')[-1]:
+      Reply(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
       timer.end()
       return
 
@@ -83,17 +84,17 @@ class DebugHandler(Handler):
       if build_route_path(self, path, method):
         self.full_path, self.method = path, method
         try:
-          await self.routes[path][method](Request(self), Response(self))
+          await self.routes[path][method](Request(self), Reply(self))
         except Exception as e:
           timer.end()
-          Response(self).status(500).html(HandlerException(e).__html__()).send()
+          Reply(self).status(500).html(ExceptionHandler(e).__html__()).send()
           print(traceback.format_exc())
           return
 
         if not self.response_sent:
-          Response(self).send_status(200)
+          Reply(self).send_status(200)
         timer.end()
         return
 
-    Response(self).send_status(404)
+    Reply(self).send_status(404)
     timer.end()

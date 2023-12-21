@@ -1,7 +1,8 @@
-from typing import Dict
+from typing import TYPE_CHECKING, Dict
 
 from .file import File
-from .body import Body
+if TYPE_CHECKING:
+    from .body import Body
 
 class Form:
   def __init__(self, body: Body):
@@ -39,5 +40,3 @@ class Form:
         name = i.split('=')[0]
         value = i.split('=')[1]
         self._fields[name] = value
-
-    raise Exception(f'Content-Type {self._body.content_type} not supported yet')

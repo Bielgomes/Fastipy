@@ -1,11 +1,11 @@
-from PyForgeAPI import Routes, Request, Response
+from Fastipy import Routes, Request, Reply
 
 import json
 
 routes = Routes(debug=True)
 
 @routes.get("/")
-async def home(req: Request, res: Response):
+async def home(req: Request, reply: Reply):
   with open("person.json", "r+") as f:
     person = json.load(f)
     f.close()
@@ -16,10 +16,10 @@ async def home(req: Request, res: Response):
     if i["age"] >= int(req.query['age']):
       _person.append(i)
 
-  res.status(200).json(_person).send()
+  reply.status(200).json(_person).send()
 
 @routes.post("/person")
-async def person(req: Request, res: Response):
+async def person(req: Request, reply: Reply):
   with open("person.json", "r+") as f:
     person = json.load(f)
     person.append(req.body.json)
@@ -27,6 +27,6 @@ async def person(req: Request, res: Response):
     json.dump(person, f, indent=2)
     f.close()
 
-  res.sendStatus(200)
+  reply.sendStatus(200)
 
 routes.run(host="localhost", port=3000)

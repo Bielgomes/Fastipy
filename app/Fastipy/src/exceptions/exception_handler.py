@@ -1,6 +1,6 @@
 import traceback
 
-class HandlerException:
+class ExceptionHandler:
   def __init__(self, error: Exception):
     self._error           = error
     self._error_type      = type(error).__name__

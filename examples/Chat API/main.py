@@ -1,4 +1,4 @@
-from PyForgeAPI import Routes, Request, Response
+from Fastipy import Routes, Request, Reply
 
 import json
 import datetime
@@ -6,35 +6,35 @@ import datetime
 routes = Routes(debug=True).cors()
 
 @routes.get("/")
-async def index(req: Request, res: Response):
+async def index(_, reply: Reply):
   try:
     with open('chat.json', 'r+') as file:
       data = json.load(file)
 
-    res.json(data).status(200).send()
+    reply.json(data).status(200).send()
   except:
-    res.send_status(500)
+    reply.send_status(500)
 
 @routes.get("/chat/:chat_id")
-async def index(req: Request, res: Response):
+async def index(req: Request, reply: Reply):
   with open('chat.json', 'r+') as file:
     data = json.load(file)
 
   for i in data:
     if i['id'] == req.params['chat_id']:
-      res.json(i).status(200).send()
+      reply.json(i).status(200).send()
       return
   
-  res.send_status(404)
+  reply.send_status(404)
 
 @routes.post("/chat")
-async def index(req: Request, res: Response):
+async def index(req: Request, reply: Reply):
   with open('chat.json', 'r') as file:
     data = json.load(file)
 
   for i in data:
     if i['id'] == req.body.json['id']:
-      res.send_status(409)
+      reply.send_status(409)
       return
 
   chat = {}
@@ -46,10 +46,10 @@ async def index(req: Request, res: Response):
   with open('chat.json', 'w') as file:
     json.dump(data, file)
 
-  res.send_status(200)
+  reply.send_status(200)
 
 @routes.post("/chat/:chat_id")
-async def index(req: Request, res: Response):
+async def index(req: Request, reply: Reply):
   with open('chat.json', 'r') as file:
     data = json.load(file)
 
@@ -63,9 +63,8 @@ async def index(req: Request, res: Response):
 
       with open('chat.json', 'w') as file:
         json.dump(data, file)
-
       return
     
-  res.send_status(404)
+  reply.send_status(404)
     
 routes.run(application="Chat API", host="localhost", port=3000)

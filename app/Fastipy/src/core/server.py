@@ -27,6 +27,7 @@ class Server():
     self.debug        = debug
     self.routes       = routes
     self.handler      = HandlerFactory.build_handler('DebugHandler' if self.debug else 'Handler')
+    self.observer     = None
   
   def run(self) -> None:
     self.handler.routes = self.routes
@@ -44,14 +45,18 @@ class Server():
     ready(self.application, self.host, self.port, self.debug)
 
     if self.debug:
-      observer = Observer()
-      observer.schedule(RestartServerHandler(), os.getcwd(), recursive=True)
-      observer_thread = Thread(target=observer.start)
-      observer_thread.start()
+      self.observer = Observer()
+      self.observer.schedule(RestartServerHandler(), os.getcwd(), recursive=True)
+      self.observer_thread = Thread(target=self.observer.start)
+      self.observer_thread.start()
 
     try:
       httpd.serve_forever()
     except KeyboardInterrupt:
-      print('PyForgeAPI Server Stopped')
+      if self.debug:
+        self.observer.stop()
+        self.observer.join()
       httpd.server_close()
+      
+      print('PyForgeAPI Server Stopped')
       raise SystemExit

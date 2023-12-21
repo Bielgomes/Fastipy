@@ -1,7 +1,7 @@
 from http.server import BaseHTTPRequestHandler
 from http.cookies import SimpleCookie
 
-from .body import Body
+from models.body import Body
 
 class Request():
   def __init__(self, request: BaseHTTPRequestHandler):
