@@ -1,7 +1,7 @@
 # Fastipy
 
 <div>
-  <img src="https://media.discordapp.net/attachments/887158781832749086/1187385388571037778/fastipy-extended.png" width="250px" height="100px">
+  <img src="https://media.discordapp.net/attachments/887158781832749086/1187385388571037778/fastipy-extended.png">
 </div>
 
 ## What is it and what is it for
