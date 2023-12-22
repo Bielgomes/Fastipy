@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
   from decorators.module import Module
 
@@ -20,6 +21,10 @@ class ModuleNode:
   
   def print_tree(self, indent=""):
     if self.__module.prefix is not None:
-      print(f"{indent} ├── {self.__module.prefix}")
+      if indent != "":
+        print(f"{indent} ├──{self.__module.prefix}")
+      else:
+        print(f"    {self.__module.prefix}")
+
       for child in self.__children:
-        child.print_tree(indent + "  ")
+        child.print_tree(indent + "   ")

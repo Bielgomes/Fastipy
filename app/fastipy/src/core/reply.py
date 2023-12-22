@@ -3,10 +3,10 @@ from http.cookies import SimpleCookie
 from typing import Literal
 import mimetypes, os, json, io
 
-from constants.content_type import CONTENT_TYPES
+from ..constants.content_type import CONTENT_TYPES
 
-from exceptions.file_exception import FileException
-from exceptions.reply_exception import ReplyException
+from ..exceptions.file_exception import FileException
+from ..exceptions.reply_exception import ReplyException
 
 class Reply:
   def __init__(self, request: BaseHTTPRequestHandler):

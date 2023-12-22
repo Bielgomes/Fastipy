@@ -5,7 +5,7 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from .handler import HandlerFactory
-from utils.ready import ready
+from ..utils.ready import ready
 
 class RestartServerHandler(FileSystemEventHandler):
   def on_modified(self, event):

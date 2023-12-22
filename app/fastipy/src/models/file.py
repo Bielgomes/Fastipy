@@ -1,6 +1,6 @@
 import json, io
 
-from exceptions.file_exception import FileException
+from ..exceptions.file_exception import FileException
 
 class File():
   def __init__(self, name: str, filename: str, filetype: str, data: bytes):

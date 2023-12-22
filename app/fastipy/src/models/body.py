@@ -1,9 +1,8 @@
 from http.server import BaseHTTPRequestHandler
-from typing import TYPE_CHECKING, Union
+from typing import Union
 import json
 
-if TYPE_CHECKING:
-    from .form import Form
+from .form import Form
 
 class Body():
   def __init__(self, request: BaseHTTPRequestHandler):
@@ -15,8 +14,7 @@ class Body():
     self.__json()
     self.__text()
 
-    if TYPE_CHECKING:
-      self._form = Form(self)
+    self._form = Form(self)
 
   def __str__(self) -> str:
     return self._content
@@ -36,6 +34,10 @@ class Body():
   @property
   def text(self) -> str:
     return self._text
+  
+  @property
+  def content(self) -> bytes:
+    return self._content
   
   @property
   def form(self) -> 'Form':

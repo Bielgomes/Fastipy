@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING, Optional
 import re
 
-from exceptions.invalid_path_exception import InvalidPathException
-from exceptions.duplicate_route_exception import DuplicateRouteException
+from ..exceptions.invalid_path_exception import InvalidPathException
+from ..exceptions.duplicate_route_exception import DuplicateRouteException
 
-from core.server import Server
-from middlewares.cors import CORSGenerator
+from ..core.server import Server
+from ..middlewares.cors import CORSGenerator
 
-from classes.module_tree import ModuleNode
+from ..classes.module_tree import ModuleNode
 
 if TYPE_CHECKING:
   from .module import Module
@@ -135,9 +135,8 @@ class Routes:
     return internal
 
   def run(self, application="My API", host="localhost", port=5000):
-    if self._debug:
-      print('\nDebug > Routes: Running')
-      print('Debug > Module Tree:')
+    if self.debug:
+      print('\nDebug > Module Tree:')
       self.module_node.print_tree()
 
     Server(
