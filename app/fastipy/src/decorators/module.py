@@ -5,3 +5,9 @@ class Module(Routes):
     super().__init__()
     self._prefix = prefix
     self._name = name
+
+  def cors(self):
+    raise NotImplementedError('Cors method is not implemented.')
+
+  def run(self):
+    raise NotImplementedError('Run method is not implemented.')
