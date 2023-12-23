@@ -1,13 +1,16 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Literal
 import re
 
 from ..exceptions.invalid_path_exception import InvalidPathException
 from ..exceptions.duplicate_route_exception import DuplicateRouteException
+from ..exceptions.no_method_exception import NoMethodException
 
 from ..core.server import Server
 from ..middlewares.cors import CORSGenerator
 
 from ..classes.module_tree import ModuleNode
+
+from ..constants.http_methods import HTTP_METHODS
 
 if TYPE_CHECKING:
   from .module import Module
@@ -22,10 +25,10 @@ class Routes:
     self._prefix      = '/'
     self._name        = None
 
-    self.module_node  = ModuleNode(self)
+    self.__module_node  = ModuleNode(self)
 
     if self._debug:
-      print('\nDebug > Routes: Initialized')
+      print('\nDebug > Routes: Initialized\n')
 
   @property
   def prefix(self) -> str:
@@ -34,24 +37,23 @@ class Routes:
   @property
   def name(self) -> str:
     return self._name
-  
+
   @property
   def cors(self) -> CORSGenerator:
     return self._cors
-  
+
   @property
   def static(self) -> str:
     return self._static_path
-  
+
   @property
   def debug(self) -> bool:
     return self._debug
 
   def bind(self, module: 'Module') -> None:
     if self._debug:
-      print(f'\nDebug > Routes: Binding module "{module.name}"')
-
-    self.module_node.add_child(module.module_node)
+      print(f'Debug > Routes: Binding module "{module.name}"')
+    self.__module_node.add_child(module.__module_node)
 
     for path, methods in module._routes.items():
       for method, func in methods.items():
@@ -60,6 +62,7 @@ class Routes:
           'path': f"{module.prefix}{path if path != '/' else ''}",
           'function': func,
         })
+    print()
 
   def cors(
     self,
@@ -84,16 +87,24 @@ class Routes:
     )
     return self
 
-  def add_route(self, route) -> None:
+  def add_route(self, route: dict) -> None:
+    if route['method'] not in HTTP_METHODS:
+      raise NoMethodException(f'Method "{type}" does not exist or is not supported yet')
+
     if (not re.fullmatch(r"^(\/:?[_a-zA-Z0-9]+)*$|^\/$", route['path']) or
       re.search(r':(\d)\w+', route['path']) or
       len(re.findall(r':(\w+)', route['path'])) != len(set(re.findall(r':(\w+)', route['path'])))):
       raise InvalidPathException(f'Invalid path: "{route["path"]}"')
 
-    if route['path'] in self._routes:
+    routeAlreadyExists = self._routes.get(route['path'], {}).get(route['method'], None) is not None
+    if routeAlreadyExists:
       raise DuplicateRouteException(f'Duplicate route: Method "{route["method"]}" Path "{route["path"]}"')
 
-    self._routes[route['path']] = {route['method']: route['function']}
+    if self._routes.get(route['path'], None) is None:
+      self._routes[route['path']] = {}
+    self._routes[route['path']][route['method']] = {
+      'handler': route['function'],
+    }
 
     if self._debug:
       print(f'| Route registered: Method "{route["method"]}" Path "{route["path"]}"')
@@ -137,7 +148,7 @@ class Routes:
   def run(self, application="My API", host="localhost", port=5000):
     if self.debug:
       print('\nDebug > Module Tree:')
-      self.module_node.print_tree()
+      self.__module_node.print_tree()
 
     Server(
       self._cors,

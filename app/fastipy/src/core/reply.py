@@ -3,7 +3,7 @@ from http.cookies import SimpleCookie
 from typing import Literal
 import mimetypes, os, json, io
 
-from ..constants.content_type import CONTENT_TYPES
+from ..constants.content_types import CONTENT_TYPES
 
 from ..exceptions.file_exception import FileException
 from ..exceptions.reply_exception import ReplyException
@@ -16,35 +16,50 @@ class Reply:
     self._request.response_sent = False
     self._headers               = {}
     self._cookies               = SimpleCookie()
-    self.content_type           = None
+
+  @property
+  def status_code(self) -> int:
+    return self._status_code
+
+  @status_code.setter
+  def status_code(self, code: int) -> None:
+    self._status_code = code
+
+  @property
+  def type(self) -> str:
+    return self._headers['Content-Type']
+  
+  @type.setter
+  def type(self, content_type: str) -> None:
+    self._headers['Content-Type'] = content_type
 
   def json(self, response: dict) -> 'Reply':
     self._response = json.dumps(response)
-    self.content_type = 'application/json'
+    self._headers['Content-Type'] = 'application/json'
     return self
 
   def text(self, response: str) -> 'Reply':
     self._response = response
-    self.content_type = 'text/plain'
+    self._headers['Content-Type'] = 'text/plain'
     return self
 
   def html(self, response: str) -> 'Reply':
     self._response = response
-    self.content_type = 'text/html'
+    self._headers['Content-Type'] = 'text/html'
     return self
 
-  def status(self, code: int) -> 'Reply':
+  def code(self, code: int) -> 'Reply':
     self._status_code = code
     return self
 
-  def header(self, key: str, value) -> 'Reply':
+  def header(self, key: str, value: str) -> 'Reply':
     self._headers[key] = value
     return self
 
-  def getHeader(self, key: str) -> str:
+  def get_header(self, key: str) -> str:
     return self._headers[key]
 
-  def removeHeader(self, key: str) -> 'Reply':
+  def remove_header(self, key: str) -> 'Reply':
     del self._headers[key]
     return self
 
@@ -114,7 +129,6 @@ class Reply:
       raise ReplyException('Status code is not set')
 
     self._request.send_response(self._status_code)
-    self._request.send_header('Content-type', self.content_type)
 
     for name, value in self._headers.items():
       self._request.send_header(name, value)
@@ -138,14 +152,15 @@ class Reply:
 
   def _get_content_type(self, path: str) -> str:
     try:
-      content_type = CONTENT_TYPES[path.split('/')[-1].split('.')[-1]]
-    except:
+      content_type = CONTENT_TYPES[path.split('.')[-1]]
+    except KeyError:
       content_type = mimetypes.guess_type(path)[0]
 
     return content_type or 'application/octet-stream'
 
   def _send_archive(self, path: str = None) -> None:
-    self.content_type = self._get_content_type(path)
+    content_type = self._get_content_type(path)
+    self._headers['Content-Type'] = content_type
 
     try:
       with io.open(path, 'rb') as file:
@@ -180,6 +195,6 @@ class Reply:
 
     with io.open(f"{path}", 'r') as file:
       self._response = file.read()
-    self.content_type = 'text/html'
+    self._headers['Content-Type'] = 'text/html'
 
     return self

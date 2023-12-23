@@ -1,3 +1,4 @@
-class InvalidPathException(Exception):
-  def __init__(self, msg):
-    self.msg = msg
+from .fastipy_base_exception import FastipyBaseException
+
+class InvalidPathException(FastipyBaseException):
+  pass

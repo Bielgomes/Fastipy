@@ -59,7 +59,7 @@ class Handler(BaseHTTPRequestHandler):
       if build_route_path(self, path, method):
         self.full_path, self.method = path, method
         try:
-          await self.routes[path][method](Request(self), Reply(self))
+          await self.routes[path][method]['handler'](Request(self), Reply(self))
         except Exception:
           Reply(self).send_status(500)
           print(traceback.format_exc())
@@ -84,7 +84,7 @@ class DebugHandler(Handler):
       if build_route_path(self, path, method):
         self.full_path, self.method = path, method
         try:
-          await self.routes[path][method](Request(self), Reply(self))
+          await self.routes[path][method]['handler'](Request(self), Reply(self))
         except Exception as e:
           timer.end()
           Reply(self).status(500).html(ExceptionHandler(e).__html__()).send()

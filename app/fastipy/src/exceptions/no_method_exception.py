@@ -1,4 +1,4 @@
 from .fastipy_base_exception import FastipyBaseException
 
-class DuplicateRouteException(FastipyBaseException):
+class NoMethodException(FastipyBaseException):
   pass

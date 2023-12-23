@@ -16,7 +16,7 @@ async def home(req: Request, reply: Reply):
     if i["age"] >= int(req.query['age']):
       _person.append(i)
 
-  reply.status(200).json(_person).send()
+  reply.code(200).json(_person).send()
 
 @routes.post("/person")
 async def person(req: Request, reply: Reply):
@@ -27,6 +27,6 @@ async def person(req: Request, reply: Reply):
     json.dump(person, f, indent=2)
     f.close()
 
-  reply.sendStatus(200)
+  reply.send_code(200)
 
 routes.run(host="localhost", port=3000)
