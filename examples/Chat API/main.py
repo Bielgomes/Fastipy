@@ -1,11 +1,11 @@
-from Fastipy import Routes, Request, Reply
+from Fastipy import Fastipy, Request, Reply
 
 import json
 import datetime
 
-routes = Routes(debug=True).cors()
+app = Fastipy(debug=True).cors()
 
-@routes.get("/")
+@app.get("/")
 async def index(_, reply: Reply):
   try:
     with open('chat.json', 'r+') as file:
@@ -15,7 +15,7 @@ async def index(_, reply: Reply):
   except:
     reply.send_code(500)
 
-@routes.get("/chat/:chat_id")
+@app.get("/chat/:chat_id")
 async def index(req: Request, reply: Reply):
   with open('chat.json', 'r+') as file:
     data = json.load(file)
@@ -27,7 +27,7 @@ async def index(req: Request, reply: Reply):
   
   reply.send_code(404)
 
-@routes.post("/chat")
+@app.post("/chat")
 async def index(req: Request, reply: Reply):
   with open('chat.json', 'r') as file:
     data = json.load(file)
@@ -48,7 +48,7 @@ async def index(req: Request, reply: Reply):
 
   reply.send_code(200)
 
-@routes.post("/chat/:chat_id")
+@app.post("/chat/:chat_id")
 async def index(req: Request, reply: Reply):
   with open('chat.json', 'r') as file:
     data = json.load(file)
@@ -67,4 +67,4 @@ async def index(req: Request, reply: Reply):
     
   reply.send_code(404)
     
-routes.run(application="Chat API", host="localhost", port=3000)
+app.run(application="Chat API", host="localhost", port=3000)

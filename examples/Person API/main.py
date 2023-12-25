@@ -1,10 +1,10 @@
-from Fastipy import Routes, Request, Reply
+from Fastipy import Fastipy, Request, Reply
 
 import json
 
-routes = Routes(debug=True)
+app = Fastipy(debug=True)
 
-@routes.get("/")
+@app.get("/")
 async def home(req: Request, reply: Reply):
   with open("person.json", "r+") as f:
     person = json.load(f)
@@ -18,7 +18,7 @@ async def home(req: Request, reply: Reply):
 
   reply.code(200).json(_person).send()
 
-@routes.post("/person")
+@app.post("/person")
 async def person(req: Request, reply: Reply):
   with open("person.json", "r+") as f:
     person = json.load(f)
@@ -29,4 +29,4 @@ async def person(req: Request, reply: Reply):
 
   reply.send_code(200)
 
-routes.run(host="localhost", port=3000)
+app.run(host="localhost", port=3000)
