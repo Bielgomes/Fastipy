@@ -11,9 +11,9 @@ async def index(_, reply: Reply):
     with open('chat.json', 'r+') as file:
       data = json.load(file)
 
-    reply.json(data).status(200).send()
+    reply.json(data).code(200).send()
   except:
-    reply.send_status(500)
+    reply.send_code(500)
 
 @routes.get("/chat/:chat_id")
 async def index(req: Request, reply: Reply):
@@ -22,10 +22,10 @@ async def index(req: Request, reply: Reply):
 
   for i in data:
     if i['id'] == req.params['chat_id']:
-      reply.json(i).status(200).send()
+      reply.json(i).code(200).send()
       return
   
-  reply.send_status(404)
+  reply.send_code(404)
 
 @routes.post("/chat")
 async def index(req: Request, reply: Reply):
@@ -34,7 +34,7 @@ async def index(req: Request, reply: Reply):
 
   for i in data:
     if i['id'] == req.body.json['id']:
-      reply.send_status(409)
+      reply.send_code(409)
       return
 
   chat = {}
@@ -46,7 +46,7 @@ async def index(req: Request, reply: Reply):
   with open('chat.json', 'w') as file:
     json.dump(data, file)
 
-  reply.send_status(200)
+  reply.send_code(200)
 
 @routes.post("/chat/:chat_id")
 async def index(req: Request, reply: Reply):
@@ -65,6 +65,6 @@ async def index(req: Request, reply: Reply):
         json.dump(data, file)
       return
     
-  reply.send_status(404)
+  reply.send_code(404)
     
 routes.run(application="Chat API", host="localhost", port=3000)

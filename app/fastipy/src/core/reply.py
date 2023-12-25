@@ -1,50 +1,73 @@
 from http.server import BaseHTTPRequestHandler
 from http.cookies import SimpleCookie
-from typing import Literal
-import mimetypes, os, json, io
+from typing import Literal, List
+import mimetypes, os, json, io, asyncio
 
-from ..constants.content_type import CONTENT_TYPES
+from ..constants.content_types import CONTENT_TYPES
 
 from ..exceptions.file_exception import FileException
 from ..exceptions.reply_exception import ReplyException
 
+from ..helpers.hook_helpers import handler_hooks
+
 class Reply:
-  def __init__(self, request: BaseHTTPRequestHandler):
+  def __init__(self, request: BaseHTTPRequestHandler, hooks: List = []):
     self._request               = request
     self._status_code           = 200
     self._response              = None
     self._request.response_sent = False
     self._headers               = {}
     self._cookies               = SimpleCookie()
-    self.content_type           = None
+
+    self.__on_response_hooks = hooks
+
+  @property
+  def status_code(self) -> int:
+    return self._status_code
+
+  @status_code.setter
+  def status_code(self, code: int) -> None:
+    self._status_code = code
+
+  @property
+  def type(self) -> str:
+    return self._headers['Content-Type']
+  
+  @type.setter
+  def type(self, content_type: str) -> None:
+    self._headers['Content-Type'] = content_type
+
+  @property
+  def is_sent(self) -> bool:
+    return self._request.response_sent
 
   def json(self, response: dict) -> 'Reply':
     self._response = json.dumps(response)
-    self.content_type = 'application/json'
+    self._headers['Content-Type'] = 'application/json'
     return self
 
   def text(self, response: str) -> 'Reply':
     self._response = response
-    self.content_type = 'text/plain'
+    self._headers['Content-Type'] = 'text/plain'
     return self
 
   def html(self, response: str) -> 'Reply':
     self._response = response
-    self.content_type = 'text/html'
+    self._headers['Content-Type'] = 'text/html'
     return self
 
-  def status(self, code: int) -> 'Reply':
+  def code(self, code: int) -> 'Reply':
     self._status_code = code
     return self
 
-  def header(self, key: str, value) -> 'Reply':
+  def header(self, key: str, value: str) -> 'Reply':
     self._headers[key] = value
     return self
 
-  def getHeader(self, key: str) -> str:
+  def get_header(self, key: str) -> str:
     return self._headers[key]
 
-  def removeHeader(self, key: str) -> 'Reply':
+  def remove_header(self, key: str) -> 'Reply':
     del self._headers[key]
     return self
 
@@ -71,18 +94,24 @@ class Reply:
     return self
 
   def send(self) -> None:
+    if self._request.response_sent:
+      raise ReplyException('Reply already sent')
+    
     self._send_headers()
     self._send_body()
 
-  def send_status(self, code: int) -> None:
+    self.__on_response_sent()
+
+  def send_code(self, code: int) -> None:
     if self._request.response_sent:
       raise ReplyException('Reply already sent')
     
     self._request.send_response(code)
     self._request.end_headers()
-    self._request.response_sent = True
 
-  def send_cookies(self) -> None:
+    self.__on_response_sent()
+
+  def send_cookie(self) -> None:
     if self._request.response_sent:
       raise ReplyException('Reply already sent')
     if self._status_code is None:
@@ -94,7 +123,8 @@ class Reply:
       self._request.send_header("Set-Cookie", cookie.OutputString())
     
     self._request.end_headers()
-    self._request.response_sent = True
+
+    self.__on_response_sent()
 
   def redirect(self, location: str, code: Literal[301, 302] = 302) -> 'Reply':
     if self._request.response_sent:
@@ -107,56 +137,10 @@ class Reply:
 
     return self
 
-  def _send_headers(self) -> None:
-    if self._request.response_sent:
-      raise ReplyException('Reply already sent')
-    if self._status_code is None:
-      raise ReplyException('Status code is not set')
-
-    self._request.send_response(self._status_code)
-    self._request.send_header('Content-type', self.content_type)
-
-    for name, value in self._headers.items():
-      self._request.send_header(name, value)
-    for cookie in self._cookies.values():
-      self._request.send_header("Set-Cookie", cookie.OutputString())
-
-    self._request.end_headers()
-
-  def _send_body(self) -> None:
-    if self._request.response_sent:
-      raise ReplyException('Reply already sent')
-    if self._response is None:
-      raise ReplyException('Reply is not set')
-    
-    try:
-      self._request.wfile.write(self._response.encode())
-    except AttributeError:
-      self._request.wfile.write(self._response)
-      
-    self._request.response_sent = True
-
-  def _get_content_type(self, path: str) -> str:
-    try:
-      content_type = CONTENT_TYPES[path.split('/')[-1].split('.')[-1]]
-    except:
-      content_type = mimetypes.guess_type(path)[0]
-
-    return content_type or 'application/octet-stream'
-
-  def _send_archive(self, path: str = None) -> None:
-    self.content_type = self._get_content_type(path)
-
-    try:
-      with io.open(path, 'rb') as file:
-        self._response = file.read()
-    except FileNotFoundError:
-      self.send_status(404)
-      return
-      
-    self.send()
-
   def send_file(self, path: str) -> 'Reply':
+    if self._request.response_sent:
+      raise ReplyException('Reply already sent')
+    
     try:
       with io.open(path, 'rb') as file:
         file_size = os.path.getsize(path)
@@ -167,7 +151,8 @@ class Reply:
         self._request.send_header('Content-Length', file_size)
         self._request.end_headers()
         self._request.wfile.write(file.read())
-        self._request.response_sent = True
+
+        self.__on_response_sent()
     except FileNotFoundError:
       raise FileException(f'File not found: Path "{path}"')
 
@@ -180,6 +165,60 @@ class Reply:
 
     with io.open(f"{path}", 'r') as file:
       self._response = file.read()
-    self.content_type = 'text/html'
+    self._headers['Content-Type'] = 'text/html'
 
     return self
+  
+  def _send_headers(self) -> None:
+    if self._status_code is None:
+      raise ReplyException('Status code is not set')
+
+    self._request.send_response(self._status_code)
+
+    for name, value in self._headers.items():
+      self._request.send_header(name, value)
+    for cookie in self._cookies.values():
+      self._request.send_header("Set-Cookie", cookie.OutputString())
+
+    self._request.end_headers()
+
+  def _send_body(self) -> None:
+    if self._response is None:
+      raise ReplyException('Reply is not set')
+    
+    try:
+      self._request.wfile.write(self._response.encode())
+    except AttributeError:
+      self._request.wfile.write(self._response)
+      
+    self._request.response_sent = True
+
+  def _get_content_type(self, path: str) -> str:
+    try:
+      content_type = CONTENT_TYPES[path.split('.')[-1]]
+    except KeyError:
+      content_type = mimetypes.guess_type(path)[0]
+
+    return content_type or 'application/octet-stream'
+
+  def _send_archive(self, path: str = None) -> None:
+    content_type = self._get_content_type(path)
+    self._headers['Content-Type'] = content_type
+
+    try:
+      with io.open(path, 'rb') as file:
+        self._response = file.read()
+    except FileNotFoundError:
+      self.send_status(404)
+      return
+      
+    self.send()
+
+  def __on_response_sent(self) -> None:
+    self._request.response_sent = True
+    handler_hooks(
+      self.__on_response_hooks,
+      self._request,
+      self,
+      check_response_sent=False
+    )

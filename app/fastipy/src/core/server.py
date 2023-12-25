@@ -12,7 +12,7 @@ class RestartServerHandler(FileSystemEventHandler):
     if event.src_path.endswith(".py"):
       try:
         os.system("cls")
-        print("Restarting PyForgeAPI Server...")
+        print("Restarting Fastipy Server...")
         exec(compile(open(sys.argv[0]).read(), sys.argv[0], "exec"), {}, {})
       except Exception:
         print(traceback.format_exc())
@@ -58,5 +58,5 @@ class Server():
         self.observer.join()
       httpd.server_close()
       
-      print('PyForgeAPI Server Stopped')
+      print('Fastipy Server Stopped')
       raise SystemExit

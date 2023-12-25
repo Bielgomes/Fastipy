@@ -1,0 +1,1 @@
+HOOK_TYPES = ['onRequest', 'onResponse', 'onError']

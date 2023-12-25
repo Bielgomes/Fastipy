@@ -4,17 +4,20 @@ import asyncio, traceback
 
 from .reply import Reply
 from .request import Request
+
 from ..exceptions.exception_handler import ExceptionHandler
 
 from ..helpers.build_route_path import build_route_path
+from ..helpers.hook_helpers import handler_hooks
+from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
+
 from ..utils.timer import Timer
 
 class HandlerFactory():
   @staticmethod
-  def build_handler(handler) -> Union['Handler', 'DebugHandler']:
+  def build_handler(handler: str) -> Union['Handler', 'DebugHandler']:
     if handler == 'DebugHandler':
       return DebugHandler
-    
     return Handler
 
 class Handler(BaseHTTPRequestHandler):
@@ -54,22 +57,38 @@ class Handler(BaseHTTPRequestHandler):
     if '.' in self.path.split('/')[-1]:
       Reply(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
       return
-    
-    for path in self.routes:
+
+    self.full_path, self.method = None, None
+    for path in self.routes:  
       if build_route_path(self, path, method):
         self.full_path, self.method = path, method
-        try:
-          await self.routes[path][method](Request(self), Reply(self))
-        except Exception:
-          Reply(self).send_status(500)
-          print(traceback.format_exc())
-          return
-        
-        if not self.response_sent:
-          Reply(self).send_status(200)
+        break
+    
+    if self.full_path is None:
+      Reply(self).send_code(404)
+      return
+
+    route_handler = self.routes[path][method]['handler']
+    route_hooks = self.routes[path][method]['hooks']
+
+    request, reply = Request(self), Reply(self, hooks=route_hooks['onResponse'])
+
+    try:
+      handler_hooks(route_hooks['onRequest'], request, reply)
+      if reply.is_sent:
         return
-      
-    Reply(self).send_status(404)
+
+      run_coroutine_or_sync_function(route_handler, request, reply)
+
+      if not reply.is_sent:
+        reply.send_code(200)
+    except Exception as e:
+      handler_hooks(route_hooks['onError'], request, reply, e)
+      if reply.is_sent:
+        return
+
+      Reply(self).code(500).html(ExceptionHandler(e).__html__()).send()
+      print(traceback.format_exc())
 
 class DebugHandler(Handler):
   async def handle_request(self, method):
@@ -80,21 +99,39 @@ class DebugHandler(Handler):
       timer.end()
       return
 
+    self.full_path, self.method = None, None
     for path in self.routes:  
       if build_route_path(self, path, method):
         self.full_path, self.method = path, method
-        try:
-          await self.routes[path][method](Request(self), Reply(self))
-        except Exception as e:
-          timer.end()
-          Reply(self).status(500).html(ExceptionHandler(e).__html__()).send()
-          print(traceback.format_exc())
-          return
+        break
+    
+    if self.full_path is None:
+      Reply(self).send_code(404)
+      timer.end()
+      return
 
-        if not self.response_sent:
-          Reply(self).send_status(200)
+    route_handler = self.routes[path][method]['handler']
+    route_hooks = self.routes[path][method]['hooks']
+
+    request, reply = Request(self), Reply(self, hooks=route_hooks['onResponse'])
+
+    try:
+      handler_hooks(route_hooks['onRequest'], request, reply)
+      if reply.is_sent:
         timer.end()
         return
 
-    Reply(self).send_status(404)
-    timer.end()
+      run_coroutine_or_sync_function(route_handler, request, reply)
+
+      if not reply.is_sent:
+        reply.send_code(200)
+      timer.end()
+    except Exception as e:
+      handler_hooks(route_hooks['onError'], request, reply, e)
+      if reply.is_sent:
+        timer.end()
+        return
+
+      Reply(self).code(500).html(ExceptionHandler(e).__html__()).send()
+      timer.end()
+      print(traceback.format_exc())
