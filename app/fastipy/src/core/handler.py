@@ -82,6 +82,7 @@ class Handler(BaseHTTPRequestHandler):
 
       if not reply.is_sent:
         reply.send_code(200)
+      return
     except Exception as e:
       handler_hooks(route_hooks['onError'], request, reply, e)
       if reply.is_sent:
@@ -126,6 +127,7 @@ class DebugHandler(Handler):
       if not reply.is_sent:
         reply.send_code(200)
       timer.end()
+      return
     except Exception as e:
       handler_hooks(route_hooks['onError'], request, reply, e)
       if reply.is_sent:
