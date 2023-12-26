@@ -1,6 +1,9 @@
 from http.server import BaseHTTPRequestHandler
 from http.cookies import SimpleCookie
 
+from urllib.parse import urlparse, parse_qsl
+import re
+
 from ..models.body import Body
 
 class Request():
@@ -9,9 +12,9 @@ class Request():
     self._body: Body  = Body(self._request)
     self._cookies     = SimpleCookie(self._request.headers.get('Cookie', None))
 
-    self.__query()
-    self.__params()
-  
+    self.__query_params()
+    self.__route_params()
+
   @property
   def method(self) -> str:
     return self._request.method
@@ -26,11 +29,11 @@ class Request():
   
   @property
   def query(self) -> dict:
-    return self._query
-  
+    return self.query_params
+
   @property
   def params(self) -> dict:
-    return self._params
+    return self.route_params
 
   @property
   def headers(self) -> dict:
@@ -40,19 +43,17 @@ class Request():
   def body(self):
     return self._body
   
-  def __query(self) -> None:
-    if self._request.route_params.get('query') is None:
-      self._query = {}
-      return
+  def __query_params(self):
+    query = urlparse(self._request.path).query
+    self.query_params = dict(parse_qsl(query))
 
-    querys = self._request.route_params.get('query', '')
-    querys = querys.replace('?', '').split('&')
-    querys = {i.split('=')[0]: i.split('=')[1] for i in querys}
+  def __route_params(self):
+    raw_path = self._request.route['raw_path']
+    path = self._request.path.split('?')[0]
 
-    self._query = querys
+    route_params_regex = re.compile(r':(\w+)')
+    raw_path_regex = re.sub(route_params_regex, r'(?P<\1>[^/]+)', re.escape(raw_path))
+    path_regex = rf"{raw_path_regex}(?:\?.*)?$"
 
-  def __params(self) -> None:
-    params = self._request.route_params
-    params.pop('query')
-    
-    self._params = params
+    match = re.match(path_regex, path)
+    self.route_params = match.groupdict() if match else {}

@@ -18,19 +18,19 @@ class RestartServerHandler(FileSystemEventHandler):
         print(traceback.format_exc())
 
 class Server():
-  def __init__(self, cors: dict, static_path: str, application: str, host: str, port: int, debug: bool, routes: dict):
+  def __init__(self, cors: dict, static_path: str, application: str, host: str, port: int, debug: bool, router: dict):
     self.cors         = cors
     self.static_path  = static_path
     self.application  = application
     self.host         = host if host != "0.0.0.0" else socket.gethostbyname(socket.gethostname())
     self.port         = port
     self.debug        = debug
-    self.routes       = routes
+    self.router       = router
     self.handler      = HandlerFactory.build_handler('DebugHandler' if self.debug else 'Handler')
     self.observer     = None
   
   def run(self) -> None:
-    self.handler.routes = self.routes
+    self.handler.router = self.router
     self.handler.cors = self.cors
     self.handler.static_path = self.static_path
 

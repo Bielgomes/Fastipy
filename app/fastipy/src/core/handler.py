@@ -7,7 +7,6 @@ from .request import Request
 
 from ..exceptions.exception_handler import ExceptionHandler
 
-from ..helpers.build_route_path import build_route_path
 from ..helpers.hook_helpers import handler_hooks
 from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
 
@@ -58,18 +57,13 @@ class Handler(BaseHTTPRequestHandler):
       Reply(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
       return
 
-    self.full_path, self.method = None, None
-    for path in self.routes:  
-      if build_route_path(self, path, method):
-        self.full_path, self.method = path, method
-        break
-    
-    if self.full_path is None:
-      Reply(self).send_code(404)
+    self.route = self.router.find_route(method, self.path.split('?')[0])
+    if self.route is None:
+      Reply(self).code(404).json({'error': 'Route not found'}).send()
       return
-
-    route_handler = self.routes[path][method]['handler']
-    route_hooks = self.routes[path][method]['hooks']
+    
+    route_handler = self.route['handler']
+    route_hooks = self.route['hooks']
 
     request, reply = Request(self), Reply(self, hooks=route_hooks['onResponse'])
 
@@ -100,19 +94,14 @@ class DebugHandler(Handler):
       timer.end()
       return
 
-    self.full_path, self.method = None, None
-    for path in self.routes:  
-      if build_route_path(self, path, method):
-        self.full_path, self.method = path, method
-        break
-    
-    if self.full_path is None:
-      Reply(self).send_code(404)
+    self.route = self.router.find_route(method, self.path.split('?')[0])
+    if self.route is None:
+      Reply(self).code(404).json({'error': 'Route not found'}).send()
       timer.end()
       return
-
-    route_handler = self.routes[path][method]['handler']
-    route_hooks = self.routes[path][method]['hooks']
+    
+    route_handler = self.route['handler']
+    route_hooks = self.route['hooks']
 
     request, reply = Request(self), Reply(self, hooks=route_hooks['onResponse'])
 

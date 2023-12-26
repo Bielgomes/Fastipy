@@ -181,7 +181,6 @@ app.run(host='localhost')
 - [ ] Add mail module
 - [ ] Add support to middlewares
 - [ ] Add decorators to routes (decorator, ReplyDecorator, RequestDecorator)
-- [ ] Better route search algorithm and structure
 - [ ] Increase performance using multiprocessing and multithreading (EXPERIMENTAL)
 
 ### Added
@@ -200,6 +199,7 @@ app.run(host='localhost')
 - [X] Refactor structure of project
 - [X] Refactor Routes class
 - [x] Routes handler can be a sync function
+- [X] Better route search algorithm and structure
 
 # Contributors
 

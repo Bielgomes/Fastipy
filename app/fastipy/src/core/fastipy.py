@@ -11,13 +11,15 @@ from ..exceptions.no_hook_type import NoHookTypeException
 from ..exceptions.no_http_method_exception import NoHTTPMethodException
 
 from .server import Server
+from ..routes.router import Router
+
 from ..middlewares.cors import CORSGenerator
 
 from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
 
 class Fastipy:
   def __init__(self, debug: bool = False, static_path: str = None):
-    self._routes        = {}
+    self._router        = Router()
     self._debug         = debug
     self._cors          = None
     self._prefix        = '/'
@@ -51,11 +53,11 @@ class Fastipy:
 
   def register(self, plugin: callable, options: Optional[dict] = {}) -> Self:
     instance = FastipyInstance(debug=self._debug)
+    instance._router = self._router
     instance._prefix = options.get('prefix', '/')
 
     run_coroutine_or_sync_function(plugin, instance, options)
 
-    self._routes = {**self._routes, **instance._routes}
     self._hooks = {**self._hooks, **instance._hooks}
 
     return self
@@ -83,12 +85,9 @@ class Fastipy:
     )
     return self
 
-  def add_route(self, route: dict) -> None:
-    method = route['method']
-    path = route['path']
+  def add_route(self, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'], path: str, route: dict) -> None:
     if self.prefix != '/':
       path = f"{self.prefix}{path if path != '/' else ''}"
-
     if method not in HTTP_METHODS:
       raise NoHTTPMethodException(f'Method "{type}" does not exist or is not supported yet')
 
@@ -97,17 +96,11 @@ class Fastipy:
       len(re.findall(r':(\w+)', path)) != len(set(re.findall(r':(\w+)', path)))):
       raise InvalidPathException(f'Invalid path: "{path}"')
 
-    routeAlreadyExists = self._routes.get(path, {}).get(method, None) is not None
+    routeAlreadyExists = self._router.find_route(method, path) is not None
     if routeAlreadyExists:
       raise DuplicateRouteException(f'Duplicate route: Method "{method}" Path "{path}"')
-
-    if self._routes.get(path) is None:
-      self._routes[path] = {}
     
-    self._routes[path][method] = {
-      'handler': route['handler'],
-      'hooks': copy.deepcopy(route['hooks'])
-    }
+    self._router.add_route(method, path, route)
 
     if self._debug:
       print(f'| Route registered: Method "{method}" Path "{path}"')
@@ -126,37 +119,37 @@ class Fastipy:
 
   def get(self, path: str) -> None:
     def internal(handler: callable) -> None:
-      self.add_route({'method': 'GET', 'path': path, 'handler': handler, 'hooks': self._hooks})
+      self.add_route('GET', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def post(self, path: str) -> None:
     def internal(handler: callable) -> None:
-      self.add_route({'method': 'POST', 'path': path, 'handler': handler, 'hooks': self._hooks})
+      self.add_route('POST', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def put(self, path: str) -> None:
     def internal(handler: callable) -> None:
-      self.add_route({'method': 'PUT', 'path': path, 'handler': handler, 'hooks': self._hooks})
+      self.add_route('PUT', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def patch(self, path: str) -> None:
     def internal(handler: callable) -> None:
-      self.add_route({'method': 'PATCH', 'path': path, 'handler': handler, 'hooks': self._hooks})
+      self.add_route('PATCH', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def delete(self, path: str) -> None:
     def internal(handler: callable) -> None:
-      self.add_route({'method': 'DELETE', 'path': path, 'handler': handler, 'hooks': self._hooks})
+      self.add_route('DELETE', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def head(self, path: str) -> None:
     def internal(handler: callable) -> None:
-      self.add_route({'method': 'HEAD', 'path': path, 'handler': handler, 'hooks': self._hooks})
+      self.add_route('HEAD', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
@@ -168,10 +161,14 @@ class Fastipy:
       host,
       port,
       self._debug,
-      self._routes
+      self._router
     ).run()
 
 class FastipyInstance(Fastipy):
+  def __init__(self, debug: bool = False):
+    super().__init__(debug)
+    self._routes = None
+
   def run(self, *args, **kwargs) -> None:
     raise NotImplementedError('FastipyInstance.run() is not implemented')
   
