@@ -17,7 +17,8 @@ class RouteNode:
         for methods, handler in child.handlers.items():
           print(f"{indent}{symbol} /{part} ({methods})")
           for hook_type in handler['hooks']:
-            print(f"{indent}{'│' if symbol == '├──' else ' '}    ⚬ {hook_type} {[f'{hook.__name__}()' for hook in handler['hooks'][hook_type]]}")
+            if handler['hooks'][hook_type]:
+              print(f"{indent}{'│' if symbol == '├──' else ' '}    ⚬ {hook_type} {[f'{hook.__name__}()' for hook in handler['hooks'][hook_type]]}")
 
       if symbol == "└──":
         return self.print_tree(child, indent + "    ")
