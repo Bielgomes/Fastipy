@@ -180,8 +180,8 @@ app.run(host='localhost')
 - [ ] Finish automatic reload in development mode
 - [ ] Add mail module
 - [ ] Add support to middlewares
-- [ ] Add decorators to routes (decorator, ReplyDecorator, RequestDecorator)
 - [ ] Increase performance using multiprocessing and multithreading (EXPERIMENTAL)
+- [ ] Add more server configurations
 
 ### Added
 
@@ -191,6 +191,7 @@ app.run(host='localhost')
 - [x] JSON Database module
 - [x] Add support to hooks (onRequest, onResponse, onError)
 - [x] Add support to plugins
+- [x] Add decorators to routes (decorator, ReplyDecorator, RequestDecorator)
 
 ### Changed
 

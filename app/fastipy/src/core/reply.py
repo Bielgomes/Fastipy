@@ -1,23 +1,28 @@
 from http.server import BaseHTTPRequestHandler
 from http.cookies import SimpleCookie
-from typing import Literal, List
-import mimetypes, os, json, io, asyncio
+from typing import Literal
+import mimetypes, os, json, io
 
 from ..constants.content_types import CONTENT_TYPES
 
 from ..exceptions.file_exception import FileException
 from ..exceptions.reply_exception import ReplyException
 
+from .decorators_base import DecoratorsBase
+
 from ..helpers.hook_helpers import handler_hooks
 
-class Reply:
-  def __init__(self, request: BaseHTTPRequestHandler, hooks: List = []):
+class Reply(DecoratorsBase):
+  def __init__(self, request: BaseHTTPRequestHandler, hooks: list = []):
+    super().__init__()
     self._request               = request
     self._status_code           = 200
     self._response              = None
     self._request.response_sent = False
     self._headers               = {}
     self._cookies               = SimpleCookie()
+
+    self.decorators             = request.decorators['reply']
 
     self.__on_response_hooks = hooks
 
@@ -222,3 +227,9 @@ class Reply:
       self,
       check_response_sent=False
     )
+
+  def __getattr__(self, name) -> any:
+    return super().__getattr__(name)
+
+  def __setattr__(self, name, value) -> None:
+    return super().__setattr__(name, value)

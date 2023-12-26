@@ -1,6 +1,5 @@
 from typing import Optional, Literal, Self
 import re, copy, nest_asyncio
-nest_asyncio.apply()
 
 from ..constants.hook_types import HOOK_TYPES
 from ..constants.http_methods import HTTP_METHODS
@@ -17,6 +16,8 @@ from ..middlewares.cors import CORSGenerator
 
 from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
 
+nest_asyncio.apply()
+
 class Fastipy:
   def __init__(self, debug: bool = False, static_path: str = None):
     self._router        = Router()
@@ -27,6 +28,8 @@ class Fastipy:
 
     self._decorators = {
       'app': {},
+      'request': {},
+      'reply': {},
     }
 
     self._hooks = {
@@ -89,10 +92,29 @@ class Fastipy:
     )
     return self
 
-  def decorator(self, name: str, value: any) -> None:
+  def decorate(self, name: str, value: any) -> None:
     if hasattr(self, name):
       raise AttributeError(f'Attribute "{name}" already exists')
     self._decorators['app'][name] = value
+
+  def decorate_request(self, name: str, value: any) -> None:
+    if hasattr(self, name):
+      raise AttributeError(f'Attribute "{name}" already exists')
+    self._decorators['request'][name] = value
+
+  def decorate_reply(self, name: str, value: any) -> None:
+    if hasattr(self, name):
+      raise AttributeError(f'Attribute "{name}" already exists')
+    self._decorators['reply'][name] = value
+
+  def has_decorator(self, name: str) -> bool:
+    return name in self._decorators['app']
+  
+  def has_request_decorator(self, name: str) -> bool:
+    return name in self._decorators['request']
+  
+  def has_reply_decorator(self, name: str) -> bool:
+    return name in self._decorators['reply']
 
   def add_route(self, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'], path: str, route: dict) -> None:
     if self.prefix != '/':
@@ -163,7 +185,7 @@ class Fastipy:
     return internal
 
   def print_routes(self) -> None:
-    self._router.print_routes()
+    self._router.print_tree()
 
   def run(self, application="My API", host="localhost", port=5000):
     Server(
@@ -173,7 +195,8 @@ class Fastipy:
       host,
       port,
       self._debug,
-      self._router
+      self._router,
+      self._decorators
     ).run()
 
   def __getattr__(self, name) -> any:

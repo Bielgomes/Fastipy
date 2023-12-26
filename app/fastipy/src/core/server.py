@@ -5,6 +5,8 @@ from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
 from .handler import HandlerFactory
+
+from ..routes.router import Router
 from ..utils.ready import ready
 
 class RestartServerHandler(FileSystemEventHandler):
@@ -18,7 +20,7 @@ class RestartServerHandler(FileSystemEventHandler):
         print(traceback.format_exc())
 
 class Server():
-  def __init__(self, cors: dict, static_path: str, application: str, host: str, port: int, debug: bool, router: dict):
+  def __init__(self, cors: dict, static_path: str, application: str, host: str, port: int, debug: bool, router: Router, decorators: dict):
     self.cors         = cors
     self.static_path  = static_path
     self.application  = application
@@ -26,11 +28,14 @@ class Server():
     self.port         = port
     self.debug        = debug
     self.router       = router
+    self.decorators   = decorators
+
     self.handler      = HandlerFactory.build_handler('DebugHandler' if self.debug else 'Handler')
     self.observer     = None
   
   def run(self) -> None:
     self.handler.router = self.router
+    self.handler.decorators = self.decorators
     self.handler.cors = self.cors
     self.handler.static_path = self.static_path
 
@@ -38,6 +43,7 @@ class Server():
     httpd.protocol_version = 'HTTP/1.1'
     httpd.timeout = 0.5
     httpd.allow_reuse_address = True
+    httpd.server_name = self.application
 
     httpd.server_bind()
     httpd.server_activate()

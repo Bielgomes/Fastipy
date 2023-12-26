@@ -65,7 +65,7 @@ class Handler(BaseHTTPRequestHandler):
     route_handler = self.route['handler']
     route_hooks = self.route['hooks']
 
-    request, reply = Request(self), Reply(self, hooks=route_hooks['onResponse'])
+    request, reply = Request(self), Reply(self, on_response_hooks=route_hooks['onResponse'])
 
     try:
       handler_hooks(route_hooks['onRequest'], request, reply)

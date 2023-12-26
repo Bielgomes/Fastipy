@@ -4,13 +4,18 @@ from http.cookies import SimpleCookie
 from urllib.parse import urlparse, parse_qsl
 import re
 
+from .decorators_base import DecoratorsBase
+
 from ..models.body import Body
 
-class Request():
+class Request(DecoratorsBase):
   def __init__(self, request: BaseHTTPRequestHandler):
+    super().__init__()
     self._request     = request
     self._body: Body  = Body(self._request)
     self._cookies     = SimpleCookie(self._request.headers.get('Cookie', None))
+
+    self.decorators  = request.decorators['request']
 
     self.__query_params()
     self.__route_params()
@@ -57,3 +62,9 @@ class Request():
 
     match = re.match(path_regex, path)
     self.route_params = match.groupdict() if match else {}
+
+  def __getattr__(self, name) -> any:
+    return super().__getattr__(name)
+
+  def __setattr__(self, name, value) -> None:
+    return super().__setattr__(name, value)
