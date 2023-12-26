@@ -1,4 +1,4 @@
-from Fastipy import Fastipy, Request, Reply
+from fastipy import Fastipy, Request, Reply
 
 import json
 import datetime
@@ -11,9 +11,9 @@ async def index(_, reply: Reply):
     with open('chat.json', 'r+') as file:
       data = json.load(file)
 
-    reply.json(data).code(200).send()
+    return reply.json(data).code(200).send()
   except:
-    reply.send_code(500)
+    return reply.send_code(500)
 
 @app.get("/chat/:chat_id")
 async def index(req: Request, reply: Reply):
@@ -25,7 +25,7 @@ async def index(req: Request, reply: Reply):
       reply.json(i).code(200).send()
       return
   
-  reply.send_code(404)
+  return reply.send_code(404)
 
 @app.post("/chat")
 async def index(req: Request, reply: Reply):
@@ -46,7 +46,7 @@ async def index(req: Request, reply: Reply):
   with open('chat.json', 'w') as file:
     json.dump(data, file)
 
-  reply.send_code(200)
+  return reply.send_code(200)
 
 @app.post("/chat/:chat_id")
 async def index(req: Request, reply: Reply):
@@ -65,6 +65,6 @@ async def index(req: Request, reply: Reply):
         json.dump(data, file)
       return
     
-  reply.send_code(404)
+  return reply.send_code(404)
     
-app.run(application="Chat API", host="localhost", port=3000)
+app.run(application="Chat API", port=3000)

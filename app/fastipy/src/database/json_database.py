@@ -28,6 +28,22 @@ class Database:
       )] if search else self.database[table]
     except KeyError:
       return []
+    
+  def find_by_id(self, table: str, _id: str) -> dict:
+    for row in self.database[table]:
+      if row['_id'] == _id:
+        return row
+
+    return {}
+    
+  def find_unique(self, table: str, search: dict) -> dict:
+    try:
+      return next(row for row in self.database[table] if all(
+        (row.get(key) == value if not isinstance(value, str) else value.lower() in str(row.get(key, '')).lower())
+        for key, value in search.items()
+      ))
+    except StopIteration:
+      return {}
       
   def insert(self, table: str, data: dict) -> dict:
     if data == {}:
