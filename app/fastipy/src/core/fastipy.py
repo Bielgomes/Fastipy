@@ -25,6 +25,10 @@ class Fastipy:
     self._prefix        = '/'
     self._static_path   = static_path
 
+    self._decorators = {
+      'app': {},
+    }
+
     self._hooks = {
       'onRequest': [],
       'onResponse': [],
@@ -54,11 +58,11 @@ class Fastipy:
   def register(self, plugin: callable, options: Optional[dict] = {}) -> Self:
     instance = FastipyInstance(debug=self._debug)
     instance._router = self._router
+    instance._decorators = self._decorators
+    instance._hooks = self._hooks
     instance._prefix = options.get('prefix', '/')
 
     run_coroutine_or_sync_function(plugin, instance, options)
-
-    self._hooks = {**self._hooks, **instance._hooks}
 
     return self
 
@@ -84,6 +88,11 @@ class Fastipy:
       custom_headers
     )
     return self
+
+  def decorator(self, name: str, value: any) -> None:
+    if hasattr(self, name):
+      raise AttributeError(f'Attribute "{name}" already exists')
+    self._decorators['app'][name] = value
 
   def add_route(self, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'], path: str, route: dict) -> None:
     if self.prefix != '/':
@@ -167,10 +176,24 @@ class Fastipy:
       self._router
     ).run()
 
+  def __getattr__(self, name) -> any:
+    if name in self._decorators['app']:
+      return self._decorators['app'][name]
+    raise AttributeError(f'Attribute "{name}" does not exist')
+  
+  def __setattr__(self, name, value) -> None:
+    if name.startswith("app_"):
+      real_name = name[len("app_"):]
+      self._decorators['app'][real_name] = value
+      return
+    super().__setattr__(name, value)
+
 class FastipyInstance(Fastipy):
   def __init__(self, debug: bool = False):
     super().__init__(debug)
     self._routes = None
+    self._decorators = None
+    self._hooks = None
 
   def run(self, *args, **kwargs) -> None:
     raise NotImplementedError('FastipyInstance.run() is not implemented')
