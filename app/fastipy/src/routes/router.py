@@ -1,17 +1,26 @@
-from typing import Literal, Dict
+from typing import Literal, Optional, Dict
 
 class RouteNode:
   def __init__(self):
     self.children: Dict[str, 'RouteNode'] = {}
     self.handlers: Dict[str, any] = {}
   
-  def print_tree(self, node: 'RouteNode', indent: str = ""):
+  def print_tree(self, node: Optional['RouteNode'] = None, indent: str = ""):
+    if node is None:
+      node = self
+
     for part, child in node.children.items():
-      handlers_str = f"({', '.join(child.handlers.keys())})"
-
       symbol = "└──" if part == list(node.children.keys())[-1] else "├──"
-      print(f"{indent}{symbol} /{part} {handlers_str}")
+      if child.handlers == {}:
+        print(f"{indent}{symbol} /{part}")
+      else:
+        for methods, handler in child.handlers.items():
+          print(f"{indent}{symbol} /{part} ({methods})")
+          for hook_type in handler['hooks']:
+            print(f"{indent}{'│' if symbol == '├──' else ' '}    ⚬ {hook_type} {[f'{hook.__name__}()' for hook in handler['hooks'][hook_type]]}")
 
+      if symbol == "└──":
+        return self.print_tree(child, indent + "    ")
       self.print_tree(child, indent + "│   ")
 
 class Router(RouteNode):

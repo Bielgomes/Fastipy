@@ -153,6 +153,9 @@ class Fastipy:
       return handler
     return internal
 
+  def print_routes(self) -> None:
+    self._router.print_routes()
+
   def run(self, application="My API", host="localhost", port=5000):
     Server(
       self._cors,
