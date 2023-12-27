@@ -24,6 +24,7 @@ class Fastipy:
     self._debug         = debug
     self._cors          = None
     self._prefix        = '/'
+    self._name          = None
     self._static_path   = static_path
 
     self._decorators = {
