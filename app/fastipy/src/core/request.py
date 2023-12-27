@@ -45,14 +45,14 @@ class Request(DecoratorsBase):
     return self._request.headers
   
   @property
-  def body(self):
+  def body(self) -> Body:
     return self._body
   
-  def __query_params(self):
+  def __query_params(self) -> None:
     query = urlparse(self._request.path).query
     self.query_params = dict(parse_qsl(query))
 
-  def __route_params(self):
+  def __route_params(self) -> None:
     raw_path = self._request.route['raw_path']
     path = self._request.path.split('?')[0]
 
