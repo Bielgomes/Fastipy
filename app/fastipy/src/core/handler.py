@@ -1,6 +1,6 @@
 from http.server import BaseHTTPRequestHandler
 from typing import Union
-import asyncio, traceback
+import traceback
 
 from .reply import Reply
 from .request import Request
@@ -21,22 +21,22 @@ class HandlerFactory():
 
 class Handler(BaseHTTPRequestHandler):
   def do_GET(self):
-    asyncio.run(self.handle_request('GET'))
+    self.handle_request('GET')
 
   def do_POST(self):
-    asyncio.run(self.handle_request('POST'))
+    self.handle_request('POST')
 
   def do_PUT(self):
-    asyncio.run(self.handle_request('PUT'))
+    self.handle_request('PUT')
 
   def do_PATCH(self):
-    asyncio.run(self.handle_request('PATCH'))
+    self.handle_request('PATCH')
 
   def do_DELETE(self):
-    asyncio.run(self.handle_request('DELETE'))
+    self.handle_request('DELETE')
 
   def do_HEAD(self):
-    asyncio.run(self.handle_request('HEAD'))
+    self.handle_request('HEAD')
 
   def do_OPTIONS(self):
     headers = self.generate_headers()
@@ -52,7 +52,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header(header, headers[header])
     BaseHTTPRequestHandler.end_headers(self)
 
-  async def handle_request(self, method):
+  def handle_request(self, method):
     if '.' in self.path.split('/')[-1]:
       Reply(self)._send_archive(path=f"{self.static_path if self.static_path else ''}{self.path}")
       return
@@ -65,7 +65,7 @@ class Handler(BaseHTTPRequestHandler):
     route_handler = self.route['handler']
     route_hooks = self.route['hooks']
 
-    request, reply = Request(self), Reply(self, on_response_hooks=route_hooks['onResponse'])
+    request, reply = Request(self), Reply(self, hooks=route_hooks['onResponse'])
 
     try:
       handler_hooks(route_hooks['onRequest'], request, reply)
@@ -86,7 +86,7 @@ class Handler(BaseHTTPRequestHandler):
       print(traceback.format_exc())
 
 class DebugHandler(Handler):
-  async def handle_request(self, method):
+  def handle_request(self, method):
     timer = Timer()
 
     if '.' in self.path.split('/')[-1]:

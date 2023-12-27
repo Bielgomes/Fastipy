@@ -214,7 +214,7 @@ class Reply(DecoratorsBase):
       with io.open(path, 'rb') as file:
         self._response = file.read()
     except FileNotFoundError:
-      self.send_status(404)
+      self.send_code(404)
       return
       
     self.send()
