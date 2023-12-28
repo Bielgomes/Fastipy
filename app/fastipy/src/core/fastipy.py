@@ -1,8 +1,11 @@
-from typing import Optional, Literal, Self
+from typing import Optional, Literal, Self, Callable
 import re, copy, nest_asyncio
+
+from ..types.plugins import BasePluginOptions
 
 from ..constants.hook_types import HOOK_TYPES
 from ..constants.http_methods import HTTP_METHODS
+from ..constants.decorators import DECORATORS
 
 from ..exceptions.invalid_path_exception import InvalidPathException
 from ..exceptions.duplicate_route_exception import DuplicateRouteException
@@ -19,7 +22,7 @@ from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
 nest_asyncio.apply()
 
 class Fastipy:
-  def __init__(self, debug: bool = False, static_path: str = None):
+  def __init__(self, debug: bool = False, static_path: str = None) -> None:
     self._router        = Router()
     self._debug         = debug
     self._cors          = None
@@ -27,17 +30,8 @@ class Fastipy:
     self._name          = None
     self._static_path   = static_path
 
-    self._decorators = {
-      'app': {},
-      'request': {},
-      'reply': {},
-    }
-
-    self._hooks = {
-      'onRequest': [],
-      'onResponse': [],
-      'onError': [],
-    }
+    self._decorators = {decorator: {} for decorator in DECORATORS}
+    self._hooks = {type: [] for type in HOOK_TYPES}
 
   @property
   def prefix(self) -> str:
@@ -59,11 +53,13 @@ class Fastipy:
   def debug(self) -> bool:
     return self._debug
 
-  def register(self, plugin: callable, options: Optional[dict] = {}) -> Self:
+  def register(self, plugin: Callable, options: BasePluginOptions = {}) -> Self:
     instance = FastipyInstance(debug=self._debug)
+
     instance._router = self._router
     instance._decorators = self._decorators
     instance._hooks = self._hooks
+
     instance._prefix = options.get('prefix', '/')
 
     run_coroutine_or_sync_function(plugin, instance, options)
@@ -94,18 +90,12 @@ class Fastipy:
     return self
 
   def decorate(self, name: str, value: any) -> None:
-    if hasattr(self, name):
-      raise AttributeError(f'Attribute "{name}" already exists')
     self._decorators['app'][name] = value
 
   def decorate_request(self, name: str, value: any) -> None:
-    if hasattr(self, name):
-      raise AttributeError(f'Attribute "{name}" already exists')
     self._decorators['request'][name] = value
 
   def decorate_reply(self, name: str, value: any) -> None:
-    if hasattr(self, name):
-      raise AttributeError(f'Attribute "{name}" already exists')
     self._decorators['reply'][name] = value
 
   def has_decorator(self, name: str) -> bool:
@@ -137,50 +127,50 @@ class Fastipy:
     if self._debug:
       print(f'| Route registered: Method "{method}" Path "{path}"')
 
-  def add_hook(self, type: Literal['onRequest', 'onResponse', 'onError'], hook: callable) -> None:
+  def add_hook(self, type: Literal['onRequest', 'onResponse', 'onError'], hook: Callable) -> None:
     if type not in HOOK_TYPES:
       raise NoHookTypeException(f'Hook type "{type}" does not exist')
     
     self._hooks[type].append(hook)
 
   def hook(self, type: Literal['onRequest', 'onResponse', 'onError']) -> None:
-    def internal(hook: callable) -> None:
+    def internal(hook: Callable) -> None:
       self.add_hook(type, hook)
       return hook
     return internal
 
   def get(self, path: str) -> None:
-    def internal(handler: callable) -> None:
+    def internal(handler: Callable) -> None:
       self.add_route('GET', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def post(self, path: str) -> None:
-    def internal(handler: callable) -> None:
+    def internal(handler: Callable) -> None:
       self.add_route('POST', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def put(self, path: str) -> None:
-    def internal(handler: callable) -> None:
+    def internal(handler: Callable) -> None:
       self.add_route('PUT', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def patch(self, path: str) -> None:
-    def internal(handler: callable) -> None:
+    def internal(handler: Callable) -> None:
       self.add_route('PATCH', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def delete(self, path: str) -> None:
-    def internal(handler: callable) -> None:
+    def internal(handler: Callable) -> None:
       self.add_route('DELETE', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
 
   def head(self, path: str) -> None:
-    def internal(handler: callable) -> None:
+    def internal(handler: Callable) -> None:
       self.add_route('HEAD', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
       return handler
     return internal
@@ -188,7 +178,7 @@ class Fastipy:
   def print_routes(self) -> None:
     self._router.print_tree()
 
-  def run(self, application="My API", host="localhost", port=5000):
+  def run(self, application: str = "Fastipy", host: str = "localhost", port: int = 5000):
     Server(
       self._cors,
       self._static_path,
@@ -200,12 +190,12 @@ class Fastipy:
       self._decorators
     ).run()
 
-  def __getattr__(self, name) -> any:
+  def __getattr__(self, name: str) -> any:
     if name in self._decorators['app']:
       return self._decorators['app'][name]
     raise AttributeError(f'Attribute "{name}" does not exist')
   
-  def __setattr__(self, name, value) -> None:
+  def __setattr__(self, name: str, value: any) -> None:
     if name.startswith("app_"):
       real_name = name[len("app_"):]
       self._decorators['app'][real_name] = value
