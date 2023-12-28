@@ -195,12 +195,13 @@ app.run(host='localhost')
 
 ### Changed
 
-- [X] Better params and query params recovery in routes
-- [X] Improved route logging
-- [X] Refactor structure of project
-- [X] Refactor Routes class
+- [x] Better params and query params recovery in routes
+- [x] Improved route logging
+- [x] Refactor structure of project
+- [x] Refactor Routes class
 - [x] Routes handler can be a sync function
-- [X] Better route search algorithm and structure
+- [x] Better route search algorithm and structure
+- [x] It is now possible to add specific hooks to a route
 
 # Contributors
 

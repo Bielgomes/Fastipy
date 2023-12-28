@@ -2,6 +2,7 @@ from typing import Optional, Literal, Self, Callable
 import re, copy, nest_asyncio
 
 from ..types.plugins import BasePluginOptions
+from ..types.routes import RouteHooks
 
 from ..constants.hook_types import HOOK_TYPES
 from ..constants.http_methods import HTTP_METHODS
@@ -139,39 +140,39 @@ class Fastipy:
       return hook
     return internal
 
-  def get(self, path: str) -> None:
+  def get(self, path: str, route_hooks: RouteHooks = {}) -> None:
     def internal(handler: Callable) -> None:
-      self.add_route('GET', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
+      self.add_route('GET', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
       return handler
     return internal
 
-  def post(self, path: str) -> None:
+  def post(self, path: str, route_hooks: RouteHooks = {}) -> None:
     def internal(handler: Callable) -> None:
-      self.add_route('POST', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
+      self.add_route('POST', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
       return handler
     return internal
 
-  def put(self, path: str) -> None:
+  def put(self, path: str, route_hooks: RouteHooks = {}) -> None:
     def internal(handler: Callable) -> None:
-      self.add_route('PUT', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
+      self.add_route('PUT', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
       return handler
     return internal
 
-  def patch(self, path: str) -> None:
+  def patch(self, path: str, route_hooks: RouteHooks = {}) -> None:
     def internal(handler: Callable) -> None:
-      self.add_route('PATCH', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
+      self.add_route('PATCH', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
       return handler
     return internal
 
-  def delete(self, path: str) -> None:
+  def delete(self, path: str, route_hooks: RouteHooks = {}) -> None:
     def internal(handler: Callable) -> None:
-      self.add_route('DELETE', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
+      self.add_route('DELETE', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
       return handler
     return internal
 
-  def head(self, path: str) -> None:
+  def head(self, path: str, route_hooks: RouteHooks = {}) -> None:
     def internal(handler: Callable) -> None:
-      self.add_route('HEAD', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks), 'raw_path': path})
+      self.add_route('HEAD', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
       return handler
     return internal
 
