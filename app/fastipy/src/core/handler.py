@@ -7,7 +7,7 @@ from .request import Request
 
 from ..exceptions.exception_handler import ExceptionHandler
 
-from ..helpers.hook_helpers import handler_hooks
+from ..helpers.route_helpers import handler_hooks, handler_middlewares
 from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
 
 from ..utils.timer import Timer
@@ -64,10 +64,13 @@ class Handler(BaseHTTPRequestHandler):
     
     route_handler = self.route['handler']
     route_hooks = self.route['hooks']
+    route_middlewares = self.route['middlewares']
 
     request, reply = Request(self), Reply(self, hooks=route_hooks['onResponse'])
 
     try:
+      handler_middlewares(route_middlewares, request, reply)
+
       handler_hooks(route_hooks['onRequest'], request, reply)
       if reply.is_sent:
         return
@@ -102,10 +105,13 @@ class DebugHandler(Handler):
     
     route_handler = self.route['handler']
     route_hooks = self.route['hooks']
+    route_middlewares = self.route['middlewares']
 
     request, reply = Request(self), Reply(self, hooks=route_hooks['onResponse'])
 
     try:
+      handler_middlewares(route_middlewares, request, reply)
+      
       handler_hooks(route_hooks['onRequest'], request, reply)
       if reply.is_sent:
         timer.end()

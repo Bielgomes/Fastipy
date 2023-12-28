@@ -10,7 +10,7 @@ from ..exceptions.reply_exception import ReplyException
 
 from .decorators_base import DecoratorsBase
 
-from ..helpers.hook_helpers import handler_hooks
+from ..helpers.route_helpers import handler_hooks
 
 class Reply(DecoratorsBase):
   def __init__(self, request: BaseHTTPRequestHandler, hooks: list = []):

@@ -9,3 +9,5 @@ class RouteHooks(TypedDict):
   onRequest: NotRequired[List[Callable]]
   onResponse: NotRequired[List[Callable]]
   onError: NotRequired[List[Callable]]
+
+RouteMiddlewares = List[Callable]

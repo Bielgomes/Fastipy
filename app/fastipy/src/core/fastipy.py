@@ -2,7 +2,7 @@ from typing import Optional, Literal, Self, Callable
 import re, copy, nest_asyncio
 
 from ..types.plugins import BasePluginOptions
-from ..types.routes import RouteHooks
+from ..types.routes import RouteHooks, RouteMiddlewares
 
 from ..constants.hook_types import HOOK_TYPES
 from ..constants.http_methods import HTTP_METHODS
@@ -12,13 +12,17 @@ from ..exceptions.invalid_path_exception import InvalidPathException
 from ..exceptions.duplicate_route_exception import DuplicateRouteException
 from ..exceptions.no_hook_type import NoHookTypeException
 from ..exceptions.no_http_method_exception import NoHTTPMethodException
-
-from .server import Server
-from ..routes.router import Router
-
-from ..middlewares.cors import CORSGenerator
+from ..exceptions.decorator_already_exists_exception import DecoratorAlreadyExistsException
 
 from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
+
+from .server import Server
+
+from .request import Request
+from .reply import Reply
+
+from ..routes.router import Router
+from ..middlewares.cors import CORSGenerator
 
 nest_asyncio.apply()
 
@@ -33,6 +37,7 @@ class Fastipy:
 
     self._decorators = {decorator: {} for decorator in DECORATORS}
     self._hooks = {type: [] for type in HOOK_TYPES}
+    self._middlewares = []
 
   @property
   def prefix(self) -> str:
@@ -60,6 +65,7 @@ class Fastipy:
     instance._router = self._router
     instance._decorators = self._decorators
     instance._hooks = self._hooks
+    instance._middlewares = self._middlewares
 
     instance._prefix = options.get('prefix', '/')
 
@@ -91,12 +97,18 @@ class Fastipy:
     return self
 
   def decorate(self, name: str, value: any) -> None:
+    if hasattr(self, name) or self.has_decorator(name):
+      raise DecoratorAlreadyExistsException(f'Decorator "{name}" has already been added!')
     self._decorators['app'][name] = value
 
   def decorate_request(self, name: str, value: any) -> None:
+    if hasattr(Request, name) or self.has_request_decorator(name):
+      raise DecoratorAlreadyExistsException(f'Decorator "{name}" has already been added!')
     self._decorators['request'][name] = value
 
   def decorate_reply(self, name: str, value: any) -> None:
+    if hasattr(Reply, name) or self.has_reply_decorator(name):
+      raise DecoratorAlreadyExistsException(f'Decorator "{name}" has already been added!')
     self._decorators['reply'][name] = value
 
   def has_decorator(self, name: str) -> bool:
@@ -108,7 +120,35 @@ class Fastipy:
   def has_reply_decorator(self, name: str) -> bool:
     return name in self._decorators['reply']
 
-  def add_route(self, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'], path: str, route: dict) -> None:
+  def add_hook(self, type: Literal['onRequest', 'onResponse', 'onError'], hook: Callable) -> None:
+    if type not in HOOK_TYPES:
+      raise NoHookTypeException(f'Hook type "{type}" does not exist')
+    
+    self._hooks[type].append(hook)
+
+  def hook(self, type: Literal['onRequest', 'onResponse', 'onError']) -> Callable:
+    def internal(hook: Callable) -> Callable:
+      self.add_hook(type, hook)
+      return hook
+    return internal
+
+  def add_middleware(self, middleware: Callable) -> None:
+    self._middlewares.append(middleware)
+
+  def use(self) -> Callable:
+    def internal(middleware: Callable) -> Callable:
+      self.add_middleware(middleware)
+      return middleware
+    return internal
+
+  def add_route(
+    self,
+    method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'],
+    path: str,
+    handler: Callable,
+    route_hooks: RouteHooks = {},
+    route_middlewares: RouteMiddlewares = []
+  ) -> None:
     if self.prefix != '/':
       path = f"{self.prefix}{path if path != '/' else ''}"
     if method not in HTTP_METHODS:
@@ -123,56 +163,55 @@ class Fastipy:
     if routeAlreadyExists:
       raise DuplicateRouteException(f'Duplicate route: Method "{method}" Path "{path}"')
     
-    self._router.add_route(method, path, route)
+    hooks = copy.deepcopy(self._hooks)
+    hooks.update(route_hooks)
+
+    middlewares = copy.deepcopy(self._middlewares)
+    middlewares.extend(route_middlewares)
+    
+    self._router.add_route(method, path, {
+      'handler': handler,
+      'hooks': hooks,
+      'middlewares': middlewares,
+      'raw_path': path
+    })
 
     if self._debug:
       print(f'| Route registered: Method "{method}" Path "{path}"')
 
-  def add_hook(self, type: Literal['onRequest', 'onResponse', 'onError'], hook: Callable) -> None:
-    if type not in HOOK_TYPES:
-      raise NoHookTypeException(f'Hook type "{type}" does not exist')
-    
-    self._hooks[type].append(hook)
-
-  def hook(self, type: Literal['onRequest', 'onResponse', 'onError']) -> None:
-    def internal(hook: Callable) -> None:
-      self.add_hook(type, hook)
-      return hook
-    return internal
-
-  def get(self, path: str, route_hooks: RouteHooks = {}) -> None:
-    def internal(handler: Callable) -> None:
-      self.add_route('GET', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
+  def get(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
+    def internal(handler: Callable) -> Callable:
+      self.add_route('GET', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def post(self, path: str, route_hooks: RouteHooks = {}) -> None:
-    def internal(handler: Callable) -> None:
-      self.add_route('POST', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
+  def post(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
+    def internal(handler: Callable) -> Callable:
+      self.add_route('POST', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def put(self, path: str, route_hooks: RouteHooks = {}) -> None:
-    def internal(handler: Callable) -> None:
-      self.add_route('PUT', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
+  def put(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
+    def internal(handler: Callable) -> Callable:
+      self.add_route('PUT', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def patch(self, path: str, route_hooks: RouteHooks = {}) -> None:
-    def internal(handler: Callable) -> None:
-      self.add_route('PATCH', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
+  def patch(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
+    def internal(handler: Callable) -> Callable:
+      self.add_route('PATCH', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def delete(self, path: str, route_hooks: RouteHooks = {}) -> None:
-    def internal(handler: Callable) -> None:
-      self.add_route('DELETE', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
+  def delete(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
+    def internal(handler: Callable) -> Callable:
+      self.add_route('DELETE', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def head(self, path: str, route_hooks: RouteHooks = {}) -> None:
-    def internal(handler: Callable) -> None:
-      self.add_route('HEAD', path, {'handler': handler, 'hooks': copy.deepcopy(self._hooks).update(route_hooks), 'raw_path': path})
+  def head(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
+    def internal(handler: Callable) -> Callable:
+      self.add_route('HEAD', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
@@ -209,6 +248,7 @@ class FastipyInstance(Fastipy):
     self._routes = None
     self._decorators = None
     self._hooks = None
+    self._middlewares = None
 
   def run(self, *args, **kwargs) -> None:
     raise NotImplementedError('FastipyInstance.run() is not implemented')

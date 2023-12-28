@@ -179,7 +179,6 @@ app.run(host='localhost')
 - [ ] Add integration to test libraries
 - [ ] Finish automatic reload in development mode
 - [ ] Add mail module
-- [ ] Add support to middlewares
 - [ ] Increase performance using multiprocessing and multithreading (EXPERIMENTAL)
 - [ ] Add more server configurations
 
@@ -192,6 +191,7 @@ app.run(host='localhost')
 - [x] Add support to hooks (onRequest, onResponse, onError)
 - [x] Add support to plugins
 - [x] Add decorators to routes (decorator, ReplyDecorator, RequestDecorator)
+- [x] Add support to middlewares
 
 ### Changed
 
