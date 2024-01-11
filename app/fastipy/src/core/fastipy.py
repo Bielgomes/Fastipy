@@ -1,11 +1,11 @@
 from typing import Optional, Literal, Self, Callable
 import re, copy, nest_asyncio
 
-from ..types.plugins import BasePluginOptions
+from ..types.plugins import PluginOptions
 from ..types.routes import RouteHooks, RouteMiddlewares
 
-from ..constants.hook_types import HOOK_TYPES
-from ..constants.http_methods import HTTP_METHODS
+from ..constants.hooks import HOOKS, HOOK_TYPES
+from ..constants.http_methods import HTTP_METHODS, HTTP_METHODS_TYPE
 from ..constants.decorators import DECORATORS
 
 from ..exceptions.invalid_path_exception import InvalidPathException
@@ -15,8 +15,6 @@ from ..exceptions.no_http_method_exception import NoHTTPMethodException
 from ..exceptions.decorator_already_exists_exception import DecoratorAlreadyExistsException
 
 from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
-
-from .server import Server
 
 from .request import Request
 from .reply import Reply
@@ -36,7 +34,7 @@ class Fastipy:
     self._static_path   = static_path
 
     self._decorators = {decorator: {} for decorator in DECORATORS}
-    self._hooks = {type: [] for type in HOOK_TYPES}
+    self._hooks = {hook_type: [] for hook_type in HOOKS}
     self._middlewares = []
 
   @property
@@ -59,7 +57,7 @@ class Fastipy:
   def debug(self) -> bool:
     return self._debug
 
-  def register(self, plugin: Callable, options: BasePluginOptions = {}) -> Self:
+  def register(self, plugin: Callable, options: PluginOptions = {}) -> Self:
     instance = FastipyInstance(debug=self._debug)
 
     instance._router = self._router
@@ -120,9 +118,9 @@ class Fastipy:
   def has_reply_decorator(self, name: str) -> bool:
     return name in self._decorators['reply']
 
-  def add_hook(self, type: Literal['onRequest', 'onResponse', 'onError'], hook: Callable) -> None:
-    if type not in HOOK_TYPES:
-      raise NoHookTypeException(f'Hook type "{type}" does not exist')
+  def add_hook(self, hook_type: HOOK_TYPES, hook: Callable) -> None:
+    if hook_type not in HOOKS:
+      raise NoHookTypeException(f'Hook type "{hook_type}" does not exist')
     
     self._hooks[type].append(hook)
 
@@ -143,7 +141,7 @@ class Fastipy:
 
   def add_route(
     self,
-    method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'],
+    method: HTTP_METHODS_TYPE,
     path: str,
     handler: Callable,
     route_hooks: RouteHooks = {},
@@ -217,18 +215,6 @@ class Fastipy:
 
   def print_routes(self) -> None:
     self._router.print_tree()
-
-  def run(self, application: str = "Fastipy", host: str = "localhost", port: int = 5000):
-    Server(
-      self._cors,
-      self._static_path,
-      application,
-      host,
-      port,
-      self._debug,
-      self._router,
-      self._decorators
-    ).run()
 
   def __getattr__(self, name: str) -> any:
     if name in self._decorators['app']:

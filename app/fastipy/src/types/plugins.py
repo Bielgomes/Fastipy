@@ -5,5 +5,5 @@ if sys.version_info < (3, 11):
 else:
   from typing import TypedDict, NotRequired
 
-class BasePluginOptions(TypedDict):
+class PluginOptions(TypedDict):
   prefix: NotRequired[str]

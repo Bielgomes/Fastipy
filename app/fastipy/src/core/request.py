@@ -1,6 +1,5 @@
 from http.server import BaseHTTPRequestHandler
 from http.cookies import SimpleCookie
-
 from urllib.parse import urlparse, parse_qsl
 import re
 
