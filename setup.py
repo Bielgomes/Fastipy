@@ -23,6 +23,6 @@ setup(
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
     ],
-    install_requires=["watchdog >= 3.0.0"],
+    install_requires=["uvicorn", "nest-asyncio"],
     python_requires=">=3.10",
 )

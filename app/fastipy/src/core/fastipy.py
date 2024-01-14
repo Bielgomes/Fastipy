@@ -1,11 +1,12 @@
-from typing import Optional, Literal, Self, Callable
-import re, copy, nest_asyncio
+from typing import Optional, Self
+from uvicorn.main import logger
+import re, copy, sys, click, nest_asyncio
 
 from ..types.plugins import PluginOptions
-from ..types.routes import RouteHooks, RouteMiddlewares
+from ..types.routes import FunctionType, RouteHookType, RouteMiddlewareType
 
-from ..constants.hooks import HOOKS, HOOK_TYPES
-from ..constants.http_methods import HTTP_METHODS, HTTP_METHODS_TYPE
+from ..constants.hooks import HOOKS, hookType
+from ..constants.http_methods import HTTP_METHODS, httpMethodType
 from ..constants.decorators import DECORATORS
 
 from ..exceptions.invalid_path_exception import InvalidPathException
@@ -22,12 +23,9 @@ from .reply import Reply
 from ..routes.router import Router
 from ..middlewares.cors import CORSGenerator
 
-nest_asyncio.apply()
-
 class Fastipy:
-  def __init__(self, debug: bool = False, static_path: str = None) -> None:
+  def __init__(self, static_path: str = None) -> None:
     self._router        = Router()
-    self._debug         = debug
     self._cors          = None
     self._prefix        = '/'
     self._name          = None
@@ -36,6 +34,8 @@ class Fastipy:
     self._decorators = {decorator: {} for decorator in DECORATORS}
     self._hooks = {hook_type: [] for hook_type in HOOKS}
     self._middlewares = []
+
+    nest_asyncio.apply()
 
   @property
   def prefix(self) -> str:
@@ -53,12 +53,8 @@ class Fastipy:
   def static(self) -> str:
     return self._static_path
 
-  @property
-  def debug(self) -> bool:
-    return self._debug
-
-  def register(self, plugin: Callable, options: PluginOptions = {}) -> Self:
-    instance = FastipyInstance(debug=self._debug)
+  def register(self, plugin: FunctionType, options: PluginOptions = {}) -> Self:
+    instance = FastipyInstance()
 
     instance._router = self._router
     instance._decorators = self._decorators
@@ -118,48 +114,51 @@ class Fastipy:
   def has_reply_decorator(self, name: str) -> bool:
     return name in self._decorators['reply']
 
-  def add_hook(self, hook_type: HOOK_TYPES, hook: Callable) -> None:
+  def add_hook(self, hook_type: hookType, hook: FunctionType) -> None:
     if hook_type not in HOOKS:
       raise NoHookTypeException(f'Hook type "{hook_type}" does not exist')
     
-    self._hooks[type].append(hook)
+    self._hooks[hook_type].append(hook)
 
-  def hook(self, type: Literal['onRequest', 'onResponse', 'onError']) -> Callable:
-    def internal(hook: Callable) -> Callable:
-      self.add_hook(type, hook)
+  def hook(self, hook_type: hookType) -> FunctionType:
+    def internal(hook: FunctionType) -> FunctionType:
+      self.add_hook(hook_type, hook)
       return hook
     return internal
 
-  def add_middleware(self, middleware: Callable) -> None:
+  def add_middleware(self, middleware: FunctionType) -> None:
     self._middlewares.append(middleware)
 
-  def use(self) -> Callable:
-    def internal(middleware: Callable) -> Callable:
+  def use(self) -> FunctionType:
+    def internal(middleware: FunctionType) -> FunctionType:
       self.add_middleware(middleware)
       return middleware
     return internal
 
   def add_route(
     self,
-    method: HTTP_METHODS_TYPE,
+    method: httpMethodType,
     path: str,
-    handler: Callable,
-    route_hooks: RouteHooks = {},
-    route_middlewares: RouteMiddlewares = []
+    handler: FunctionType,
+    route_hooks: RouteHookType = {},
+    route_middlewares: RouteMiddlewareType = []
   ) -> None:
     if self.prefix != '/':
       path = f"{self.prefix}{path if path != '/' else ''}"
     if method not in HTTP_METHODS:
-      raise NoHTTPMethodException(f'Method "{type}" does not exist or is not supported yet')
+      logger.error(NoHTTPMethodException(f"Method [{method}] is not supported"))
+      sys.exit(1)
 
     if (not re.fullmatch(r"^(\/:?[_a-zA-Z0-9]+)*$|^\/$", path) or
       re.search(r':(\d)\w+', path) or
       len(re.findall(r':(\w+)', path)) != len(set(re.findall(r':(\w+)', path)))):
-      raise InvalidPathException(f'Invalid path: "{path}"')
+      logger.error(InvalidPathException(f"Invalid path '{path}'"))
+      sys.exit(1)
 
     routeAlreadyExists = self._router.find_route(method, path) is not None
     if routeAlreadyExists:
-      raise DuplicateRouteException(f'Duplicate route: Method "{method}" Path "{path}"')
+      logger.error(DuplicateRouteException(f"Duplicate route [{method}] '{path}'"))
+      sys.exit(1)
     
     hooks = copy.deepcopy(self._hooks)
     hooks.update(route_hooks)
@@ -174,41 +173,42 @@ class Fastipy:
       'raw_path': path
     })
 
-    if self._debug:
-      print(f'| Route registered: Method "{method}" Path "{path}"')
+    message = f"Route registered [%s] '{path}'"
+    color_message = "Route registered [" + click.style("%s", fg="cyan") + f"] '{path}'"
+    logger.debug(message, method, extra={"color_message": color_message})
 
-  def get(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
-    def internal(handler: Callable) -> Callable:
+  def get(self, path: str, route_hooks: RouteHookType = {}, route_middlewares: RouteMiddlewareType = []) -> FunctionType:
+    def internal(handler: FunctionType) -> FunctionType:
       self.add_route('GET', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def post(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
-    def internal(handler: Callable) -> Callable:
+  def post(self, path: str, route_hooks: RouteHookType = {}, route_middlewares: RouteMiddlewareType = []) -> FunctionType:
+    def internal(handler: FunctionType) -> FunctionType:
       self.add_route('POST', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def put(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
-    def internal(handler: Callable) -> Callable:
+  def put(self, path: str, route_hooks: RouteHookType = {}, route_middlewares: RouteMiddlewareType = []) -> FunctionType:
+    def internal(handler: FunctionType) -> FunctionType:
       self.add_route('PUT', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def patch(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
-    def internal(handler: Callable) -> Callable:
+  def patch(self, path: str, route_hooks: RouteHookType = {}, route_middlewares: RouteMiddlewareType = []) -> FunctionType:
+    def internal(handler: FunctionType) -> FunctionType:
       self.add_route('PATCH', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def delete(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
-    def internal(handler: Callable) -> Callable:
+  def delete(self, path: str, route_hooks: RouteHookType = {}, route_middlewares: RouteMiddlewareType = []) -> FunctionType:
+    def internal(handler: FunctionType) -> FunctionType:
       self.add_route('DELETE', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
 
-  def head(self, path: str, route_hooks: RouteHooks = {}, route_middlewares: RouteMiddlewares = []) -> Callable:
-    def internal(handler: Callable) -> Callable:
+  def head(self, path: str, route_hooks: RouteHookType = {}, route_middlewares: RouteMiddlewareType = []) -> FunctionType:
+    def internal(handler: FunctionType) -> FunctionType:
       self.add_route('HEAD', path, handler, route_hooks, route_middlewares)
       return handler
     return internal
@@ -229,15 +229,13 @@ class Fastipy:
     super().__setattr__(name, value)
 
 class FastipyInstance(Fastipy):
-  def __init__(self, debug: bool = False):
-    super().__init__(debug)
+  def __init__(self):
+    super().__init__()
     self._routes = None
     self._decorators = None
     self._hooks = None
     self._middlewares = None
 
-  def run(self, *args, **kwargs) -> None:
-    raise NotImplementedError('FastipyInstance.run() is not implemented')
-  
   def cors(self, *args, **kwargs) -> None:
-    raise NotImplementedError('FastipyInstance.cors() is not implemented')
+    logger.error(NotImplementedError('FastipyInstance.cors() is not implemented'))
+    sys.exit(1)

@@ -1,6 +1,6 @@
 from .src.core.fastipy import Fastipy, FastipyInstance
 
-from .src.types.plugins import BasePluginOptions
+from .src.types.plugins import PluginOptions
 
 from .src.core.request import Request
 from .src.core.reply import Reply
@@ -12,10 +12,10 @@ __all__ = [
   'Fastipy',
   'FastipyInstance',
 
-  'BasePluginOptions',
+  'PluginOptions',
 
   'Request',
-  'Reply'
+  'Reply',
 
   'Database',
   'Status',
