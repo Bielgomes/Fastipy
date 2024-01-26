@@ -1,24 +1,19 @@
-from http.server import BaseHTTPRequestHandler
 from typing import Union
 import json
 
 from .form import Form
 
 class Body():
-  def __init__(self, request: BaseHTTPRequestHandler):
-    self._request       = request
-    self._content_type   = self._request.headers.get('Content-Type').split(';')[0] if 'Content-Type' in self._request.headers else None
-    self._content_length = int(self._request.headers.get('Content-Length', 0))
+  def __init__(self, scope, receive) -> None:
+    self.__scope         = scope
+    self.__receive       = receive
 
-    self.__handle_request_content()
-    self.__json()
-    self.__text()
+    self._content        = None
+    self._raw_content    = None
+    self._content_type   = self.__scope['headers'].get('content-type', None)
+    self._content_length = int(self.__scope['headers'].get('content-length', 0))
+    self._json           = None
 
-    self._form = Form(self)
-
-  def __str__(self) -> str:
-    return self._content
-  
   @property
   def type(self) -> Union[str, None]:
     return self._content_type
@@ -28,35 +23,39 @@ class Body():
     return self._content_length
   
   @property
+  def content(self) -> str:
+    return self._content
+  
+  @property
+  def raw_content(self) -> bytes:
+    return self._raw_content
+  
+  @property
   def json(self) -> dict:
     return self._json
   
   @property
-  def text(self) -> str:
-    return self._text
-  
-  @property
-  def content(self) -> bytes:
-    return self._content
-  
-  @property
   def form(self) -> 'Form':
     return self._form
+  
+  async def load(self):
+    content = await self.__receive()
+    self._raw_content = content['body']
+
+    while content['more_body']:
+      content = await self.__receive()
+      self._raw_content += content['body']
+
+    try:
+      self._content = self._raw_content.decode()
+    except: pass
+
+    self.__json()
+
+    self._form = Form(self)
 
   def __json(self) -> None:
     if self._content_type == 'application/json':
-      self._json = json.loads(self._content)
-      return
-    self._json = None
-
-  def __text(self) -> None:
-    if self._content_type == 'text/plain':
-      self._text = self._content
-      return
-    self._text = None
-
-  def __handle_request_content(self) -> None:
-    if self._content_type == 'multipart/form-data':
-      self._content = self._request.rfile.read(self._content_length)
-      return
-    self._content = self._request.rfile.read(self._content_length).decode('utf-8')
+      try:
+        self._json = json.loads(self._raw_content)
+      except: pass

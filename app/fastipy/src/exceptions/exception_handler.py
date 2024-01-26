@@ -2,35 +2,35 @@ import traceback
 
 class ExceptionHandler:
   def __init__(self, error: Exception):
-    self._error           = error
-    self._error_type      = type(error).__name__
-    self._error_message   = str(error)
-    self._error_traceback = traceback.format_exc()
+    self._error     = error
+    self._type      = type(error).__name__
+    self._message   = str(error)
+    self._traceback = traceback.format_exc()
 
   def __str__(self) -> str:
-    return f"{self.error_type}: {self.error_message}"
+    return f"{self.type}: {self.message}"
 
   @property
   def error(self) -> Exception:
     return self._error
   
   @property
-  def error_type(self) -> str:
-    return self._error_type
+  def type(self) -> str:
+    return self._type
   
   @property
-  def error_message(self) -> str:
-    return self._error_message
+  def message(self) -> str:
+    return self._message
   
   @property
-  def error_traceback(self) -> str:
-    return self._error_traceback
+  def traceback(self) -> str:
+    return self._traceback
   
   def __html__(self) -> str:
     return f"""
     <html>
       <head>
-        <title>{self._error_type}</title>
+        <title>{self._type}</title>
         <style type="text/css">
         {'''
           * {
@@ -65,10 +65,10 @@ class ExceptionHandler:
         </style>
       </head>
       <body>
-        <h1>{self._error_type}</h1>
-        <h2>{self._error_message}</h2>
+        <h1>{self._type}</h1>
+        <h2>{self._message}</h2>
         <h1>Traceback</h1>
-        <pre>{self._error_traceback}</pre>
+        <pre>{self._traceback}</pre>
       </body>
     </html>
     """

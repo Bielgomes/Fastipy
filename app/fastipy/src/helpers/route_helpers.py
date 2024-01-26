@@ -2,18 +2,18 @@ from typing import TYPE_CHECKING, List
 
 from ..types.routes import FunctionType
 
-from .async_sync_helpers import run_coroutine_or_sync_function
+from .async_sync_helpers import run_async_or_sync
 
 if TYPE_CHECKING:
-  from ..core.reply import Reply
   from ..core.request import Request
+  from ..core.reply import Reply, RestrictReply
 
-def handler_hooks(hooks: List[FunctionType], request: 'Request', reply: 'Reply', *args, check_response_sent: bool = True, **kwargs) -> None:
+async def handler_hooks(hooks: List[FunctionType], request: 'Request', reply: 'Reply', *args, check_response_sent: bool = True, **kwargs) -> None:
   for hook in hooks:
-    hook(request, reply, *args, **kwargs)
+    await run_async_or_sync(hook, *args, request, reply, **kwargs)
     if check_response_sent and reply.is_sent:
       break
 
-def handler_middlewares(middlewares: List[FunctionType], request: 'Request', reply: 'Reply') -> None:
+async def handler_middlewares(middlewares: List[FunctionType], request: 'Request', reply: 'RestrictReply') -> None:
   for middleware in middlewares:
-    run_coroutine_or_sync_function(middleware, request, reply)
+    await run_async_or_sync(middleware, request, reply)

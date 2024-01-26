@@ -9,8 +9,9 @@ else:
 FunctionType = Union[Callable, Coroutine]
 
 class RouteHookType(TypedDict):
-  onRequest: NotRequired[List[Callable]]
-  onResponse: NotRequired[List[Callable]]
-  onError: NotRequired[List[Callable]]
+  onRequest: NotRequired[List[FunctionType]]
+  preHandler: NotRequired[List[FunctionType]]
+  onResponse: NotRequired[List[FunctionType]]
+  onError: NotRequired[List[FunctionType]]
 
-RouteMiddlewareType = List[Callable]
+RouteMiddlewareType = List[FunctionType]

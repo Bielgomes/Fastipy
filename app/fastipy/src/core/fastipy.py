@@ -1,6 +1,6 @@
-from typing import Optional, Self
+from typing import Dict, Optional, Self
 from uvicorn.main import logger
-import re, copy, sys, click, nest_asyncio
+import re, copy, click, nest_asyncio
 
 from ..types.plugins import PluginOptions
 from ..types.routes import FunctionType, RouteHookType, RouteMiddlewareType
@@ -15,25 +15,34 @@ from ..exceptions.no_hook_type import NoHookTypeException
 from ..exceptions.no_http_method_exception import NoHTTPMethodException
 from ..exceptions.decorator_already_exists_exception import DecoratorAlreadyExistsException
 
-from ..helpers.async_sync_helpers import run_coroutine_or_sync_function
+from ..helpers.async_sync_helpers import run_sync_or_async
+
+from ..classes.decorators_base import DecoratorsBase
+from .request_handler import RequestHandler
 
 from .request import Request
 from .reply import Reply
 
 from ..routes.router import Router
+from ..routes.plugin_tree import PluginTree, PluginNode
+
 from ..middlewares.cors import CORSGenerator
 
-class Fastipy:
+class Fastipy(RequestHandler, DecoratorsBase):
   def __init__(self, static_path: str = None) -> None:
     self._router        = Router()
+    self._plugins       = PluginTree()
     self._cors          = None
     self._prefix        = '/'
     self._name          = None
     self._static_path   = static_path
+    self._error_handler = None
 
-    self._decorators = {decorator: {} for decorator in DECORATORS}
-    self._hooks = {hook_type: [] for hook_type in HOOKS}
-    self._middlewares = []
+    self._decorators    = {decorator: {} for decorator in DECORATORS}
+    self._hooks         = {hook_type: [] for hook_type in HOOKS}
+    self._middlewares   = []
+
+    self._instance_decorators = self._decorators['app']
 
     nest_asyncio.apply()
 
@@ -52,18 +61,42 @@ class Fastipy:
   @property
   def static(self) -> str:
     return self._static_path
+  
+  def set_name(self, name: str) -> None:
+    self._name = name
+  
+  def print_routes(self, options: Dict[str, any] = {}) -> None:
+    self._router.print_tree(options=options)
+
+  def print_plugins(self) -> None:
+    self._plugins.print_tree()
+  
+  def set_error_handler(self, handler: FunctionType) -> None:
+    self._error_handler = handler
+
+  def error_handler(self) -> FunctionType:
+    def internal(handler: FunctionType) -> FunctionType:
+      self.set_error_handler(handler)
+      return handler
+    return internal
 
   def register(self, plugin: FunctionType, options: PluginOptions = {}) -> Self:
     instance = FastipyInstance()
 
     instance._router = self._router
+    instance._plugins = PluginNode(plugin.__name__)
     instance._decorators = self._decorators
     instance._hooks = self._hooks
     instance._middlewares = self._middlewares
 
     instance._prefix = options.get('prefix', '/')
+    
+    run_sync_or_async(plugin, instance, options)
 
-    run_coroutine_or_sync_function(plugin, instance, options)
+    self._error_handler = instance._error_handler
+
+    if instance._name is not None: instance._plugins.name = instance._name
+    self._plugins.add_child(instance._plugins)
 
     return self
 
@@ -92,17 +125,26 @@ class Fastipy:
 
   def decorate(self, name: str, value: any) -> None:
     if hasattr(self, name) or self.has_decorator(name):
-      raise DecoratorAlreadyExistsException(f'Decorator "{name}" has already been added!')
+      message = f"Failed to register decorator '{name}' >> Duplicate decorator"
+      logger.error(DecoratorAlreadyExistsException(message))
+      raise DecoratorAlreadyExistsException(message)
+    
     self._decorators['app'][name] = value
 
   def decorate_request(self, name: str, value: any) -> None:
     if hasattr(Request, name) or self.has_request_decorator(name):
-      raise DecoratorAlreadyExistsException(f'Decorator "{name}" has already been added!')
+      message = f"Failed to register request decorator '{name}' >> Duplicate decorator"
+      logger.error(DecoratorAlreadyExistsException(message))
+      raise DecoratorAlreadyExistsException(message)
+    
     self._decorators['request'][name] = value
 
   def decorate_reply(self, name: str, value: any) -> None:
     if hasattr(Reply, name) or self.has_reply_decorator(name):
-      raise DecoratorAlreadyExistsException(f'Decorator "{name}" has already been added!')
+      message = f"Failed to register reply decorator '{name}' >> Duplicate decorator"
+      logger.error(DecoratorAlreadyExistsException(message))
+      raise DecoratorAlreadyExistsException(message)
+    
     self._decorators['reply'][name] = value
 
   def has_decorator(self, name: str) -> bool:
@@ -116,7 +158,9 @@ class Fastipy:
 
   def add_hook(self, hook_type: hookType, hook: FunctionType) -> None:
     if hook_type not in HOOKS:
-      raise NoHookTypeException(f'Hook type "{hook_type}" does not exist')
+      message = f"Failed to register hook [{hook_type}] >> Type not supported"
+      logger.error(NoHookTypeException(message))
+      raise NoHookTypeException(message)
     
     self._hooks[hook_type].append(hook)
 
@@ -136,7 +180,7 @@ class Fastipy:
     return internal
 
   def add_route(
-    self,
+    self, 
     method: httpMethodType,
     path: str,
     handler: FunctionType,
@@ -146,19 +190,20 @@ class Fastipy:
     if self.prefix != '/':
       path = f"{self.prefix}{path if path != '/' else ''}"
     if method not in HTTP_METHODS:
-      logger.error(NoHTTPMethodException(f"Method [{method}] is not supported"))
-      sys.exit(1)
+      message = f"Failed to register route [{method}] '{path}' >> Method not supported"
+      logger.error(NoHTTPMethodException(message))
+      raise NoHTTPMethodException(message)
 
-    if (not re.fullmatch(r"^(\/:?[_a-zA-Z0-9]+)*$|^\/$", path) or
-      re.search(r':(\d)\w+', path) or
-      len(re.findall(r':(\w+)', path)) != len(set(re.findall(r':(\w+)', path)))):
-      logger.error(InvalidPathException(f"Invalid path '{path}'"))
-      sys.exit(1)
+    if (not re.fullmatch(r"^(\/:?[_a-zA-Z0-9]+)*$|^\/$", path) or re.search(r':(\d)\w+', path) or len(re.findall(r':(\w+)', path)) != len(set(re.findall(r':(\w+)', path)))):
+      message = f"Failed to register route [{method}] '{path}' >> Invalid path"
+      logger.error(InvalidPathException(message))
+      raise InvalidPathException(message)
 
     routeAlreadyExists = self._router.find_route(method, path) is not None
     if routeAlreadyExists:
-      logger.error(DuplicateRouteException(f"Duplicate route [{method}] '{path}'"))
-      sys.exit(1)
+      message = f"Failed to register route [{method}] '{path}' >> Duplicate route"
+      logger.error(DuplicateRouteException(message))
+      raise DuplicateRouteException(message)
     
     hooks = copy.deepcopy(self._hooks)
     hooks.update(route_hooks)
@@ -213,29 +258,21 @@ class Fastipy:
       return handler
     return internal
 
-  def print_routes(self) -> None:
-    self._router.print_tree()
+  def __getattr__(self, name) -> any:
+    return super().__getattr__(name)
 
-  def __getattr__(self, name: str) -> any:
-    if name in self._decorators['app']:
-      return self._decorators['app'][name]
-    raise AttributeError(f'Attribute "{name}" does not exist')
-  
-  def __setattr__(self, name: str, value: any) -> None:
-    if name.startswith("app_"):
-      real_name = name[len("app_"):]
-      self._decorators['app'][real_name] = value
-      return
-    super().__setattr__(name, value)
+  def __setattr__(self, name, value) -> None:
+    return super().__setattr__(name, value)
 
 class FastipyInstance(Fastipy):
   def __init__(self):
     super().__init__()
-    self._routes = None
-    self._decorators = None
-    self._hooks = None
-    self._middlewares = None
+    self._routes        = None
+    self._plugins       = None
+    self._decorators    = None
+    self._hooks         = None
+    self._middlewares   = None
+    self._error_handler = None
 
   def cors(self, *args, **kwargs) -> None:
-    logger.error(NotImplementedError('FastipyInstance.cors() is not implemented'))
-    sys.exit(1)
+    logger.warn(NotImplementedError('FastipyInstance.cors() is not implemented'))

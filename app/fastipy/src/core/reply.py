@@ -1,30 +1,48 @@
-from http.server import BaseHTTPRequestHandler
+from typing import Dict, List, Union, Optional, Set
 from http.cookies import SimpleCookie
-from typing import Literal
+from time import perf_counter
+from logging import Logger
 import mimetypes, os, json, io
 
 from ..constants.content_types import CONTENT_TYPES
 
+from ..types.routes import FunctionType
+
 from ..exceptions.file_exception import FileException
 from ..exceptions.reply_exception import ReplyException
 
-from .decorators_base import DecoratorsBase
+from ..classes.decorators_base import DecoratorsBase
 
 from ..helpers.route_helpers import handler_hooks
 
+from .request import Request
+
 class Reply(DecoratorsBase):
-  def __init__(self, request: BaseHTTPRequestHandler, hooks: list = []):
-    super().__init__()
-    self._request               = request
-    self._status_code           = 200
-    self._response              = None
-    self._request.response_sent = False
-    self._headers               = {}
-    self._cookies               = SimpleCookie()
+  def __init__(
+    self,
+    send,
+    logger: Logger,
+    request: Request = None,
+    cors: Dict = {},
+    static_path: Union[str, None] = None,
+    decorators: Dict[str, List[FunctionType]] = {},
+    hooks: Dict[str, List[FunctionType]] = {},
+  ) -> None:
+    self.__send               = send
+    self.__request            = request
+    self.__on_response_hooks  = hooks.get('onResponse', [])
 
-    self.decorators             = request.decorators['reply']
+    self._log                 = logger
+    self._cors                = cors
+    self._static_path         = static_path
+    self._headers             = {}
+    self._status_code         = 200
+    self._content             = None
+    self._cookies             = SimpleCookie()
+    self._response_time       = perf_counter()
+    self._response_sent       = False
 
-    self.__on_response_hooks = hooks
+    self._instance_decorators = decorators.get('reply', [])
 
   @property
   def status_code(self) -> int:
@@ -32,37 +50,54 @@ class Reply(DecoratorsBase):
 
   @status_code.setter
   def status_code(self, code: int) -> None:
+    if code < 100 or code > 599:
+      message = 'Status code must be a number between 100 and 599'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
+    
     self._status_code = code
 
   @property
-  def type(self) -> str:
-    return self._headers['Content-Type']
+  def content_type(self) -> Union[str, None]:
+    return self._headers.get('Content-Type', None)
   
-  @type.setter
-  def type(self, content_type: str) -> None:
+  @content_type.setter
+  def content_type(self, content_type: str) -> None:
     self._headers['Content-Type'] = content_type
 
   @property
   def is_sent(self) -> bool:
-    return self._request.response_sent
-
+    return self._response_sent
+  
+  @property
+  def cookies(self) -> SimpleCookie:
+    return self._cookies
+  
+  @property
+  def headers(self) -> Dict[str, str]:
+    return self._headers
+  
+  def type(self, content_type: str) -> 'Reply':
+    self._headers['Content-Type'] = content_type
+    return self
+  
+  def code(self, code: int) -> 'Reply':
+    self._status_code = code
+    return self
+  
   def json(self, response: dict) -> 'Reply':
-    self._response = json.dumps(response)
+    self._content = json.dumps(response)
     self._headers['Content-Type'] = 'application/json'
     return self
 
   def text(self, response: str) -> 'Reply':
-    self._response = response
+    self._content = response
     self._headers['Content-Type'] = 'text/plain'
     return self
 
   def html(self, response: str) -> 'Reply':
-    self._response = response
+    self._content = response
     self._headers['Content-Type'] = 'text/html'
-    return self
-
-  def code(self, code: int) -> 'Reply':
-    self._status_code = code
     return self
 
   def header(self, key: str, value: str) -> 'Reply':
@@ -91,113 +126,166 @@ class Reply(DecoratorsBase):
     self._cookies[name]['secure'] = secure
     self._cookies[name]['httpOnly'] = httpOnly
 
-    if expires is not None:
-      self._cookies[name]['expires'] = expires
-    if domain is not None:
-      self._cookies[name]['domain'] = domain
-
+    if expires is not None: self._cookies[name]['expires'] = expires
+    if domain is not None: self._cookies[name]['domain'] = domain
     return self
+  
+  def getResponseTime(self) -> float:
+    return perf_counter() - self._response_time
 
-  def send(self) -> None:
-    if self._request.response_sent:
-      raise ReplyException('Reply already sent')
+  async def send(self) -> None:
+    if self._response_sent:
+      message = 'Reply already sent'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
+
+    await self._send_headers()
+    await self._send_body()
+
+    await self.__on_response_sent()
+
+  async def send_code(self, code: int) -> None:
+    if self._response_sent:
+      message = 'Reply already sent'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
     
-    self._send_headers()
-    self._send_body()
+    self._status_code = code
 
-    self.__on_response_sent()
+    await self._send_headers()
+    await self._send_body(send_blank=True)
 
-  def send_code(self, code: int) -> None:
-    if self._request.response_sent:
-      raise ReplyException('Reply already sent')
+    await self.__on_response_sent()
+
+  async def send_cookie(self) -> None:
+    if self._response_sent:
+      message = 'Reply already sent'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
     
-    self._request.send_response(code)
-    self._request.end_headers()
-
-    self.__on_response_sent()
-
-  def send_cookie(self) -> None:
-    if self._request.response_sent:
-      raise ReplyException('Reply already sent')
-    if self._status_code is None:
-      raise ReplyException('Status code is not set')
+    headers = [[b'Set-Cookie', cookie.OutputString().decode('utf-8')] for cookie in self._cookies.values()]
     
-    self._request.send_response(self._status_code)
+    await self._send_headers(headers)
+    await self._send_body(send_blank=True)
 
-    for cookie in self._cookies.values():
-      self._request.send_header("Set-Cookie", cookie.OutputString())
-    
-    self._request.end_headers()
+    await self.__on_response_sent()
 
-    self.__on_response_sent()
-
-  def redirect(self, location: str, code: Literal[301, 302] = 302) -> 'Reply':
-    if self._request.response_sent:
-      raise ReplyException('Reply already sent')
-    
-    self._request.send_response(code)
-    self._request.send_header('Location', location)
-    self._request.end_headers()
-    self._request.response_sent = True
-
-    return self
-
-  def send_file(self, path: str) -> 'Reply':
-    if self._request.response_sent:
-      raise ReplyException('Reply already sent')
+  async def send_file(self, path: str) -> None:
+    if self._response_sent:
+      message = 'Reply already sent'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
     
     try:
       with io.open(path, 'rb') as file:
         file_size = os.path.getsize(path)
         content_type = self._get_content_type(path)
-        self._request.send_response(200)
-        self._request.send_header('Content-type', content_type)
-        self._request.send_header('Content-Disposition', f'attachment; filename="{path.split("/")[-1]}"')
-        self._request.send_header('Content-Length', file_size)
-        self._request.end_headers()
-        self._request.wfile.write(file.read())
 
-        self.__on_response_sent()
+        headers = self._parse_headers()
+        headers.append((b'Content-type', content_type.encode('utf-8')))
+        headers.append((b'Content-Disposition', f'attachment; filename="{path.split("/")[-1]}"'.encode('utf-8')))
+        headers.append((b'Content-Length', file_size.encode('utf-8')))
+
+        self._content = file.read()
+
+        await self._send_headers(headers=headers)
+        await self._send_body()
+
+        await self.__on_response_sent()
     except FileNotFoundError:
-      raise FileException(f'File not found: Path "{path}"')
+      message = f"Failed to send file '{path}' >> File not found"
+      self._log.error(FileException(message))
+      raise FileException(message)
+
+  async def redirect(
+    self,
+    location: str,
+    code: int = 302,
+    cache_control: Optional[str] = 'no-store, no-cache, must-revalidate'
+  ) -> None:
+    if self._response_sent:
+      message = 'Reply already sent'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
+
+    self._status_code = code
+
+    headers = self._parse_headers()
+    headers.append((b'Location', location.encode('utf-8')))
+
+    if cache_control:
+      headers.append((b'Cache-Control', cache_control.encode('utf-8')))
+
+    await self._send_headers(headers=headers)
+    await self._send_body(send_blank=True)
+
+    await self.__on_response_sent()
 
   def render_page(self, path: str) -> 'Reply':
     if not path.endswith('.html'):
-      raise FileException('The path must lead to an HTML file')
+      message = f"Failed to render page '{path}' >> File not a html"
+      self._log.error(FileException(message))
+      raise FileException(message)
 
-    if self._request.static_path:
-      path = f"{self._request.static_path}/{path}"
+    if self._static_path:
+      path = f"{self._static_path}/{path}"
 
-    with io.open(f"{path}", 'r') as file:
-      self._response = file.read()
-    self._headers['Content-Type'] = 'text/html'
+    try:
+      with io.open(f"{path}", 'r') as file:
+        self._content = file.read()
+      self._headers['Content-Type'] = 'text/html'
+    except FileNotFoundError:
+      message = f"Failed to render page '{path}' >> File not found"
+      self._log.error(FileException(message))
+      raise FileException(message)
 
     return self
   
-  def _send_headers(self) -> None:
-    if self._status_code is None:
-      raise ReplyException('Status code is not set')
-
-    self._request.send_response(self._status_code)
-
-    for name, value in self._headers.items():
-      self._request.send_header(name, value)
-    for cookie in self._cookies.values():
-      self._request.send_header("Set-Cookie", cookie.OutputString())
-
-    self._request.end_headers()
-
-  def _send_body(self) -> None:
-    if self._response is None:
-      raise ReplyException('Reply is not set')
+  async def _options(self, allowed_methods: List[str]) -> None:
+    if self._response_sent:
+      message = 'Reply already sent'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
     
-    try:
-      self._request.wfile.write(self._response.encode())
-    except AttributeError:
-      self._request.wfile.write(self._response)
-      
-    self._request.response_sent = True
+    headers = [(key.encode('utf-8'), value.encode('utf-8')) for key, value in self._cors.items()]
+    headers.append((b'Allow', b', '.join([method.encode('utf-8') for method in allowed_methods])))
 
+    print(headers)
+
+    await self._send_headers(headers)
+    await self._send_body(send_blank=True)
+
+    await self.__on_response_sent()
+  
+  async def _send_headers(self, headers: List[bytes] = None) -> None:
+    await self.__send({
+      'type': 'http.response.start',
+      'status': self._status_code,
+      'headers': self._parse_headers() if headers is None else headers,
+    })
+
+  async def _send_body(self, send_blank: bool = False) -> None:
+    if not send_blank and self._content is None:
+      message = 'Reply is not set, try send_code() instead'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
+    
+    body = self._content.encode('utf-8') if not send_blank else b''
+
+    await self.__send({
+      'type': 'http.response.body',
+      'body': body,
+    })
+
+  def _parse_headers(self) -> List[Set[bytes]]:
+    headers = [(header.encode('utf-8'), value.encode('utf-8')) for header, value in self._headers.items()]
+    for header, value in self._cors.items():
+      headers.append((header.encode('utf-8'), value.encode('utf-8')))
+    for cookie in self._cookies.values():
+      headers.append((b'Set-Cookie', cookie.OutputString().encode('utf-8')))
+
+    return headers
+  
   def _get_content_type(self, path: str) -> str:
     try:
       content_type = CONTENT_TYPES[path.split('.')[-1]]
@@ -205,31 +293,134 @@ class Reply(DecoratorsBase):
       content_type = mimetypes.guess_type(path)[0]
 
     return content_type or 'application/octet-stream'
-
-  def _send_archive(self, path: str = None) -> None:
+  
+  async def _send_archive(self, path: str = None) -> None:
     content_type = self._get_content_type(path)
-    self._headers['Content-Type'] = content_type
+
+    if self._static_path:
+      path = f"{self._static_path}/{path}"
 
     try:
       with io.open(path, 'rb') as file:
-        self._response = file.read()
-    except FileNotFoundError:
-      self.send_code(404)
-      return
-      
-    self.send()
+        self._content = file.read()
+      self._headers['Content-Type'] = content_type
 
-  def __on_response_sent(self) -> None:
-    self._request.response_sent = True
-    handler_hooks(
+      await self._send_headers()
+      await self._send_body()
+    except FileNotFoundError:
+      self._status_code = 404
+      
+      await self._send_headers()
+      await self._send_body(send_blank=True)
+
+  async def __on_response_sent(self) -> None:
+    self._response_sent = True
+    await handler_hooks(
       self.__on_response_hooks,
-      self._request,
-      self,
+      self.__request,
+      RestrictReply(self),
       check_response_sent=False
     )
 
   def __getattr__(self, name) -> any:
     return super().__getattr__(name)
 
+  def __setattr__(self, name, value) -> None:
+    return super().__setattr__(name, value)
+
+class RestrictReply:
+  def __init__(self, reply: Reply):
+    self._reply = reply
+
+  @property
+  def status_code(self) -> int:
+    return self._reply.status_code
+  
+  @status_code.setter
+  def status_code(self, code: int) -> None:
+    self._reply.status_code = code
+
+  @property
+  def content_type(self) -> str:
+    return self._reply.content_type
+  
+  @content_type.setter
+  def content_type(self, content_type: str) -> None:
+    self._reply.content_type = content_type
+
+  @property
+  def is_sent(self) -> bool:
+    return self._reply.is_sent
+  
+  @property
+  def cookies(self) -> SimpleCookie:
+    return self._reply.cookies
+  
+  @property
+  def headers(self) -> Dict[str, str]:
+    return self._reply.headers
+  
+  def type(self, content_type: str) -> 'Reply':
+    return self._reply.type(content_type)
+  
+  def code(self, code: int) -> 'Reply':
+    return self._reply.code(code)
+  
+  def json(self, response: dict) -> None:
+    self._reply._log.warn(ReplyException('Function "json" is not allowed in this context'))
+
+  def text(self, response: str) -> None:
+    self._reply._log.warn(ReplyException('Function "text" is not allowed in this context'))
+  
+  def html(self, response: str) -> None:
+    self._reply._log.warn(ReplyException('Function "html" is not allowed in this context'))
+  
+  def header(self, key: str, value: str) -> 'Reply':
+    return self._reply.header(key, value)
+  
+  def get_header(self, key: str) -> str:
+    return self._reply.get_header(key)
+  
+  def remove_header(self, key: str) -> 'Reply':
+    return self._reply.remove_header(key)
+  
+  def cookie(
+    self,
+    name: str,
+    value: str,
+    path="/",
+    expires=None,
+    domain: str = None,
+    secure: bool = False,
+    httpOnly: bool = False
+  ) -> 'Reply':
+    return self._reply.cookie(name, value, path, expires, domain, secure, httpOnly)
+
+  def send(self) -> None:
+    self._reply._log.warn(ReplyException('Function "send" is not allowed in this context'))
+  
+  def send_code(self, code: int) -> None:
+    self._reply._log.warn(ReplyException('Function "send_code" is not allowed in this context'))
+  
+  def send_cookie(self) -> None:
+    self._reply._log.warn(ReplyException('Function "send_cookie" is not allowed in this context'))
+  
+  def send_file(self, path: str) -> None:
+    self._reply._log.warn(ReplyException('Function "send_file" is not allowed in this context'))
+  
+  def redirect(
+    self,
+    location: str,
+    code: int = 302,
+    cache_control: Optional[str] = 'no-store, no-cache, must-revalidate'
+  ) -> None:
+    self._reply._log.warn(ReplyException('Function "redirect" is not allowed in this context'))
+  
+  def render_page(self, path: str) -> 'Reply':
+    return self._reply.render_page(path)
+  
+  def __getattr__(self, name) -> any:
+    return super().__getattr__(name)
+  
   def __setattr__(self, name, value) -> None:
     return super().__setattr__(name, value)

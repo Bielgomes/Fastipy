@@ -5,7 +5,9 @@ class RouteNode:
     self.children: Dict[str, 'RouteNode'] = {}
     self.handlers: Dict[str, any] = {}
   
-  def print_tree(self, node: Optional['RouteNode'] = None, indent: str = ""):
+  def print_tree(self, node: Optional['RouteNode'] = None, indent: str = "", options: Dict[str, any] = {}):
+    include_hooks = options.get('include_hooks', False)
+    
     if node is None:
       node = self
 
@@ -16,13 +18,13 @@ class RouteNode:
       else:
         for methods, handler in child.handlers.items():
           print(f"{indent}{symbol} /{part} ({methods})")
-          for hook_type in handler['hooks']:
-            if handler['hooks'][hook_type]:
-              print(f"{indent}{'│' if symbol == '├──' else ' '}    ⚬ {hook_type} {[f'{hook.__name__}()' for hook in handler['hooks'][hook_type]]}")
+          if include_hooks:
+            for hook_type in handler['hooks']:
+              if handler['hooks'][hook_type]:
+                print(f"{indent}{'│' if symbol == '├──' else ' '}    ⚬ {hook_type} {[f'{hook.__name__}()' for hook in handler['hooks'][hook_type]]}")
 
-      if symbol == "└──":
-        return self.print_tree(child, indent + "    ")
-      self.print_tree(child, indent + "│   ")
+      if symbol == "└──": return self.print_tree(child, indent + "    ", options)
+      self.print_tree(child, indent + "│   ", options)
 
 class Router(RouteNode):
   def add_route(self, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'], path: str, route: dict):
@@ -36,7 +38,27 @@ class Router(RouteNode):
 
     node.handlers[method] = route
 
-  def find_route(self, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'], path: str):
+  def find_route(self, method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD'], path: str, return_params: bool = False):
+    parts = path.split('/')
+    node = self
+    params = {}
+
+    for part in parts:
+      if part in node.children:
+        node = node.children[part]
+      else:
+        children = next((key for key in node.children.keys() if key.startswith(':')), None)
+        if children:
+          node = node.children[children]
+          params[children[1:]] = part
+        else:
+          if return_params:  return None, None
+          return None
+
+    if return_params: return node.handlers.get(method, None), params
+    return node.handlers.get(method, None)
+  
+  def get_methods(self, path: str):
     parts = path.split('/')
     node = self
 
@@ -48,6 +70,7 @@ class Router(RouteNode):
         if children:
           node = node.children[children]
         else:
-          return None
+          return []
 
-    return node.handlers.get(method, None)
+    return list(node.handlers.keys()) + ['OPTIONS']
+  

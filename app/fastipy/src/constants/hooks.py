@@ -1,4 +1,4 @@
 from typing import Literal
 
-hookType = Literal['onRequest', 'onResponse', 'onError']
-HOOKS = ['onRequest', 'onResponse', 'onError']
+hookType = Literal['onRequest', 'preHandler', 'onResponse', 'onError']
+HOOKS = ['onRequest', 'preHandler', 'onResponse', 'onError']

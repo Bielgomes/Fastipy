@@ -22,8 +22,11 @@ class Form:
     return self._files
   
   def __get_variables(self) -> None:
-    if self._body.type == 'multipart/form-data':
-      body_parts = self._body.content.split(b'Content-Disposition: form-data; name="')
+    if self._body.type is None:
+      return
+
+    if 'multipart/form-data' in self._body.type:
+      body_parts = self._body.raw_content.split(b'Content-Disposition: form-data; name="')
       for i in range(1, len(body_parts)):
         name = body_parts[i].split(b'"')[0].decode()
         filename = body_parts[i].split(b'filename="')[1].split(b'"')[0].decode() if b'filename="' in body_parts[i] else None
@@ -31,13 +34,13 @@ class Form:
         data = body_parts[i].split(b'\r\n\r\n')[1].split(b'\r\n----------------------------')[0].split(b'\r\n--')[0]
 
         if filename:
-          self._files[name] = File(name, filename, filetype, data)
+          self._files[name] = File(filename, filetype, data)
         else:
           self._fields[name] = data.decode()
 
-    elif self._body.type == 'application/x-www-form-urlencoded':
-      body_parts = self._body.content.split('&')
+    elif 'application/x-www-form-urlencoded' in self._body.type:
+      body_parts = self._body.raw_content.split(b'&')
       for i in body_parts:
-        name = i.split('=')[0]
-        value = i.split('=')[1]
+        name = i.split(b'=')[0].decode()
+        value = i.split(b'=')[1].decode()
         self._fields[name] = value

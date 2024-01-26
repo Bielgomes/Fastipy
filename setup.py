@@ -23,6 +23,6 @@ setup(
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
     ],
-    install_requires=["uvicorn", "nest-asyncio"],
+    install_requires=["uvicorn[standard]", "nest-asyncio"],
     python_requires=">=3.10",
 )
