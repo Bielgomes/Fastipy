@@ -12,24 +12,42 @@ from .reply import Reply, RestrictReply
 
 class RequestHandler:
   async def __call__(self, scope, receive, send):
-    assert scope['type'] == 'http'
-    
-    cors = self._cors.generate_headers() if self._cors else {}
+    if scope['type'] == 'http':
+      cors = self._cors.generate_headers() if self._cors else {}
 
-    if scope['method'] in ['POST', 'GET', 'PUT', 'PATCH', 'DELETE', 'HEAD']:
-      await self._handle_http_request(scope, receive, send, cors)
-      return
-
-    elif scope['method'] == 'OPTIONS':
-      allowed_methods = self._router.get_methods(scope['path'])
-      if len(allowed_methods) == 0:
-        await self._handle_404(send, cors)
+      if scope['method'] in ['POST', 'GET', 'PUT', 'PATCH', 'DELETE', 'HEAD']:
+        await self._handle_http_request(scope, receive, send, cors)
         return
 
-      await Reply(send, logger, cors=cors)._options(allowed_methods)
-      return
+      elif scope['method'] == 'OPTIONS':
+        allowed_methods = self._router.get_methods(scope['path'])
+        if len(allowed_methods) == 0:
+          await self._handle_404(send, cors)
+          return
 
-    await Reply(send, logger, cors=cors).code(405).json({'error': 'Method not allowed'}).send()
+        await Reply(send, logger, cors=cors)._options(allowed_methods)
+        return
+
+      await Reply(send, logger, cors=cors).code(405).json({'error': 'Method not allowed'}).send()
+  
+    elif scope['type'] == 'lifespan':
+      await self._handle_lifespan(receive, send)
+
+  async def _handle_lifespan(self, receive, send):
+    while True:
+      message = await receive()
+      if message['type'] == 'lifespan.startup':
+        for startup_event in self._events['startup']:
+          await run_async_or_sync(startup_event)
+        
+        await send({'type': 'lifespan.startup.complete'})
+
+      elif message['type'] == 'lifespan.shutdown':
+        for shutdown_event in self._events['shutdown']:
+          await run_async_or_sync(shutdown_event)
+
+        await send({'type': 'lifespan.shutdown.complete'})
+        return
 
   async def _handle_http_request(self, scope, receive, send, cors):
     if '.' in scope['path'].split('/')[-1]:

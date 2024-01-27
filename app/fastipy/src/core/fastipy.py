@@ -8,12 +8,14 @@ from ..types.routes import FunctionType, RouteHookType, RouteMiddlewareType
 from ..constants.hooks import HOOKS, hookType
 from ..constants.http_methods import HTTP_METHODS, httpMethodType
 from ..constants.decorators import DECORATORS
+from ..constants.events import EVENTS, eventType
 
 from ..exceptions.invalid_path_exception import InvalidPathException
 from ..exceptions.duplicate_route_exception import DuplicateRouteException
 from ..exceptions.no_hook_type import NoHookTypeException
 from ..exceptions.no_http_method_exception import NoHTTPMethodException
 from ..exceptions.decorator_already_exists_exception import DecoratorAlreadyExistsException
+from ..exceptions.no_event_type import NoEventTypeException
 
 from ..helpers.async_sync_helpers import run_sync_or_async
 
@@ -41,6 +43,7 @@ class Fastipy(RequestHandler, DecoratorsBase):
     self._decorators    = {decorator: {} for decorator in DECORATORS}
     self._hooks         = {hook_type: [] for hook_type in HOOKS}
     self._middlewares   = []
+    self._events        = {event_type: [] for event_type in EVENTS}
 
     self._instance_decorators = self._decorators['app']
 
@@ -79,6 +82,20 @@ class Fastipy(RequestHandler, DecoratorsBase):
       self.set_error_handler(handler)
       return handler
     return internal
+  
+  def add_event(self, event_type: eventType, event: FunctionType) -> None:
+    if event_type not in EVENTS:
+      message = f"Failed to register event [{event_type}] >> Type not supported"
+      logger.error(NoEventTypeException(message))
+      raise NoEventTypeException(message)
+    
+    self._events[event_type].append(event)
+  
+  def on(self, event_type: eventType) -> FunctionType:
+    def internal(event: FunctionType) -> FunctionType:
+      self.add_event(event_type, event)
+      return event
+    return internal
 
   def register(self, plugin: FunctionType, options: PluginOptions = {}) -> Self:
     instance = FastipyInstance()
@@ -88,6 +105,7 @@ class Fastipy(RequestHandler, DecoratorsBase):
     instance._decorators = self._decorators
     instance._hooks = self._hooks
     instance._middlewares = self._middlewares
+    instance._events = self._events
 
     instance._prefix = options.get('prefix', '/')
     
