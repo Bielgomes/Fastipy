@@ -101,11 +101,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
     instance = FastipyInstance()
 
     instance._router = self._router
+    instance._static_path = self._static_path
     instance._plugins = PluginNode(plugin.__name__)
     instance._decorators = self._decorators
     instance._hooks = self._hooks
     instance._middlewares = self._middlewares
     instance._events = self._events
+    instance._instance_decorators = self._instance_decorators
 
     instance._prefix = options.get('prefix', '/')
     
@@ -283,14 +285,5 @@ class Fastipy(RequestHandler, DecoratorsBase):
     return super().__setattr__(name, value)
 
 class FastipyInstance(Fastipy):
-  def __init__(self):
-    super().__init__()
-    self._routes        = None
-    self._plugins       = None
-    self._decorators    = None
-    self._hooks         = None
-    self._middlewares   = None
-    self._error_handler = None
-
   def cors(self, *args, **kwargs) -> None:
     logger.warn(NotImplementedError('FastipyInstance.cors() is not implemented'))
