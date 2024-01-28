@@ -170,7 +170,7 @@ class Reply(DecoratorsBase):
 
     await self.__on_response_sent()
 
-  async def send_file(self, path: str) -> None:
+  async def send_file(self, path: str, stream: bool = False, block_size: int = 1024) -> None:
     if self._response_sent:
       message = 'Reply already sent'
       self._log.error(ReplyException(message))
@@ -184,12 +184,22 @@ class Reply(DecoratorsBase):
         headers = self._parse_headers()
         headers.append((b'Content-type', content_type.encode('utf-8')))
         headers.append((b'Content-Disposition', f'attachment; filename="{path.split("/")[-1]}"'.encode('utf-8')))
-        headers.append((b'Content-Length', file_size.encode('utf-8')))
-
-        self._content = file.read()
+        headers.append((b'Content-Length', str(file_size).encode('utf-8')))
 
         await self._send_headers(headers=headers)
-        await self._send_body()
+
+        if stream:
+          while True:
+            chunk = file.read(block_size)
+            if not chunk:
+              await self._send_body(send_blank=True)
+              break
+
+            self._content = chunk
+            await self._send_body(more_body=True)
+        else:
+          self._content = file.read()
+          await self._send_body()
 
         await self.__on_response_sent()
     except FileNotFoundError:
@@ -250,8 +260,6 @@ class Reply(DecoratorsBase):
     headers = [(key.encode('utf-8'), value.encode('utf-8')) for key, value in self._cors.items()]
     headers.append((b'Allow', b', '.join([method.encode('utf-8') for method in allowed_methods])))
 
-    print(headers)
-
     await self._send_headers(headers)
     await self._send_body(send_blank=True)
 
@@ -264,17 +272,21 @@ class Reply(DecoratorsBase):
       'headers': self._parse_headers() if headers is None else headers,
     })
 
-  async def _send_body(self, send_blank: bool = False) -> None:
+  async def _send_body(self, send_blank: bool = False, more_body: bool = False) -> None:
     if not send_blank and self._content is None:
       message = 'Reply is not set, try send_code() instead'
       self._log.error(ReplyException(message))
       raise ReplyException(message)
     
-    body = self._content.encode('utf-8') if not send_blank else b''
+    try:
+      body = self._content.encode('utf-8') if not send_blank else b''
+    except AttributeError:
+      body = self._content if not send_blank else b''
 
     await self.__send({
       'type': 'http.response.body',
       'body': body,
+      **({'more_body': True} if more_body else {})
     })
 
   def _parse_headers(self) -> List[Set[bytes]]:
