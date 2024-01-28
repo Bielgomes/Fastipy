@@ -1,3 +1,20 @@
+Metadata-Version: 2.1
+Name: fastipy
+Version: 1.5.0
+Summary: Fastipy is a fast and easy-to-use open source Python library for developing RESTful APIs. Inspired by the FastAPI and Fastify syntax and powered by uvicorn ASGI web server.
+Home-page: https://github.com/Bielgomes/Fastipy
+Author: Bielgomes
+Author-email: bielgomesdasilva@hotmail.com
+License: GNU Affero General Public License v3
+Project-URL: Bug Tracker, https://github.com/Bielgomes/Fastipy/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU Affero General Public License v3
+Classifier: Operating System :: OS Independent
+Classifier: Framework :: FastAPITopic :: Internet :: WWW/HTTP :: HTTP Servers
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
 # Fastipy
 
 <div>
@@ -228,4 +245,4 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ## How to Contributing
 
-Open pull request 😎
+Open pull request ðŸ˜Ž
