@@ -16,8 +16,9 @@ class RouteNode:
       if child.handlers == {}:
         print(f"{indent}{symbol} /{part}")
       else:
-        for methods, handler in child.handlers.items():
-          print(f"{indent}{symbol} /{part} ({methods})")
+        last_index = len(child.handlers) - 1
+        for current_index, (method, handler) in enumerate(child.handlers.items()):
+          print(f"{indent}{symbol if current_index == last_index else '├──'} /{part} ({method})")
           if include_hooks:
             for hook_type in handler['hooks']:
               if handler['hooks'][hook_type]:
