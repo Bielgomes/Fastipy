@@ -12,17 +12,18 @@ class RouteNode:
       node = self
 
     for part, child in node.children.items():
-      symbol = "└──" if part == list(node.children.keys())[-1] else "├──"
+      symbol = '└──' if part == list(node.children.keys())[-1] else '├──'
       if child.handlers == {}:
         print(f"{indent}{symbol} /{part}")
       else:
         last_index = len(child.handlers) - 1
         for current_index, (method, handler) in enumerate(child.handlers.items()):
-          print(f"{indent}{symbol if current_index == last_index else '├──'} /{part} ({method})")
+          subsymbol = symbol if current_index == last_index else '├──'
+          print(f"{indent}{subsymbol} /{part} ({method})")
           if include_hooks:
             for hook_type in handler['hooks']:
               if handler['hooks'][hook_type]:
-                print(f"{indent}{'│' if symbol == '├──' else ' '}    ⚬ {hook_type} {[f'{hook.__name__}()' for hook in handler['hooks'][hook_type]]}")
+                print(f"{indent}{'│' if subsymbol == '├──' else ' '}    ⚬ {hook_type} {[f'{hook.__name__}()' for hook in handler['hooks'][hook_type]]}")
 
       if symbol == "└──": return self.print_tree(child, indent + "    ", options)
       self.print_tree(child, indent + "│   ", options)
