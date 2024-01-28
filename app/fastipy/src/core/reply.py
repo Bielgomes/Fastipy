@@ -1,4 +1,4 @@
-from typing import Dict, List, Union, Optional, Set
+from typing import Dict, Iterator, List, Union, Optional, Set
 from http.cookies import SimpleCookie
 from time import perf_counter
 from logging import Logger
@@ -206,6 +206,33 @@ class Reply(DecoratorsBase):
       message = f"Failed to send file '{path}' >> File not found"
       self._log.error(FileException(message))
       raise FileException(message)
+    
+  async def send_stream(self, stream: Iterator[any], media_type: str = 'application/octet-stream') -> None:
+    if self._response_sent:
+      message = 'Reply already sent'
+      self._log.error(ReplyException(message))
+      raise ReplyException(message)
+    
+    headers = self._parse_headers()
+    headers.append((b'Content-type', media_type.encode('utf-8')))
+
+    await self._send_headers(headers=headers)
+
+    while True:
+      try:
+        if hasattr(stream, '__anext__'): 
+          chunk = await anext(stream)
+        else:
+          chunk = next(stream)
+
+        self._content = chunk
+        await self._send_body(more_body=True)
+      except (StopIteration, StopAsyncIteration):
+        await self._send_body(send_blank=True)
+        break
+      
+
+    await self.__on_response_sent()
 
   async def redirect(
     self,
