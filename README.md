@@ -6,7 +6,9 @@
 
 ## What is it and what is it for
 
-[Fastipy](https://pypi.org/project/Fastipy/) is a fast, very simple to use and understand open source python library for developing RESTful APIs.
+[Fastipy](https://pypi.org/project/Fastipy/) is a fast and easy-to-use open source Python library for developing RESTful APIs.
+
+Powered by **[uvicorn](https://www.uvicorn.org/)**
 
 ## Installation
 
@@ -22,17 +24,16 @@ pip install fastipy
 from fastipy import Fastipy, Request, Reply
 
 # Debug mode is False by default
-app = Fastipy(debug=True)
+app = Fastipy()
 
-# Routes can be async or sync functions
+# Routes can be async or sync functions, but reply send functions are async
+# The handler returns the default HTTP status code 200
 @app.get('/')
 def home(req: Request, reply: Reply):
   # Get query params age
   age = req.query['age']
-  # Recovery all persons from database with this age
-  reply.html("<h1>Listing all persons</h1><ul><li>A Person</li></ul>").code(200).send()
-
-app.run(application="Person API", host="localhost", port=3000)
+  # Example: Recovery all persons from database with this age and print the html
+  print("<h1>Listing all persons</h1><ul><li>A Person</li></ul>")
 ```
 
 ### Example for GET Route with Params, CORS and multiple methods
@@ -48,11 +49,9 @@ async def getUser(req: Request, reply: Reply):
   # get users from database
   for i in users:
     if i["id"] == req.params["id"]:
-      reply.json(i).send()
+      await reply.json(i).send()
       return
-  reply.send_code(404)
-
-app.run(application="Person API", host="localhost", port=3000)
+  await reply.send_code(404)
 ```
 
 ### Example for POST Route with Body
@@ -66,9 +65,7 @@ app = Fastipy()
 async def createUser(req: Request, reply: Reply):
   user = req.body.json
   # Save user in database
-  reply.text("Created").code(201).send()
-
-app.run(application="Person API", host="localhost", port=3000)
+  await reply.text("Created").code(201).send()
 ```
 
 ### Example for PUT Route with Body
@@ -82,41 +79,43 @@ app = Fastipy()
 async def createUser(req: Request, reply: Reply):
   user = req.body.json
   # Update user in database
-  reply.html('<h1>Created</h1>').code(201).send()
-
-app.run(application="Person API", host="localhost", port=3000)
+  await reply.html('<h1>Created</h1>').code(201).send()
 ```
+
+### See more examples in **[examples](https://github.com/Bielgomes/Fastipy/tree/main/examples)** folder
 
 ## Creating plugins
 
 ```py
 # chat.py
-from fastipy import FastipyInstance, Reply, Module
+from fastipy import FastipyInstance, Reply
 
 # Plugins can be asynchronous or synchronized functions
-# plugins have the main instance as a parameter, which means they can use all of Fastipy's functions
-def chatRoutes(app: FastipyInstance):
+# Plugins have the main instance as a parameter, which means they can use all of Fastipy's functions
+def chatRoutes(app: FastipyInstance, options: dict):
   @app.get('/')
   async def index(req: Request, reply: Reply):
-    reply.send_code(200)
+    await reply.send_code(200)
 
   @app.get('/chat')
   async def test(req: Request, reply: Reply):
-    reply.send_code(200)
+    await reply.send_code(200)
 ```
 
 ```py
 # message.py
-from fastipy import FastipyInstance, Reply, Module
+from fastipy import FastipyInstance, Reply
 
-async def messageRoutes(app: FastipyInstance):
+async def messageRoutes(app: FastipyInstance, options: dict):
   @message.get('/')
   async def index(req: Request, reply: Reply):
-    reply.send_code(200)
+    await reply.send_code(200)
 
   @message.get('/message')
   async def test(req: Request, reply: Reply):
-    reply.send_code(200)
+    await reply.send_code(200)
+
+  app.name('custom plugin name')
 ```
 
 ```py
@@ -126,12 +125,10 @@ from fastipy import Fastipy
 from message import messageRoutes
 from chat import chatRoutes
 
-app = Fastipy(debug=True).cors()
+app = Fastipy().cors()
 
 app.register(messageRoutes, {'prefix': '/message'})
 app.register(chatRoutes, {'prefix': '/chat'})
-
-app.run(host='localhost')
 ```
 
 ## Hooks
@@ -141,8 +138,12 @@ from fastipy import Fastipy, Request, Reply
 
 app = Fastipy()
 
-# Hooks does not support asynchronism
-# The onRequest hook is called before executing a route handler
+# The preHandler hook is called before the request handler
+@app.hook('preHandler')
+def preHandler(req: Request, reply: Reply):
+  print('onRequest hook')
+
+# The onRequest hook is called when the request is handled
 @app.hook('onRequest')
 def onRequest(req: Request, reply: Reply):
   print('onRequest hook')
@@ -161,12 +162,32 @@ def onError(req: Request, reply: Reply, error):
 # The order of hooks of the same type is important
 @app.get('/')
 async def index(req: Request, reply: Reply):
-  reply.send_code(200)
-
-app.run(host='localhost')
+  await reply.send_code(200)
 ```
 
-## See more examples in [examples](https://github.com/Bielgomes/Fastipy/tree/main/examples) folder
+## Running
+
+Run Fastipy application in development is easy
+
+```py
+import uvicorn
+
+if __name__ == "__main__":
+  # main:app indicates the FILE:VARIABLE
+
+  # The file is the main file where Fastipy() is instantiated
+  # The variable is the name of the variable that contains the instance of Fastipy()
+
+  # You can find more configurations here https://www.uvicorn.org/
+
+  config = uvicorn.Config('main:app', log_level='debug', port=3000)
+  server = uvicorn.Server(config)
+  server.run()
+```
+
+# Application Deploy
+
+For production deployment, please refer to this **[uvicorn guide](https://www.uvicorn.org/deployment/)**.
 
 # Change Log
 
@@ -177,10 +198,7 @@ app.run(host='localhost')
 - [ ] Automatic Docs page generator (EXPERIMENTAL)
 - [ ] Add template engine
 - [ ] Add integration to test libraries
-- [ ] Finish automatic reload in development mode
 - [ ] Add mail module
-- [ ] Increase performance using multiprocessing and multithreading (EXPERIMENTAL)
-- [ ] Add more server configurations
 
 ### Added
 
@@ -190,8 +208,13 @@ app.run(host='localhost')
 - [x] JSON Database module
 - [x] Add support to hooks (onRequest, onResponse, onError)
 - [x] Add support to plugins
-- [x] Add decorators to routes (decorator, ReplyDecorator, RequestDecorator)
+- [x] Add decorators to routes (decorator, decorate_request, decorate_reply)
 - [x] Add support to middlewares
+- [x] Add support for lifespan events (startup, shutdown)
+- [x] New preHandler hook
+- [x] Add stream file support
+- [x] Automatic OPTIONS method response for routes
+- [x] Custom global error handler
 
 ### Changed
 
@@ -201,7 +224,9 @@ app.run(host='localhost')
 - [x] Refactor Routes class
 - [x] Routes handler can be a sync function
 - [x] Better route search algorithm and structure
-- [x] It is now possible to add specific hooks to a route
+- [x] It is now possible to add specific hooks and middlewares to a route
+- [x] Implementation of uvicorn HTTP web server
+- [x] Better error handler
 
 # Contributors
 

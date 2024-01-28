@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
 setup(
     name="fastipy",
     version="1.5.0",
-    description="Fastipy is a fast and easy-to-use open source python library for developing RESTful APIs. It provides a clear and concise syntax for handling routes, requests, and responses, making the development of APIs faster and more efficient. With support for form parameters, body and route parameters, it is useful for handling different types of requests. Whether you are a beginner or an experienced developer, Fastipy is a simple and powerful choice for creating robust and scalable APIs.",
+    description="Fastipy is a fast and easy-to-use open source Python library for developing RESTful APIs. Inspired by the FastAPI and Fastify syntax and powered by uvicorn ASGI web server.",
     package_dir={"": "app"},
     packages=find_packages(where="app"),
     long_description=long_description,
@@ -22,6 +22,8 @@ setup(
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
+        "Framework :: FastAPI"
+        "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
     ],
     install_requires=["uvicorn[standard]", "nest-asyncio"],
     python_requires=">=3.10",

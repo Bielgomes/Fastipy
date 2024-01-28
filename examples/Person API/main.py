@@ -2,7 +2,11 @@ from Fastipy import Fastipy, Request, Reply
 
 import json
 
-app = Fastipy(debug=True)
+app = Fastipy()
+
+@app.hook('preHandler')
+def preHandler(req: Request, reply: Reply):
+  print(req.method, req.url)
 
 @app.get("/")
 async def home(req: Request, reply: Reply):
@@ -16,7 +20,7 @@ async def home(req: Request, reply: Reply):
     if i["age"] >= int(req.query['age']):
       _person.append(i)
 
-  return reply.code(200).json(_person).send()
+  await reply.code(200).json(_person).send()
 
 @app.post("/person")
 async def person(req: Request, reply: Reply):
@@ -27,6 +31,12 @@ async def person(req: Request, reply: Reply):
     json.dump(person, f, indent=2)
     f.close()
 
-  return reply.send_code(200)
+  await reply.send_code(200)
 
-app.run(application="Person API", port=3000)
+@app.on('startup')
+def startup():
+  print('HTTP server is running on port 3000 🚀')
+
+@app.on('shutdown')
+def shutdown():
+  print('Server stopped!')
