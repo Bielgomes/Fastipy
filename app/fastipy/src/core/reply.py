@@ -206,8 +206,8 @@ class Reply(DecoratorsBase):
       message = f"Failed to send file '{path}' >> File not found"
       self._log.error(FileException(message))
       raise FileException(message)
-    
-  async def send_stream(self, stream: Iterator[any], media_type: str = 'application/octet-stream') -> None:
+
+  async def stream(self, stream: Iterator[str], media_type: str = 'application/octet-stream') -> None:
     if self._response_sent:
       message = 'Reply already sent'
       self._log.error(ReplyException(message))
@@ -230,7 +230,6 @@ class Reply(DecoratorsBase):
       except (StopIteration, StopAsyncIteration):
         await self._send_body(send_blank=True)
         break
-      
 
     await self.__on_response_sent()
 
