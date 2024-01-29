@@ -7,10 +7,18 @@ Author: Bielgomes
 Author-email: bielgomesdasilva@hotmail.com
 License: GNU Affero General Public License v3
 Project-URL: Bug Tracker, https://github.com/Bielgomes/Fastipy/issues
-Classifier: Programming Language :: Python :: 3
+Classifier: Development Status :: 4 - Beta
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
 Classifier: License :: OSI Approved :: GNU Affero General Public License v3
 Classifier: Operating System :: OS Independent
-Classifier: Framework :: FastAPITopic :: Internet :: WWW/HTTP :: HTTP Servers
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Internet :: WWW/HTTP :: HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Internet :: WWW/HTTP :: ASGI
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
 Requires-Python: >=3.10
 Description-Content-Type: text/markdown
 License-File: LICENSE

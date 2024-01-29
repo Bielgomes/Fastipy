@@ -4,3 +4,5 @@ __pycache__/
 
 # Environment configuration
 .vscode
+.env
+.pypirc

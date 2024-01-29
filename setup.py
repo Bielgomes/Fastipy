@@ -19,11 +19,18 @@ setup(
         "Bug Tracker": "https://github.com/Bielgomes/Fastipy/issues"
     },
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Development Status :: 4 - Beta",
+        "Environment :: Web Environment",
+        "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU Affero General Public License v3",
         "Operating System :: OS Independent",
-        "Framework :: FastAPI"
-        "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
+        "Topic :: Internet :: WWW/HTTP :: HTTP",
+        "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+        "Topic :: Internet :: WWW/HTTP :: ASGI",
+        "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     install_requires=["uvicorn[standard]", "nest-asyncio"],
     python_requires=">=3.10",
