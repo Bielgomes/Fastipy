@@ -23,7 +23,6 @@ pip install fastipy
 ```python
 from fastipy import Fastipy, Request, Reply
 
-# Debug mode is False by default
 app = Fastipy()
 
 # Routes can be async or sync functions, but reply send functions are async
@@ -33,7 +32,7 @@ def home(req: Request, reply: Reply):
   # Get query params age
   age = req.query['age']
   # Example: Recovery all persons from database with this age and print the html
-  print("<h1>Listing all persons</h1><ul><li>A Person</li></ul>")
+  print("<h1>Retrieving all persons</h1><ul><li>A Person</li></ul>")
 ```
 
 ### Example for GET Route with Params, CORS and multiple methods
@@ -91,7 +90,7 @@ async def createUser(req: Request, reply: Reply):
 from fastipy import FastipyInstance, Reply
 
 # Plugins can be asynchronous or synchronized functions
-# Plugins have the main instance as a parameter, which means they can use all of Fastipy's functions
+# Plugins have access to the main instance, which means they can use all of Fastipy's functions
 def chatRoutes(app: FastipyInstance, options: dict):
   @app.get('/')
   async def index(req: Request, reply: Reply):
@@ -167,7 +166,7 @@ async def index(req: Request, reply: Reply):
 
 ## Running
 
-Run Fastipy application in development is easy
+Running Fastipy application in development is easy
 
 ```py
 import uvicorn
@@ -228,4 +227,4 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ## How to Contributing
 
-Open pull request 😎
+Open pull request
