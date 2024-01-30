@@ -18,7 +18,7 @@ pip install fastipy
 
 ## Examples
 
-### Example for GET Route with Query Params and debug mode
+### Example for GET Route with Query Params
 
 ```python
 from fastipy import Fastipy, Request, Reply
