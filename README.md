@@ -48,6 +48,7 @@ async def getUser(req: Request, reply: Reply):
   # get users from database
   for i in users:
     if i["id"] == req.params["id"]:
+      # All response functions are asynchronous
       await reply.json(i).send()
       return
   await reply.send_code(404)
@@ -154,8 +155,8 @@ def onResponse(req: Request, reply: Reply):
 
 # The onError hook is called when an error occurs
 @app.hook('onError')
-def onError(req: Request, reply: Reply, error):
-  print('onError hook')
+def onError(error: Exception, req: Request, reply: Reply):
+  print(f'onError hook exception: {error}')
 
 # A hook will only be linked to a route if its declaration precedes the route
 # The order of hooks of the same type is important
@@ -190,34 +191,17 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 # Change Log
 
-## Version 1.5.0
+## Development Version 1.5.1
+
+### ToDo
+
+- [] Add template engine
+- [] Add integration to test libraries
+- [] Add mail module
 
 ### Added
 
-- [x] Request method PATCH
-- [x] More security in CORS
-- [x] JSON Database module
-- [x] Add support to hooks (onRequest, onResponse, onError)
-- [x] Add support to plugins
-- [x] Add decorators to routes (decorator, decorate_request, decorate_reply)
-- [x] Add support to middlewares
-- [x] Add support for lifespan events (startup, shutdown)
-- [x] New preHandler hook
-- [x] Add stream file support
-- [x] Automatic OPTIONS method response for routes
-- [x] Custom global error handler
-
 ### Changed
-
-- [x] Better params and query params recovery in routes
-- [x] Improved route logging
-- [x] Refactor structure of project
-- [x] Refactor Routes class
-- [x] Routes handler can be a sync function
-- [x] Better route search algorithm and structure
-- [x] It is now possible to add specific hooks and middlewares to a route
-- [x] Implementation of uvicorn HTTP web server
-- [x] Better error handler
 
 # Contributors
 
