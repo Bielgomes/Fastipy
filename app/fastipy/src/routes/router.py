@@ -4,9 +4,14 @@ class RouteNode:
   def __init__(self):
     self.children: Dict[str, 'RouteNode'] = {}
     self.handlers: Dict[str, any] = {}
+
+  def __print_functions(self, name: str, functions: Dict[str, any], indent: str = "", subsymbol: str = "├──"):
+    if functions:
+      print(f"{indent}{'│' if subsymbol == '├──' else ' '}    ⚬ {name} {[f'{function.__name__}()' for function in functions]}")
   
   def print_tree(self, node: Optional['RouteNode'] = None, indent: str = "", options: Dict[str, any] = {}):
     include_hooks = options.get('include_hooks', False)
+    include_middlewares = options.get('include_middlewares', False)
     
     if node is None:
       node = self
@@ -20,10 +25,12 @@ class RouteNode:
         for current_index, (method, handler) in enumerate(child.handlers.items()):
           subsymbol = symbol if current_index == last_index else '├──'
           print(f"{indent}{subsymbol} /{part} ({method})")
+
           if include_hooks:
             for hook_type in handler['hooks']:
-              if handler['hooks'][hook_type]:
-                print(f"{indent}{'│' if subsymbol == '├──' else ' '}    ⚬ {hook_type} {[f'{hook.__name__}()' for hook in handler['hooks'][hook_type]]}")
+              child.__print_functions(hook_type, handler['hooks'][hook_type], indent, subsymbol)
+          if include_middlewares:
+            child.__print_functions('middleware', handler['middlewares'], indent, subsymbol)
 
       if symbol == "└──": return self.print_tree(child, indent + "    ", options)
       self.print_tree(child, indent + "│   ", options)
