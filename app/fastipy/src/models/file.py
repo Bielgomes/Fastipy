@@ -1,7 +1,7 @@
 from uvicorn.main import logger
 import uuid, json, io
 
-from ..exceptions.file_exception import FileException
+from ..exceptions import FileException
 
 class File():
   def __init__(self, filename: str, type: str, data: bytes):

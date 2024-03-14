@@ -10,12 +10,7 @@ from ..constants.http_methods import HTTP_METHODS, httpMethodType
 from ..constants.decorators import DECORATORS
 from ..constants.events import EVENTS, eventType
 
-from ..exceptions.invalid_path_exception import InvalidPathException
-from ..exceptions.duplicate_route_exception import DuplicateRouteException
-from ..exceptions.no_hook_type import NoHookTypeException
-from ..exceptions.no_http_method_exception import NoHTTPMethodException
-from ..exceptions.decorator_already_exists_exception import DecoratorAlreadyExistsException
-from ..exceptions.no_event_type import NoEventTypeException
+from ..exceptions import InvalidPathException, DuplicateRouteException, NoHookTypeException, NoHTTPMethodException, DecoratorAlreadyExistsException, NoEventTypeException
 
 from ..helpers.async_sync_helpers import run_sync_or_async
 

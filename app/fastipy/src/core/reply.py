@@ -8,8 +8,7 @@ from ..constants.content_types import CONTENT_TYPES
 
 from ..types.routes import FunctionType
 
-from ..exceptions.file_exception import FileException
-from ..exceptions.reply_exception import ReplyException
+from ..exceptions import FileException, ReplyException
 
 from ..classes.decorators_base import DecoratorsBase
 
