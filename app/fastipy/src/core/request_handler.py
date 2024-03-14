@@ -1,8 +1,7 @@
 from uvicorn.main import logger
 import traceback
 
-from ..exceptions.exception_handler import ExceptionHandler
-from ..exceptions.fastipy_base_exception import FastipyBaseException
+from ..exceptions import ExceptionHandler, FastipyBaseException
 
 from ..helpers.route_helpers import handler_hooks, handler_middlewares
 from ..helpers.async_sync_helpers import run_async_or_sync
@@ -88,31 +87,27 @@ class RequestHandler:
       await reply.send_code(200)
 
   async def _handle_exception(self, route_hooks, request, reply, exception):
-    exception_handler = ExceptionHandler(exception)
-
     try:
-      if self._error_handler:
-        await run_async_or_sync(self._error_handler, exception, request, reply)
-        return
-      
-      await self._default_error_handling(exception, reply, exception_handler)
-
-    except Exception as exception:
       exception_handler = ExceptionHandler(exception)
 
-      if not route_hooks['onError']:
-        await self._default_error_handling(exception, reply, exception_handler, internal=False)
+      await handler_hooks(route_hooks['onError'], request, reply, exception)
+      if reply.is_sent:
         return
+      
+      if self._error_handler:
+        await run_async_or_sync(self._error_handler, exception, request, reply)
+        if reply.is_sent:
+          return
+      
+      await self._default_error_handling(exception, reply, exception_handler)
+    except Exception as exception:
+      exception_handler = ExceptionHandler(exception)
+      
+      await self._default_error_handling(exception, reply, exception_handler, internal=True)
 
-      try:
-        await handler_hooks(route_hooks['onError'], request, reply, exception)
 
-      except Exception as exception:
-        exception_handler = ExceptionHandler(exception)
-        await self._default_error_handling(exception, reply, exception_handler, internal=False)
-
-  async def _default_error_handling(self, exception, reply, exception_handler, internal = True):
-    if not internal or issubclass(type(exception), FastipyBaseException):
+  async def _default_error_handling(self, exception, reply, exception_handler, internal = False):
+    if internal or issubclass(type(exception), FastipyBaseException):
       await reply.code(500).json({'error': f'{exception_handler.type}: {exception_handler.message}'}).send()
       print(traceback.format_exc())
     else:
