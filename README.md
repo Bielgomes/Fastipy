@@ -201,7 +201,12 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### Added
 
+- [X] Added the possibility of printing middleware routes in the router's print tree.
+
 ### Changed
+
+- [X] Error imports are now centralized in the exceptions module.
+- [X] Improved error handling flow, now error handling hooks are executed first rather than the default error handling.
 
 # Contributors
 
