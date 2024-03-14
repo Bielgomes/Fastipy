@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setup(
     name="fastipy",
-    version="1.5.0",
+    version="1.5.1",
     description="Fastipy is a fast and easy-to-use open source Python library for developing RESTful APIs. Inspired by the FastAPI and Fastify syntax and powered by uvicorn ASGI web server.",
     package_dir={"": "app"},
     packages=find_packages(where="app"),
