@@ -8,7 +8,7 @@ from .src.core.reply import Reply
 from .src.classes.mailer import Mailer, create_message
 from .src.classes.template_render import render_template
 
-from .src.database.json_database import Database
+from .src.classes.json_database import Database
 from .src.constants.http_status_code import Status
 
 __all__ = [
