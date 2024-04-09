@@ -195,13 +195,14 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### ToDo
 
-- [] Add template engine
-- [] Add integration to test libraries
-- [] Add mail module
+- [ ] Add template engine
+- [ ] Add integration to test libraries
+- [X] Add mail module
 
 ### Added
 
 - [X] Added the possibility of printing middleware routes in the router's print tree.
+- [X] Added a customizable mail module
 
 ### Changed
 
