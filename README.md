@@ -199,6 +199,8 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 - [X] Add mail module
 - [ ] Add integration to test libraries
 - [ ] Add an automatic way to send messages with different formats without calling a function like json()
+- [ ] Better file stream in reply send file function 
+- [ ] Better logs with factory pattern
 
 ### Added
 
