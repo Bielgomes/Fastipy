@@ -195,18 +195,16 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### ToDo
 
-- [X] Add template engine
-- [X] Add mail module
-- [ ] Add integration to test libraries
-- [ ] Add an automatic way to send messages with different formats without calling a function like json()
-- [ ] Better file stream in reply send file function 
-- [ ] Better logs with factory pattern
+- [ ] Add integration to test libraries.
+- [ ] Add an automatic way to send messages with different formats without calling a function like json().
+- [ ] Better file stream in reply send file function.
+- [ ] Better logs with factory pattern.
 
 ### Added
 
 - [X] Added the possibility of printing middleware routes in the router's print tree.
-- [X] Added a customizable mail module
-- [X] Added jinja2 lib to render templates
+- [X] Added a customizable mail module.
+- [X] Added jinja2 lib to render templates.
 
 ### Changed
 
