@@ -1,3 +1,0 @@
-uvicorn[standard]
-nest-asyncio
-Jinja2
