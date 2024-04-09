@@ -195,14 +195,16 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### ToDo
 
-- [ ] Add template engine
-- [ ] Add integration to test libraries
+- [X] Add template engine
 - [X] Add mail module
+- [ ] Add integration to test libraries
+- [ ] Add an automatic way to send messages with different formats without calling a function like json()
 
 ### Added
 
 - [X] Added the possibility of printing middleware routes in the router's print tree.
 - [X] Added a customizable mail module
+- [X] Added jinja2 lib to render templates
 
 ### Changed
 
