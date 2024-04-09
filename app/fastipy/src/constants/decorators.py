@@ -1,1 +1,1 @@
-DECORATORS = ['app', 'request', 'reply']
+DECORATORS = ["app", "request", "reply"]

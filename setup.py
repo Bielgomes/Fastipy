@@ -15,9 +15,7 @@ setup(
     author="Bielgomes",
     author_email="bielgomesdasilva@hotmail.com",
     license="GNU Affero General Public License v3",
-    project_urls={
-        "Bug Tracker": "https://github.com/Bielgomes/Fastipy/issues"
-    },
+    project_urls={"Bug Tracker": "https://github.com/Bielgomes/Fastipy/issues"},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Web Environment",

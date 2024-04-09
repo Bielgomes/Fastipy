@@ -1,80 +1,100 @@
 from pathlib import Path
 import json, uuid
 
+
 class Database:
-  def __init__(self):
-    self.database = {}
-    self.path     = Path(__file__).parent.parent / 'db.json'
-    
-    self.__load()
+    def __init__(self):
+        self.database = {}
+        self.path = Path(__file__).parent.parent / "db.json"
 
-  def __load(self) -> None:
-    if not self.path.exists():
-      self.__persist()
-      return
+        self.__load()
 
-    with open(self.path, 'r') as f:
-      self.database = json.load(f)
+    def __load(self) -> None:
+        if not self.path.exists():
+            self.__persist()
+            return
 
-  def __persist(self) -> None:
-    with open(self.path, 'w') as f:
-      json.dump(self.database, f, indent=2)
+        with open(self.path, "r") as f:
+            self.database = json.load(f)
 
-  def select(self, table: dict, search: dict = None) -> list:
-    try:
-      return [row for row in self.database[table] if all(
-        (row.get(key) == value if not isinstance(value, str) else value.lower() in str(row.get(key, '')).lower())
-        for key, value in search.items()
-      )] if search else self.database[table]
-    except KeyError:
-      return []
-    
-  def find_by_id(self, table: str, _id: str) -> dict:
-    for row in self.database[table]:
-      if row['_id'] == _id:
-        return row
+    def __persist(self) -> None:
+        with open(self.path, "w") as f:
+            json.dump(self.database, f, indent=2)
 
-    return {}
-    
-  def find_unique(self, table: str, search: dict) -> dict:
-    try:
-      return next(row for row in self.database[table] if all(
-        (row.get(key) == value if not isinstance(value, str) else value.lower() in str(row.get(key, '')).lower())
-        for key, value in search.items()
-      ))
-    except StopIteration:
-      return {}
-      
-  def insert(self, table: str, data: dict) -> dict:
-    if data == {}:
-      raise Exception("Data cannot be empty")
+    def select(self, table: dict, search: dict = None) -> list:
+        try:
+            return (
+                [
+                    row
+                    for row in self.database[table]
+                    if all(
+                        (
+                            row.get(key) == value
+                            if not isinstance(value, str)
+                            else value.lower() in str(row.get(key, "")).lower()
+                        )
+                        for key, value in search.items()
+                    )
+                ]
+                if search
+                else self.database[table]
+            )
+        except KeyError:
+            return []
 
-    data = {'_id': str(uuid.uuid4()), **data}
+    def find_by_id(self, table: str, _id: str) -> dict:
+        for row in self.database[table]:
+            if row["_id"] == _id:
+                return row
 
-    try:
-      self.database[table].append(data)
-    except:
-      self.database[table] = [data]
+        return {}
 
-    self.__persist()
+    def find_unique(self, table: str, search: dict) -> dict:
+        try:
+            return next(
+                row
+                for row in self.database[table]
+                if all(
+                    (
+                        row.get(key) == value
+                        if not isinstance(value, str)
+                        else value.lower() in str(row.get(key, "")).lower()
+                    )
+                    for key, value in search.items()
+                )
+            )
+        except StopIteration:
+            return {}
 
-    return data
+    def insert(self, table: str, data: dict) -> dict:
+        if data == {}:
+            raise Exception("Data cannot be empty")
 
-  def delete(self, table: str, _id: str) -> bool:
-    for row in self.database[table]:
-      if row['_id'] == _id:
-        self.database[table].remove(row)
+        data = {"_id": str(uuid.uuid4()), **data}
+
+        try:
+            self.database[table].append(data)
+        except:
+            self.database[table] = [data]
+
         self.__persist()
-        return True
 
-    return False
+        return data
 
-  def update(self, table: str, _id: str, data: dict) -> bool:
-    for row in self.database[table]:
-      if row['_id'] == _id:
-        row.update(data)
-        self.__persist()
-        return True
+    def delete(self, table: str, _id: str) -> bool:
+        for row in self.database[table]:
+            if row["_id"] == _id:
+                self.database[table].remove(row)
+                self.__persist()
+                return True
 
-    return False
-  
+        return False
+
+    def update(self, table: str, _id: str, data: dict) -> bool:
+        for row in self.database[table]:
+            if row["_id"] == _id:
+                row.update(data)
+                self.__persist()
+                return True
+
+        return False

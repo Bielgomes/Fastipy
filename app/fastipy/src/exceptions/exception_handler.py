@@ -1,33 +1,34 @@
 import traceback
 
+
 class ExceptionHandler:
-  def __init__(self, error: Exception):
-    self._error     = error
-    self._type      = type(error).__name__
-    self._message   = str(error)
-    self._traceback = traceback.format_exc()
+    def __init__(self, error: Exception):
+        self._error = error
+        self._type = type(error).__name__
+        self._message = str(error)
+        self._traceback = traceback.format_exc()
 
-  def __str__(self) -> str:
-    return f"{self.type}: {self.message}"
+    def __str__(self) -> str:
+        return f"{self.type}: {self.message}"
 
-  @property
-  def error(self) -> Exception:
-    return self._error
-  
-  @property
-  def type(self) -> str:
-    return self._type
-  
-  @property
-  def message(self) -> str:
-    return self._message
-  
-  @property
-  def traceback(self) -> str:
-    return self._traceback
-  
-  def __html__(self) -> str:
-    return f"""
+    @property
+    def error(self) -> Exception:
+        return self._error
+
+    @property
+    def type(self) -> str:
+        return self._type
+
+    @property
+    def message(self) -> str:
+        return self._message
+
+    @property
+    def traceback(self) -> str:
+        return self._traceback
+
+    def __html__(self) -> str:
+        return f"""
     <html>
       <head>
         <title>{self._type}</title>
