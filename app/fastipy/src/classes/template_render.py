@@ -35,7 +35,7 @@ def render_template(
     context: Optional[Dict[str, Any]] = {},
     encoding: str = "utf-8",
     followlinks: bool = False,
-    extensions: Collection[str] = {"html", "htm", "xml"},
+    extensions: Collection[str] = ("html", "htm", "xml"),
     disabled_extensions: Collection[str] = (),
     default_for_string: bool = True,
     autoescape_default: bool = False,
