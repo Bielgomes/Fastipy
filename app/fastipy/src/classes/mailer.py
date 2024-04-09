@@ -102,7 +102,7 @@ class Mailer:
     def timeout(self):
         return self._timeout
 
-    def send_email(self, message: MIMEMultipart, raise_exceptions=False):
+    def send_email(self, message: Union[MIMEMultipart, List[MIMEMultipart]], raise_exceptions=False):
         try:
             if self.ssl:
                 smtp_conn = smtplib.SMTP_SSL(self.host, self.port, timeout=self.timeout)
@@ -114,12 +114,17 @@ class Mailer:
                     raise ValueError("Either SSL or TLS should be enabled.")
 
             smtp_conn.login(self._auth_user, self._auth_password)
-            smtp_conn.sendmail(message["From"], message["To"], message.as_string())
+
+            if not isinstance(message, list):
+                message = [message]
+
+            for message_data in message:
+                smtp_conn.sendmail(message_data["From"], message_data["To"], message_data.as_string())
+
             smtp_conn.quit()
         except Exception as e:
             if raise_exceptions:
                 raise e
 
     def send_emails(self, messages: List[MIMEMultipart], raise_exceptions=False):
-        for messages in messages:
-            self.send_email(messages, raise_exceptions)
+        self.send_email(messages, raise_exceptions)
