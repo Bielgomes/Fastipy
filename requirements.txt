@@ -1,4 +1,17 @@
+anyio==4.3.0
+click==8.1.7
+-e git+https://github.com/Bielgomes/Fastipy.git@aed0cb185d8f81c1e708940d1c8b9650eb918562#egg=fastipy
+h11==0.14.0
+httptools==0.6.1
+idna==3.6
 Jinja2==3.1.3
+MarkupSafe==2.1.5
 nest-asyncio==1.5.8
-uvicorn==0.25.0
+python-dotenv==1.0.1
+PyYAML==6.0.1
 setuptools==69.0.3
+sniffio==1.3.1
+uvicorn==0.25.0
+uvloop==0.19.0
+watchfiles==0.21.0
+websockets==12.0

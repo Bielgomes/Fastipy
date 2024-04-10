@@ -198,7 +198,6 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 - [ ] Add integration to test libraries.
 - [ ] Add an automatic way to send messages with different formats without calling a function like json().
 - [ ] Better file stream in reply send file function.
-- [ ] Better logs with factory pattern.
 
 ### Added
 
@@ -210,6 +209,7 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 - [X] Error imports are now centralized in the exceptions module.
 - [X] Improved error handling flow, now error handling hooks are executed first rather than the default error handling.
+- [X] Apply code reuse to generate logs.
 
 # Contributors
 
