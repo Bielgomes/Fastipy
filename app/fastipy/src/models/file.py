@@ -1,6 +1,7 @@
-from uvicorn.main import logger
 import uuid, json, io
+from uvicorn.main import logger
 
+from ..helpers.route_helpers import log_and_raise
 from ..exceptions import FileException
 
 
@@ -65,9 +66,9 @@ class File:
             with io.open(path, "wb") as file:
                 file.write(self._data)
         except:
-            message = f"Could not save file in '{path}'"
-            logger.error(FileException(message))
-            raise FileException(message)
+            log_and_raise(
+                logger.error, FileException, f"Could not save file in '{path}'"
+            )
 
     def safe_save(self, path=None) -> str:
         if path is None:
@@ -86,8 +87,8 @@ class File:
             with io.open(path, "wb") as file:
                 file.write(self._data)
         except:
-            message = f"Could not save file in '{path}'"
-            logger.error(FileException(message))
-            raise FileException(message)
+            log_and_raise(
+                logger.error, FileException, f"Could not save file in '{path}'"
+            )
 
         return path

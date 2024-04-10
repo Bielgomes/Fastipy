@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Callable, List
 
-from ..types.routes import FunctionType
-
+from ..exceptions.fastipy_base_exception import FastipyBaseException
 from .async_sync_helpers import run_async_or_sync
+from ..types.routes import FunctionType
 
 if TYPE_CHECKING:
     from ..core.request import Request
@@ -28,3 +28,10 @@ async def handler_middlewares(
 ) -> None:
     for middleware in middlewares:
         await run_async_or_sync(middleware, request, reply)
+
+
+def log_and_raise(
+    log: Callable, exception: FastipyBaseException, message: str, **kwargs
+) -> None:
+    log(message, **kwargs)
+    raise exception(message)

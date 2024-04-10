@@ -1,8 +1,8 @@
+import os, json, io
 from typing import Dict, Iterator, List, Union, Optional, Set
 from http.cookies import SimpleCookie
 from time import perf_counter
 from logging import Logger
-import os, json, io
 
 from ..types.routes import FunctionType
 
@@ -10,7 +10,7 @@ from ..exceptions import FileException, ReplyException
 
 from ..classes.decorators_base import DecoratorsBase
 
-from ..helpers.route_helpers import handler_hooks
+from ..helpers.route_helpers import handler_hooks, log_and_raise
 from ..helpers.content_type import get_content_type
 
 from .request import Request
@@ -31,7 +31,7 @@ class Reply(DecoratorsBase):
         self.__request = request
         self.__on_response_hooks = hooks.get("onResponse", [])
 
-        self._log = logger
+        self._logger = logger
         self._cors = cors
         self._static_path = static_path
         self._headers = {}
@@ -50,9 +50,11 @@ class Reply(DecoratorsBase):
     @status_code.setter
     def status_code(self, code: int) -> None:
         if code < 100 or code > 599:
-            message = "Status code must be a number between 100 and 599"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(
+                self._logger.error,
+                ReplyException,
+                "Status code must be a number between 100 and 599",
+            )
 
         self._status_code = code
 
@@ -136,9 +138,7 @@ class Reply(DecoratorsBase):
 
     async def send(self) -> None:
         if self._response_sent:
-            message = "Reply already sent"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
 
         await self._send_headers()
         await self._send_body()
@@ -147,9 +147,7 @@ class Reply(DecoratorsBase):
 
     async def send_code(self, code: int) -> None:
         if self._response_sent:
-            message = "Reply already sent"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
 
         self._status_code = code
 
@@ -160,9 +158,7 @@ class Reply(DecoratorsBase):
 
     async def send_cookie(self) -> None:
         if self._response_sent:
-            message = "Reply already sent"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
 
         headers = [
             [b"Set-Cookie", cookie.OutputString().decode("utf-8")]
@@ -178,9 +174,7 @@ class Reply(DecoratorsBase):
         self, path: str, stream: bool = False, block_size: int = 1024
     ) -> None:
         if self._response_sent:
-            message = "Reply already sent"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
 
         try:
             with io.open(path, "rb") as file:
@@ -214,17 +208,17 @@ class Reply(DecoratorsBase):
 
                 await self.__on_response_sent()
         except FileNotFoundError:
-            message = f"Failed to send file '{path}' >> File not found"
-            self._log.error(FileException(message))
-            raise FileException(message)
+            log_and_raise(
+                self._logger.error,
+                FileException,
+                f"Failed to send file '{path}' >> File not found",
+            )
 
     async def stream(
         self, stream: Iterator[str], media_type: str = "application/octet-stream"
     ) -> None:
         if self._response_sent:
-            message = "Reply already sent"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
 
         headers = self._parse_headers()
         headers.append((b"Content-type", media_type.encode("utf-8")))
@@ -253,9 +247,7 @@ class Reply(DecoratorsBase):
         cache_control: Optional[str] = "no-store, no-cache, must-revalidate",
     ) -> None:
         if self._response_sent:
-            message = "Reply already sent"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
 
         self._status_code = code
 
@@ -272,9 +264,11 @@ class Reply(DecoratorsBase):
 
     def render_page(self, path: str) -> "Reply":
         if not path.endswith(".html"):
-            message = f"Failed to render page '{path}' >> File not a html"
-            self._log.error(FileException(message))
-            raise FileException(message)
+            log_and_raise(
+                self._logger.error,
+                FileException,
+                f"Failed to render page '{path}' >> File not a html",
+            )
 
         if self._static_path:
             path = f"{self._static_path}/{path}"
@@ -284,17 +278,17 @@ class Reply(DecoratorsBase):
                 self._content = file.read()
             self._headers["Content-Type"] = "text/html"
         except FileNotFoundError:
-            message = f"Failed to render page '{path}' >> File not found"
-            self._log.error(FileException(message))
-            raise FileException(message)
+            log_and_raise(
+                self._logger.error,
+                FileException,
+                f"Failed to render page '{path}' >> File not found",
+            )
 
         return self
 
     async def _options(self, allowed_methods: List[str]) -> None:
         if self._response_sent:
-            message = "Reply already sent"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
 
         headers = [
             (key.encode("utf-8"), value.encode("utf-8"))
@@ -325,9 +319,11 @@ class Reply(DecoratorsBase):
         self, send_blank: bool = False, more_body: bool = False
     ) -> None:
         if not send_blank and self._content is None:
-            message = "Reply is not set, try send_code() instead"
-            self._log.error(ReplyException(message))
-            raise ReplyException(message)
+            log_and_raise(
+                self._logger.error,
+                ReplyException,
+                "Reply content is not set, try send_code() instead",
+            )
 
         try:
             body = self._content.encode("utf-8") if not send_blank else b""
