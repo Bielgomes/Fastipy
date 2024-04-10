@@ -1,4 +1,3 @@
-from uvicorn.main import logger
 import traceback
 
 from ..exceptions import ExceptionHandler, FastipyBaseException
@@ -25,10 +24,10 @@ class RequestHandler:
                     await self._handle_404(send, cors)
                     return
 
-                await Reply(send, logger, cors=cors)._options(allowed_methods)
+                await Reply(send, cors=cors)._options(allowed_methods)
                 return
 
-            await Reply(send, logger, cors=cors).code(405).json(
+            await Reply(send, cors=cors).code(405).json(
                 {"error": "Method not allowed"}
             ).send()
 
@@ -53,9 +52,9 @@ class RequestHandler:
 
     async def _handle_http_request(self, scope, receive, send, cors):
         if "." in scope["path"].split("/")[-1]:
-            await Reply(
-                send, logger, cors=cors, static_path=self._static_path
-            )._send_archive(scope["path"])
+            await Reply(send, cors=cors, static_path=self._static_path)._send_archive(
+                scope["path"]
+            )
             return
 
         route, params = self._router.find_route(
@@ -66,10 +65,9 @@ class RequestHandler:
             return
 
         scope["params"] = params
-        request = Request(scope, receive, logger, self._decorators)
+        request = Request(scope, receive, self._decorators)
         reply = Reply(
             send,
-            logger,
             request,
             cors,
             self._static_path,
@@ -134,6 +132,4 @@ class RequestHandler:
             raise exception
 
     async def _handle_404(self, send, cors):
-        await Reply(send, logger, cors=cors).code(404).json(
-            {"error": "Route not found"}
-        ).send()
+        await Reply(send, cors=cors).code(404).json({"error": "Route not found"}).send()
