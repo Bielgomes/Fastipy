@@ -2,7 +2,7 @@ import mimetypes
 from ..constants.content_types import CONTENT_TYPES
 
 
-def get_content_type(self, path: str) -> str:
+def get_content_type(path: str) -> str:
     try:
         content_type = CONTENT_TYPES[path.split(".")[-1]]
     except KeyError:

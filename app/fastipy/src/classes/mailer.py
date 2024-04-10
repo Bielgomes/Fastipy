@@ -1,6 +1,6 @@
+import smtplib
 from email import encoders
 from email.mime.base import MIMEBase
-import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
@@ -102,7 +102,9 @@ class Mailer:
     def timeout(self):
         return self._timeout
 
-    def send_email(self, message: Union[MIMEMultipart, List[MIMEMultipart]], raise_exceptions=False):
+    def send_email(
+        self, message: Union[MIMEMultipart, List[MIMEMultipart]], raise_exceptions=False
+    ):
         try:
             if self.ssl:
                 smtp_conn = smtplib.SMTP_SSL(self.host, self.port, timeout=self.timeout)
@@ -119,7 +121,9 @@ class Mailer:
                 message = [message]
 
             for message_data in message:
-                smtp_conn.sendmail(message_data["From"], message_data["To"], message_data.as_string())
+                smtp_conn.sendmail(
+                    message_data["From"], message_data["To"], message_data.as_string()
+                )
 
             smtp_conn.quit()
         except Exception as e:
