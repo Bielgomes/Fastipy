@@ -2,7 +2,7 @@ import os, json, io
 from typing import Dict, Iterator, List, Union, Optional, Set
 from http.cookies import SimpleCookie
 from time import perf_counter
-from logging import Logger
+from uvicorn.main import logger
 
 from ..types.routes import FunctionType
 
@@ -10,7 +10,7 @@ from ..exceptions import FileException, ReplyException
 
 from ..classes.decorators_base import DecoratorsBase
 
-from ..helpers.route_helpers import handler_hooks, log_and_raise
+from ..helpers.route_helpers import handler_hooks
 from ..helpers.content_type import get_content_type
 
 from .request import Request
@@ -20,7 +20,6 @@ class Reply(DecoratorsBase):
     def __init__(
         self,
         send,
-        logger: Logger,
         request: Request = None,
         cors: Dict = {},
         static_path: Union[str, None] = None,
@@ -31,7 +30,6 @@ class Reply(DecoratorsBase):
         self.__request = request
         self.__on_response_hooks = hooks.get("onResponse", [])
 
-        self._logger = logger
         self._cors = cors
         self._static_path = static_path
         self._headers = {}
@@ -50,10 +48,9 @@ class Reply(DecoratorsBase):
     @status_code.setter
     def status_code(self, code: int) -> None:
         if code < 100 or code > 599:
-            log_and_raise(
-                self._logger.error,
-                ReplyException,
+            raise ReplyException(
                 "Status code must be a number between 100 and 599",
+                logger.error,
             )
 
         self._status_code = code
@@ -138,7 +135,7 @@ class Reply(DecoratorsBase):
 
     async def send(self) -> None:
         if self._response_sent:
-            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
+            raise ReplyException("Reply already sent", logger.error)
 
         await self._send_headers()
         await self._send_body()
@@ -147,7 +144,7 @@ class Reply(DecoratorsBase):
 
     async def send_code(self, code: int) -> None:
         if self._response_sent:
-            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
+            raise ReplyException("Reply already sent", logger.error)
 
         self._status_code = code
 
@@ -158,7 +155,7 @@ class Reply(DecoratorsBase):
 
     async def send_cookie(self) -> None:
         if self._response_sent:
-            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
+            raise ReplyException("Reply already sent", logger.error)
 
         headers = [
             [b"Set-Cookie", cookie.OutputString().decode("utf-8")]
@@ -174,7 +171,7 @@ class Reply(DecoratorsBase):
         self, path: str, stream: bool = False, block_size: int = 1024
     ) -> None:
         if self._response_sent:
-            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
+            raise ReplyException("Reply already sent", logger.error)
 
         try:
             with io.open(path, "rb") as file:
@@ -208,36 +205,46 @@ class Reply(DecoratorsBase):
 
                 await self.__on_response_sent()
         except FileNotFoundError:
-            log_and_raise(
-                self._logger.error,
-                FileException,
-                f"Failed to send file '{path}' >> File not found",
+            raise FileException(
+                f"Failed to send file '{path}' >> File not found", logger.error
             )
 
     async def stream(
         self, stream: Iterator[str], media_type: str = "application/octet-stream"
     ) -> None:
         if self._response_sent:
-            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
+            raise ReplyException("Reply already sent", logger.error)
+
+        if not hasattr(stream, "__next__") and not hasattr(stream, "__anext__"):
+            raise ReplyException(
+                "Stream must be an async generator or generator", logger.error
+            )
 
         headers = self._parse_headers()
         headers.append((b"Content-type", media_type.encode("utf-8")))
 
         await self._send_headers(headers=headers)
 
-        while True:
-            try:
-                if hasattr(stream, "__anext__"):
+        if hasattr(stream, "__anext__"):
+            while True:
+                try:
                     chunk = await anext(stream)
-                else:
-                    chunk = next(stream)
+                except StopAsyncIteration:
+                    break
 
                 self._content = chunk
                 await self._send_body(more_body=True)
-            except (StopIteration, StopAsyncIteration):
-                await self._send_body(send_blank=True)
-                break
+        else:
+            while True:
+                try:
+                    chunk = next(stream)
+                except StopIteration:
+                    break
 
+                self._content = chunk
+                await self._send_body(more_body=True)
+
+        await self._send_body(send_blank=True)
         await self.__on_response_sent()
 
     async def redirect(
@@ -247,7 +254,7 @@ class Reply(DecoratorsBase):
         cache_control: Optional[str] = "no-store, no-cache, must-revalidate",
     ) -> None:
         if self._response_sent:
-            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
+            raise ReplyException("Reply already sent", logger.error)
 
         self._status_code = code
 
@@ -264,10 +271,8 @@ class Reply(DecoratorsBase):
 
     def render_page(self, path: str) -> "Reply":
         if not path.endswith(".html"):
-            log_and_raise(
-                self._logger.error,
-                FileException,
-                f"Failed to render page '{path}' >> File not a html",
+            raise FileException(
+                f"Failed to render page '{path}' >> File not a html", logger.error
             )
 
         if self._static_path:
@@ -278,17 +283,15 @@ class Reply(DecoratorsBase):
                 self._content = file.read()
             self._headers["Content-Type"] = "text/html"
         except FileNotFoundError:
-            log_and_raise(
-                self._logger.error,
-                FileException,
-                f"Failed to render page '{path}' >> File not found",
+            raise FileException(
+                f"Failed to render page '{path}' >> File not found", logger.error
             )
 
         return self
 
     async def _options(self, allowed_methods: List[str]) -> None:
         if self._response_sent:
-            log_and_raise(self._logger.error, ReplyException, "Reply already sent")
+            raise ReplyException("Reply already sent", logger.error)
 
         headers = [
             (key.encode("utf-8"), value.encode("utf-8"))
@@ -319,10 +322,9 @@ class Reply(DecoratorsBase):
         self, send_blank: bool = False, more_body: bool = False
     ) -> None:
         if not send_blank and self._content is None:
-            log_and_raise(
-                self._logger.error,
-                ReplyException,
-                "Reply content is not set, try send_code() instead",
+            raise ReplyException(
+                "Reply content is not set, try json(), text() or html() instead",
+                logger.error,
             )
 
         try:

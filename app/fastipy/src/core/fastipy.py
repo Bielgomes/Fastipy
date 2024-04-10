@@ -2,8 +2,6 @@ import re, copy, click, nest_asyncio
 from typing import Dict, Optional, Self
 from uvicorn.main import logger
 
-from ..helpers.route_helpers import log_and_raise
-
 from ..constants.hooks import HOOKS, hookType
 from ..constants.http_methods import HTTP_METHODS, httpMethodType
 from ..constants.decorators import DECORATORS
@@ -91,10 +89,9 @@ class Fastipy(RequestHandler, DecoratorsBase):
 
     def add_event(self, event_type: eventType, event: FunctionType) -> None:
         if event_type not in EVENTS:
-            log_and_raise(
-                logger.error,
-                NoEventTypeException,
+            raise NoEventTypeException(
                 f"Failed to register event [{event_type}] >> Type not supported",
+                logger.error,
             )
 
         self._events[event_type].append(event)
@@ -155,30 +152,27 @@ class Fastipy(RequestHandler, DecoratorsBase):
 
     def decorate(self, name: str, value: any) -> None:
         if hasattr(self, name) or self.has_decorator(name):
-            log_and_raise(
-                logger.error,
-                DecoratorAlreadyExistsException,
+            raise DecoratorAlreadyExistsException(
                 f"Failed to register decorator '{name}' >> Duplicate decorator",
+                logger.error,
             )
 
         self._decorators["app"][name] = value
 
     def decorate_request(self, name: str, value: any) -> None:
         if hasattr(Request, name) or self.has_request_decorator(name):
-            log_and_raise(
-                logger.error,
-                DecoratorAlreadyExistsException,
+            raise DecoratorAlreadyExistsException(
                 f"Failed to register request decorator '{name}' >> Duplicate decorator",
+                logger.error,
             )
 
         self._decorators["request"][name] = value
 
     def decorate_reply(self, name: str, value: any) -> None:
         if hasattr(Reply, name) or self.has_reply_decorator(name):
-            log_and_raise(
-                logger.error,
-                DecoratorAlreadyExistsException,
+            raise DecoratorAlreadyExistsException(
                 f"Failed to register reply decorator '{name}' >> Duplicate decorator",
+                logger.error,
             )
 
         self._decorators["reply"][name] = value
@@ -194,10 +188,9 @@ class Fastipy(RequestHandler, DecoratorsBase):
 
     def add_hook(self, hook_type: hookType, hook: FunctionType) -> None:
         if hook_type not in HOOKS:
-            log_and_raise(
-                logger.error,
-                NoHookTypeException,
+            raise NoHookTypeException(
                 f"Failed to register hook [{hook_type}] >> Type not supported",
+                logger.error,
             )
 
         self._hooks[hook_type].append(hook)
@@ -230,10 +223,9 @@ class Fastipy(RequestHandler, DecoratorsBase):
         if self.prefix != "/":
             path = f"{self.prefix}{path if path != '/' else ''}"
         if method not in HTTP_METHODS:
-            log_and_raise(
-                logger.error,
-                NoHTTPMethodException,
+            raise NoHTTPMethodException(
                 f"Failed to register route [{method}] '{path}' >> Method not supported",
+                logger.error,
             )
 
         if (
@@ -241,18 +233,16 @@ class Fastipy(RequestHandler, DecoratorsBase):
             or re.search(r":(\d)\w+", path)
             or len(re.findall(r":(\w+)", path)) != len(set(re.findall(r":(\w+)", path)))
         ):
-            log_and_raise(
-                logger.error,
-                InvalidPathException,
+            raise InvalidPathException(
                 f"Failed to register route [{method}] '{path}' >> Invalid path",
+                logger.error,
             )
 
         routeAlreadyExists = self._router.find_route(method, path) is not None
         if routeAlreadyExists:
-            log_and_raise(
-                logger.error,
-                DuplicateRouteException,
+            raise DuplicateRouteException(
                 f"Failed to register route [{method}] '{path}' >> Duplicate route",
+                logger.error,
             )
 
         hooks = copy.deepcopy(self._hooks)
@@ -358,8 +348,4 @@ class Fastipy(RequestHandler, DecoratorsBase):
 
 class FastipyInstance(Fastipy):
     def cors(self, *args, **kwargs) -> None:
-        log_and_raise(
-            logger.warn,
-            NotImplementedError,
-            "FastipyInstance.cors() is not implemented",
-        )
+        logger.warn("FastipyInstance.cors() is not implemented")

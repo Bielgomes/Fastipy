@@ -28,10 +28,3 @@ async def handler_middlewares(
 ) -> None:
     for middleware in middlewares:
         await run_async_or_sync(middleware, request, reply)
-
-
-def log_and_raise(
-    log: Callable, exception: FastipyBaseException, message: str, **kwargs
-) -> None:
-    log(message, **kwargs)
-    raise exception(message)
