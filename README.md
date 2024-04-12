@@ -197,6 +197,7 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 - [ ] Add integration to test libraries.
 - [ ] Add an automatic way to send messages with different formats without calling a function like json().
+- [ ] Add timeout setting for routes.
 
 ### Added
 
