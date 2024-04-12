@@ -130,7 +130,7 @@ class Reply(DecoratorsBase):
             self._cookies[name]["domain"] = domain
         return self
 
-    def getResponseTime(self) -> float:
+    def get_response_time(self) -> float:
         return perf_counter() - self._response_time
 
     async def send(self) -> None:
