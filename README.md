@@ -242,15 +242,12 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ## Development Version 1.5.1
 
-### ToDo
-
-- [ ] Add integration to test libraries.
-
 ### Added
 
 - [X] Added the possibility of printing middleware routes in the router's print tree.
 - [X] Added a customizable mail module.
 - [X] Added jinja2 lib to render templates.
+- [x] Add integration to end-to-end tests.
 
 ### Changed
 
