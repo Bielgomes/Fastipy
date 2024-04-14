@@ -240,22 +240,13 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 # Change Log
 
-## Version 1.5.1
+## Development Version 1.5.2
+
+### Todo
 
 ### Added
 
-- [X] Added the possibility of printing middleware routes in the router's print tree.
-- [X] Added a customizable mail module.
-- [X] Added jinja2 lib to render templates.
-- [x] Add integration to end-to-end tests.
-
 ### Changed
-
-- [X] Error imports are now centralized in the exceptions module.
-- [X] Improved error handling flow, now error handling hooks are executed first rather than the default error handling.
-- [X] Apply code reuse to generate logs.
-- [X] Refactored file stream in reply send file function.
-- [X] Reply send function now automatically serializes the value sent to it and sets a content type
 
 # Contributors
 

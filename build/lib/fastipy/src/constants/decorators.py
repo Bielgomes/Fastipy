@@ -1,1 +1,0 @@
-DECORATORS = ["app", "request", "reply"]
