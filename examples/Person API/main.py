@@ -1,4 +1,4 @@
-from Fastipy import Fastipy, Request, Reply
+from fastipy import Fastipy, Request, Reply
 
 import json
 
@@ -22,7 +22,7 @@ async def home(req: Request, reply: Reply):
         if i["age"] >= int(req.query["age"]):
             _person.append(i)
 
-    await reply.code(200).json(_person).send()
+    await reply.code(200).send(_person)
 
 
 @app.post("/person")

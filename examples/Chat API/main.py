@@ -12,7 +12,7 @@ async def index(_, reply: Reply):
         with open("chat.json", "r+") as file:
             data = json.load(file)
 
-        await reply.json(data).code(200).send()
+        await reply.code(200).send(data)
     except:
         await reply.send_code(500)
 
@@ -24,7 +24,7 @@ async def index(req: Request, reply: Reply):
 
     for i in data:
         if i["id"] == req.params["chat_id"]:
-            await reply.json(i).code(200).send()
+            await reply.code(200).send(i)
             return
 
     await reply.send_code(404)

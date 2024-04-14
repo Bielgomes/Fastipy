@@ -19,18 +19,18 @@ app.register(
 
 @app.get("/")
 async def index(_, reply: Reply):
-    await reply.json(db.select("chat")).code(200).send()
+    await reply.code(200).send(db.select("chat"))
 
 
 @app.get("/chat/:chat_id")
 async def index(req: Request, reply: Reply):
-    await reply.json(db.find_by_id("chat", req.params["chat_id"])).code(200).send()
+    await reply.code(200).send(db.find_by_id("chat", req.params["chat_id"]))
 
 
 @app.post("/chat")
 async def index(req: Request, reply: Reply):
     if db.find_by_id("chat", req.body.json["id"]):
-        await reply.code(409).json({"error": "Chat with this id already exists"}).send()
+        await reply.code(409).send({"error": "Chat with this id already exists"})
         return
 
     db.insert("chat", req.body.json)
