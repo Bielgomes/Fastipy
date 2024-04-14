@@ -1,7 +1,6 @@
 import os
-from typing import Collection
+from typing import Any, Optional, Dict, Collection
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from typing import Any, Dict, Optional
 
 
 def configure_jinja(

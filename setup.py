@@ -29,6 +29,11 @@ setup(
         "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
-    install_requires=["uvicorn[standard]", "nest-asyncio", "Jinja2"],
+    install_requires=[
+        "uvicorn[standard]",
+        "starlette",
+        "nest-asyncio",
+        "Jinja2",
+    ],
     python_requires=">=3.10",
 )

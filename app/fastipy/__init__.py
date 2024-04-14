@@ -1,3 +1,5 @@
+__version__ = "1.5.1"
+
 from .src.core.fastipy import Fastipy, FastipyInstance
 
 from .src.types.plugins import PluginOptions
