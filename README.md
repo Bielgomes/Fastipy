@@ -200,6 +200,20 @@ async def index(_, reply: Reply):
   await reply.send_code(200)
 ```
 
+## End to End tests
+
+```py
+# See more in https://www.starlette.io/testclient/
+from fastipy import TestClient
+from main import app
+
+client = TestClient(app)
+
+response = client.post("/")
+assert response.status_code == 200
+assert response.text == "Hello World"
+```
+
 ## Running
 
 Running Fastipy application in development is easy

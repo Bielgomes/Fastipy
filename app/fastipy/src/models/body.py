@@ -43,7 +43,7 @@ class Body:
         content = await self.__receive()
         self._raw_content = content["body"]
 
-        while content["more_body"]:
+        while content.get("more_body"):
             content = await self.__receive()
             self._raw_content += content["body"]
 

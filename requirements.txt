@@ -1,6 +1,5 @@
 anyio==4.3.0
 click==8.1.7
--e git+https://github.com/Bielgomes/Fastipy.git@aed0cb185d8f81c1e708940d1c8b9650eb918562#egg=fastipy
 h11==0.14.0
 httptools==0.6.1
 idna==3.6
@@ -15,3 +14,6 @@ uvicorn==0.25.0
 uvloop==0.19.0
 watchfiles==0.21.0
 websockets==12.0
+httpx==0.27.0
+certifi==2024.2.2
+httpcore==1.0.5

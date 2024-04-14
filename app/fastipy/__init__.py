@@ -11,6 +11,8 @@ from .src.classes.json_database import Database
 
 from .src.constants.http_status_code import Status
 
+from starlette.testclient import TestClient
+
 __all__ = [
     "Fastipy",
     "FastipyInstance",
@@ -22,4 +24,5 @@ __all__ = [
     "render_template",
     "Database",
     "Status",
+    "TestClient",
 ]
