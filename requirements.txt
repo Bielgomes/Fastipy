@@ -19,3 +19,4 @@ certifi==2024.2.2
 httpcore==1.0.5
 starlette==0.37.2
 wheel==0.43.0
+twine==5.0.0
