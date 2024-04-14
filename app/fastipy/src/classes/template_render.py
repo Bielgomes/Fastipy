@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional
 def configure_jinja(
     template_dir: str = "templates",
     encoding: str = "utf-8",
-    followlinks: bool = False,
+    follow_links: bool = False,
     extensions: Collection[str] = ("html", "htm", "xml"),
     disabled_extensions: Collection[str] = (),
     default_for_string: bool = True,
@@ -15,7 +15,7 @@ def configure_jinja(
     **kwargs: Any
 ) -> Environment:
     loader = FileSystemLoader(
-        searchpath=template_dir, encoding=encoding, followlinks=followlinks
+        searchpath=template_dir, encoding=encoding, followlinks=follow_links
     )
     env = Environment(
         loader=loader,
@@ -34,7 +34,7 @@ def render_template(
     template_name: str,
     context: Optional[Dict[str, Any]] = {},
     encoding: str = "utf-8",
-    followlinks: bool = False,
+    follow_links: bool = False,
     extensions: Collection[str] = ("html", "htm", "xml"),
     disabled_extensions: Collection[str] = (),
     default_for_string: bool = True,
@@ -48,7 +48,7 @@ def render_template(
     env = configure_jinja(
         template_dir,
         encoding,
-        followlinks,
+        follow_links,
         extensions,
         disabled_extensions,
         default_for_string,
