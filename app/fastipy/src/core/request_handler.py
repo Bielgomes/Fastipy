@@ -66,6 +66,7 @@ class RequestHandler:
 
         scope["params"] = params
         request = Request(scope, receive, self._decorators)
+        self._serializers: list = self._serializers
         reply = Reply(
             send,
             request,
@@ -73,6 +74,7 @@ class RequestHandler:
             self._static_path,
             self._decorators,
             route["hooks"],
+            self._serializers,
         )
 
         try:
@@ -121,15 +123,16 @@ class RequestHandler:
             )
 
     async def _default_error_handling(
-        self, exception, reply, exception_handler, internal=False
+        self, exception, reply: Reply, exception_handler, internal=False
     ):
         if internal or issubclass(type(exception), FastipyBaseException):
-            await reply.code(500).json(
-                {"error": f"{exception_handler.type}: {exception_handler.message}"}
-            ).send()
+            await reply._send_error(
+                message=f"{exception_handler.type}: {exception_handler.message.replace('\"', "'")}",
+                code=500,
+            )
             print(traceback.format_exc())
         else:
             raise exception
 
     async def _handle_404(self, send, cors):
-        await Reply(send, cors=cors).code(404).json({"error": "Route not found"}).send()
+        await Reply(send, cors=cors)._send_error(message="Route not found", code=404)

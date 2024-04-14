@@ -1,5 +1,16 @@
-import os, json, io
-from typing import Dict, Iterator, List, Union, Optional, Set
+import json
+import os, io
+from typing import (
+    AsyncGenerator,
+    Callable,
+    Dict,
+    Generator,
+    Iterator,
+    List,
+    Union,
+    Optional,
+    Set,
+)
 from http.cookies import SimpleCookie
 from time import perf_counter
 from uvicorn.main import logger
@@ -10,7 +21,7 @@ from ..exceptions import FileException, ReplyException
 
 from ..classes.decorators_base import DecoratorsBase
 
-from ..helpers.route_helpers import handler_hooks
+from ..helpers.route_helpers import handler_hooks, serializer_handler
 from ..helpers.content_type import get_content_type
 
 from .request import Request
@@ -25,6 +36,7 @@ class Reply(DecoratorsBase):
         static_path: Union[str, None] = None,
         decorators: Dict[str, List[FunctionType]] = {},
         hooks: Dict[str, List[FunctionType]] = {},
+        serializers: List[Dict[str, Callable[[any], Union[bool, any]]]] = [],
     ) -> None:
         self.__send = send
         self.__request = request
@@ -38,6 +50,7 @@ class Reply(DecoratorsBase):
         self._cookies = SimpleCookie()
         self._response_time = perf_counter()
         self._response_sent = False
+        self._serializers = reversed(serializers)
 
         self._instance_decorators = decorators.get("reply", [])
 
@@ -83,21 +96,6 @@ class Reply(DecoratorsBase):
         self._status_code = code
         return self
 
-    def json(self, response: dict) -> "Reply":
-        self._content = json.dumps(response)
-        self._headers["Content-Type"] = "application/json"
-        return self
-
-    def text(self, response: str) -> "Reply":
-        self._content = response
-        self._headers["Content-Type"] = "text/plain"
-        return self
-
-    def html(self, response: str) -> "Reply":
-        self._content = response
-        self._headers["Content-Type"] = "text/html"
-        return self
-
     def header(self, key: str, value: str) -> "Reply":
         self._headers[key] = value
         return self
@@ -133,12 +131,21 @@ class Reply(DecoratorsBase):
     def get_response_time(self) -> float:
         return perf_counter() - self._response_time
 
-    async def send(self) -> None:
+    async def send(self, value: any = None) -> None:
         if self._response_sent:
             raise ReplyException("Reply already sent", logger.error)
 
+        content_type, serialized_value = serializer_handler(self._serializers, value)
+        if not self.content_type and content_type:
+            self.content_type = content_type
+
+        if isinstance(serialized_value, (Generator, AsyncGenerator)):
+            return await self.__stream(serialized_value)
+
+        self._content = serialized_value
+
         await self._send_headers()
-        await self._send_body()
+        await self._send_body(send_blank=False if serialized_value else True)
 
         await self.__on_response_sent()
 
@@ -209,23 +216,38 @@ class Reply(DecoratorsBase):
                 f"Failed to send file '{path}' >> File not found", logger.error
             )
 
-    async def stream(
-        self, stream: Iterator[str], media_type: str = "application/octet-stream"
-    ) -> None:
+    async def _send_error(self, message: str, code: int) -> None:
         if self._response_sent:
             raise ReplyException("Reply already sent", logger.error)
 
-        if not hasattr(stream, "__next__") and not hasattr(stream, "__anext__"):
+        if code < 100 or code > 599:
+            raise ReplyException(
+                "Status code must be a number between 100 and 599",
+                logger.error,
+            )
+
+        self._status_code = code
+        self._headers["Content-Type"] = "application/json"
+        self._content = json.dumps({"error": message})
+
+        await self._send_headers()
+        await self._send_body()
+
+        await self.__on_response_sent()
+
+    async def __stream(self, stream: Iterator[str]) -> None:
+        if self._response_sent:
+            raise ReplyException("Reply already sent", logger.error)
+
+        if not isinstance(stream, (AsyncGenerator, Generator)):
             raise ReplyException(
                 "Stream must be an async generator or generator", logger.error
             )
 
         headers = self._parse_headers()
-        headers.append((b"Content-type", media_type.encode("utf-8")))
-
         await self._send_headers(headers=headers)
 
-        if hasattr(stream, "__anext__"):
+        if isinstance(stream, AsyncGenerator):
             while True:
                 try:
                     chunk = await anext(stream)
@@ -323,7 +345,7 @@ class Reply(DecoratorsBase):
     ) -> None:
         if not send_blank and self._content is None:
             raise ReplyException(
-                "Reply content is not set, try json(), text() or html() instead",
+                "Reply content is not set, use 'send' method to set content",
                 logger.error,
             )
 
@@ -425,21 +447,6 @@ class RestrictReply:
     def code(self, code: int) -> "Reply":
         return self._reply.code(code)
 
-    def json(self, response: dict) -> None:
-        self._reply._log.warn(
-            ReplyException('Function "json" is not allowed in this context')
-        )
-
-    def text(self, response: str) -> None:
-        self._reply._log.warn(
-            ReplyException('Function "text" is not allowed in this context')
-        )
-
-    def html(self, response: str) -> None:
-        self._reply._log.warn(
-            ReplyException('Function "html" is not allowed in this context')
-        )
-
     def header(self, key: str, value: str) -> "Reply":
         return self._reply.header(key, value)
 
@@ -461,7 +468,7 @@ class RestrictReply:
     ) -> "Reply":
         return self._reply.cookie(name, value, path, expires, domain, secure, httpOnly)
 
-    def send(self) -> None:
+    def send(self, value: any) -> None:
         self._reply._log.warn(
             ReplyException('Function "send" is not allowed in this context')
         )

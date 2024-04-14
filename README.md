@@ -20,7 +20,7 @@ pip install fastipy
 
 ### Example for GET Route with Query Params
 
-```python
+```py
 from fastipy import Fastipy, Request, Reply
 
 app = Fastipy()
@@ -28,7 +28,7 @@ app = Fastipy()
 # Routes can be async or sync functions, but reply send functions are async
 # The handler returns the default HTTP status code 200
 @app.get('/')
-def home(req: Request, reply: Reply):
+def home(req: Request, _):
   # Get query params age
   age = req.query['age']
   # Example: Recovery all persons from database with this age and print the html
@@ -37,7 +37,7 @@ def home(req: Request, reply: Reply):
 
 ### Example for GET Route with Params, CORS and multiple methods
 
-```python
+```py
 from fastipy import Fastipy, Request, Reply
 
 app = Fastipy().cors()
@@ -49,14 +49,14 @@ async def getUser(req: Request, reply: Reply):
   for i in users:
     if i["id"] == req.params["id"]:
       # All response functions are asynchronous
-      await reply.json(i).send()
-      return
+      return await reply.send(i)
+
   await reply.send_code(404)
 ```
 
 ### Example for POST Route with Body
 
-```python
+```py
 from fastipy import Fastipy, Request, Reply
 
 app = Fastipy()
@@ -65,12 +65,12 @@ app = Fastipy()
 async def createUser(req: Request, reply: Reply):
   user = req.body.json
   # Save user in database
-  await reply.text("Created").code(201).send()
+  await reply.code(201).send("Created")
 ```
 
 ### Example for PUT Route with Body
 
-```python
+```py
 from fastipy import Fastipy, Request, Reply
 
 app = Fastipy()
@@ -79,7 +79,42 @@ app = Fastipy()
 async def createUser(req: Request, reply: Reply):
   user = req.body.json
   # Update user in database
-  await reply.html('<h1>Created</h1>').code(201).send()
+  await reply.type("text/html").code(201).send("<h1>Created</h1>")
+```
+
+### Example for GET Route with file stream
+
+```py
+from fastipy import Fastipy, Request, Reply
+
+app = Fastipy()
+
+@app.get('/stream')
+async def streamFile(_, reply: Reply):
+  # It could be an asynchronous generator
+  def generator():
+    with open("file.txt") as f:
+        for line in f:
+            yield line
+
+  await reply.send(generator())
+```
+
+### Adding custom serializer to Reply send
+
+```py
+from fastipy import Fastipy, Request, Reply
+
+app = Fastipy()
+
+app.add_serializer(
+    validation=lambda data: isinstance(data, str),
+    serializer=lambda data: ("application/json", json.dumps({"error": data})),
+)
+
+@app.get("/")
+async def customSerializer(_, reply: Reply):
+    await reply.code(404).send("Field not found")
 ```
 
 ### See more examples in **[examples](https://github.com/Bielgomes/Fastipy/tree/main/examples)** folder
@@ -94,11 +129,11 @@ from fastipy import FastipyInstance, Reply
 # Plugins have access to the main instance, which means they can use all of Fastipy's functions
 def chatRoutes(app: FastipyInstance, options: dict):
   @app.get('/')
-  async def index(req: Request, reply: Reply):
+  async def index(_, reply: Reply):
     await reply.send_code(200)
 
   @app.get('/chat')
-  async def test(req: Request, reply: Reply):
+  async def test(_, reply: Reply):
     await reply.send_code(200)
 ```
 
@@ -108,11 +143,11 @@ from fastipy import FastipyInstance, Reply
 
 async def messageRoutes(app: FastipyInstance, options: dict):
   @message.get('/')
-  async def index(req: Request, reply: Reply):
+  async def index(_, reply: Reply):
     await reply.send_code(200)
 
   @message.get('/message')
-  async def test(req: Request, reply: Reply):
+  async def test(_, reply: Reply):
     await reply.send_code(200)
 
   app.name('custom plugin name')
@@ -161,7 +196,7 @@ def onError(error: Exception, req: Request, reply: Reply):
 # A hook will only be linked to a route if its declaration precedes the route
 # The order of hooks of the same type is important
 @app.get('/')
-async def index(req: Request, reply: Reply):
+async def index(_, reply: Reply):
   await reply.send_code(200)
 ```
 
@@ -196,8 +231,6 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 ### ToDo
 
 - [ ] Add integration to test libraries.
-- [ ] Add an automatic way to send messages with different formats without calling a function like json().
-- [ ] Add timeout setting for routes.
 
 ### Added
 
@@ -211,6 +244,7 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 - [X] Improved error handling flow, now error handling hooks are executed first rather than the default error handling.
 - [X] Apply code reuse to generate logs.
 - [X] Refactored file stream in reply send file function.
+- [X] Reply send function now automatically serializes the value sent to it and sets a content type
 
 # Contributors
 

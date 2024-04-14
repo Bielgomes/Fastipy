@@ -1,11 +1,12 @@
 import re, copy, click, nest_asyncio
-from typing import Dict, Optional, Self
+from typing import Callable, Dict, Optional, Self
 from uvicorn.main import logger
 
 from ..constants.hooks import HOOKS, hookType
 from ..constants.http_methods import HTTP_METHODS, httpMethodType
 from ..constants.decorators import DECORATORS
 from ..constants.events import EVENTS, eventType
+from ..constants.serializers import SERIALIZERS
 
 from ..types.plugins import PluginOptions
 from ..types.routes import FunctionType, RouteHookType, RouteMiddlewareType
@@ -47,6 +48,7 @@ class Fastipy(RequestHandler, DecoratorsBase):
         self._hooks = {hook_type: [] for hook_type in HOOKS}
         self._middlewares = []
         self._events = {event_type: [] for event_type in EVENTS}
+        self._serializers = SERIALIZERS
 
         self._instance_decorators = self._decorators["app"]
 
@@ -211,6 +213,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
             return middleware
 
         return internal
+
+    def add_serializer(
+        self,
+        validation: Callable[[any], bool],
+        serializer: Callable[[any], any],
+    ):
+        self._serializers.append({"validate": validation, "serialize": serializer})
 
     def add_route(
         self,

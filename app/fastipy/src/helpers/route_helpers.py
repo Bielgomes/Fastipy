@@ -1,6 +1,5 @@
-from typing import TYPE_CHECKING, Callable, List
+from typing import TYPE_CHECKING, Callable, Dict, List, Union
 
-from ..exceptions.fastipy_base_exception import FastipyBaseException
 from .async_sync_helpers import run_async_or_sync
 from ..types.routes import FunctionType
 
@@ -28,3 +27,13 @@ async def handler_middlewares(
 ) -> None:
     for middleware in middlewares:
         await run_async_or_sync(middleware, request, reply)
+
+
+def serializer_handler(
+    serializers: List[Dict[str, Callable[[any], Union[bool, any]]]], value: any
+):
+    for serializer in serializers:
+        if serializer["validate"](value):
+            return serializer["serialize"](value)
+
+    return "text/plain; charset=utf-8", str(value)
