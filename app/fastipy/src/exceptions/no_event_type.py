@@ -1,5 +1,5 @@
-from .fastipy_base_exception import FastipyBaseException
+from .fastipy_exception import FastipyException
 
 
-class NoEventTypeException(FastipyBaseException):
+class NoEventTypeException(FastipyException):
     pass

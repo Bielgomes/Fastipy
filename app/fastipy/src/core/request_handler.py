@@ -1,6 +1,6 @@
 import traceback
 
-from ..exceptions import ExceptionHandler, FastipyBaseException
+from ..exceptions import ExceptionHandler, FastipyException
 
 from ..helpers.route_helpers import handler_hooks, handler_middlewares
 from ..helpers.async_sync_helpers import run_async_or_sync
@@ -125,7 +125,7 @@ class RequestHandler:
     async def _default_error_handling(
         self, exception, reply: Reply, exception_handler, internal=False
     ):
-        if internal or issubclass(type(exception), FastipyBaseException):
+        if internal or issubclass(type(exception), FastipyException):
             await reply._send_error(
                 message=f"{exception_handler.type}: {exception_handler.message.replace('\"', "'")}",
                 code=500,
