@@ -10,6 +10,7 @@ from ..constants.serializers import SERIALIZERS
 
 from ..types.plugins import PluginOptions
 from ..types.routes import FunctionType, RouteHookType, RouteMiddlewareType
+from ..types.fastipy import FastipyOptions
 
 from ..exceptions import (
     InvalidPathException,
@@ -18,6 +19,7 @@ from ..exceptions import (
     NoHTTPMethodException,
     DecoratorAlreadyExistsException,
     NoEventTypeException,
+    PluginException,
 )
 
 from ..helpers.async_sync_helpers import run_sync_or_async
@@ -35,12 +37,13 @@ from ..middlewares.cors import CORSGenerator
 
 
 class Fastipy(RequestHandler, DecoratorsBase):
-    def __init__(self, static_path: str = None) -> None:
+    def __init__(self, options: FastipyOptions = {}, static_path: str = None) -> None:
         self._router = Router()
         self._plugins = PluginTree()
         self._cors = None
         self._prefix = "/"
         self._name = None
+        self._options = options
         self._static_path = static_path
         self._error_handler = None
 
@@ -109,6 +112,7 @@ class Fastipy(RequestHandler, DecoratorsBase):
         instance = FastipyInstance()
 
         instance._router = self._router
+        instance._options = self._options
         instance._static_path = self._static_path
         instance._plugins = PluginNode(plugin.__name__)
         instance._decorators = self._decorators
@@ -119,7 +123,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
 
         instance._prefix = options.get("prefix", "/")
 
-        run_sync_or_async(plugin, instance, options)
+        timeout = self._options.get("plugin_timeout", None)
+        error = run_sync_or_async(plugin, timeout, instance, options)
+        if error:
+            raise PluginException(
+                f"Failed to register plugin '{plugin.__name__}' >> Plugin timed out",
+                logger.error,
+            )
 
         self._error_handler = instance._error_handler
 

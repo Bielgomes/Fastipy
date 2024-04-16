@@ -246,7 +246,12 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### Added
 
+- [x] Added Fastipy config
+- [x] Added Plugin timeout configuration
+
 ### Changed
+
+- [x] Renaming the fastipy base exception to the fastipy exception to make it easier to handle
 
 # Contributors
 
