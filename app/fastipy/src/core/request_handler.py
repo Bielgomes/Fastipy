@@ -127,7 +127,8 @@ class RequestHandler:
     ):
         if internal or issubclass(type(exception), FastipyException):
             await reply._send_error(
-                message=f"{exception_handler.type}: {exception_handler.message.replace('\"', "'")}",
+                message=f"{exception_handler.type}:"
+                + exception_handler.message.replace('"', "'"),
                 code=500,
             )
             print(traceback.format_exc())
