@@ -244,7 +244,8 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### Todo
 
-- [ ] Fix safe save file function, to save in correct path.
+- [ ] Optimize body loading to only execute functions when necessary.
+- [ ] Type the parameters of the request handler functions.
 
 ### Added
 
@@ -255,7 +256,8 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 ### Changed
 
 - [x] Renaming the fastipy base exception to the fastipy exception to make it easier to handle
-- [x] Fix problem in error handler for python 3.11.
+- [x] Fixed problem in the error handler for python 3.11.
+- [x] Fixed the function of saving files securely, to save them in the correct path.
 
 # Contributors
 

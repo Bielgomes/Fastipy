@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING, Dict
 
+from fastipy.src.helpers.content_type import get_content_type
+
 from .file import File
 
 if TYPE_CHECKING:
@@ -37,12 +39,7 @@ class Form:
                     if b'filename="' in body_parts[i]
                     else None
                 )
-                filetype = (
-                    body_parts[i].split(b"Content-Type: ")[1].split(b"\r\n")[0].decode()
-                    if b"Content-Type: " in body_parts[i]
-                    else None
-                )
-                data = (
+                raw_content = (
                     body_parts[i]
                     .split(b"\r\n\r\n")[1]
                     .split(b"\r\n----------------------------")[0]
@@ -50,9 +47,10 @@ class Form:
                 )
 
                 if filename:
-                    self._files[name] = File(filename, filetype, data)
+                    filetype = get_content_type(filename)
+                    self._files[name] = File(filename, filetype, raw_content)
                 else:
-                    self._fields[name] = data.decode()
+                    self._fields[name] = raw_content.decode()
 
         elif "application/x-www-form-urlencoded" in self._body.type:
             body_parts = self._body.raw_content.split(b"&")

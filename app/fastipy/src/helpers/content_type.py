@@ -9,3 +9,11 @@ def get_content_type(path: str) -> str:
         content_type = mimetypes.guess_type(path)[0]
 
     return content_type or "application/octet-stream"
+
+
+def get_extension(content_type: str) -> str:
+    for key, value in CONTENT_TYPES.items():
+        if value == content_type:
+            return key
+
+    return mimetypes.guess_extension(content_type)

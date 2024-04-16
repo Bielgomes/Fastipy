@@ -1,14 +1,16 @@
 import uuid, json, io
+from typing import Optional
 from uvicorn.main import logger
 
+from ..helpers.content_type import get_extension
 from ..exceptions import FileException
 
 
 class File:
-    def __init__(self, filename: str, type: str, data: bytes):
+    def __init__(self, filename: str, filetype: str, raw_content: bytes):
         self._filename = filename
-        self._type = type
-        self._data = data
+        self._filetype = filetype
+        self._raw_content = raw_content
 
         self._text = None
         self._json = None
@@ -17,24 +19,20 @@ class File:
         self.__json()
 
     @property
-    def name(self) -> str:
-        return self._name
-
-    @property
     def filename(self) -> str:
         return self._filename
 
     @property
     def type(self) -> str:
-        return self._type
+        return self._filetype
 
     @property
-    def data(self) -> bytes:
-        return self._data
+    def raw_content(self) -> bytes:
+        return self._raw_content
 
     @property
     def size(self) -> int:
-        return len(self._data)
+        return len(self._raw_content)
 
     @property
     def text(self) -> str:
@@ -46,43 +44,41 @@ class File:
 
     def __text(self) -> None:
         try:
-            self._text = self._data.decode()
+            self._text = self._raw_content.decode()
         except:
             pass
 
     def __json(self) -> None:
         if self._type == "application/json":
             try:
-                self._json = json.loads(self._data)
+                self._json = json.loads(self._raw_content)
             except:
                 pass
 
-    def save(self, path=None) -> None:
+    def save(self, path: Optional[str] = None) -> None:
         if path is None:
             path = self._filename
 
         try:
             with io.open(path, "wb") as file:
-                file.write(self._data)
+                file.write(self._raw_content)
         except:
             raise FileException(f"Could not save file in '{path}'", logger.error)
 
-    def safe_save(self, path=None) -> str:
+    def save_safe(
+        self, path: Optional[str] = None, extension: Optional[str] = None
+    ) -> str:
         if path is None:
             path = self._filename
 
-        filename = path.split("/")[-1]
-
         id = str(uuid.uuid4())
 
-        name = filename.split(".")[0]
-        extension = filename.split(".")[-1] if len(filename.split(".")) > 1 else None
-
-        path = f"{name}_{id}{f'.{extension}' if extension else ''}"
+        extension = get_extension(self._type) if extension is None else extension
+        path = f"{path}/{id}.{extension}"
 
         try:
             with io.open(path, "wb") as file:
-                file.write(self._data)
+                file.write(self._raw_content)
         except:
             raise FileException(f"Could not save file in '{path}'", logger.error)
 
