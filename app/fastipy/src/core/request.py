@@ -8,6 +8,7 @@ from ..types.routes import FunctionType
 from ..classes.decorators_base import DecoratorsBase
 
 from ..models.body import Body
+from ..models.form import Form
 
 
 class Request(DecoratorsBase):
@@ -75,6 +76,10 @@ class Request(DecoratorsBase):
     @property
     def raw_query(self) -> bytes:
         return self.__scope["query_string"]
+
+    @property
+    def form(self) -> Union[Form, None]:
+        return self._body.form
 
     @property
     def body(self) -> Union[Body, None]:
