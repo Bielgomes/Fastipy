@@ -245,17 +245,17 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 ### Todo
 
 - [ ] Optimize body loading to only execute functions when necessary.
-- [ ] Type the parameters of the request handler functions.
 
 ### Added
 
-- [x] Added Fastipy config
-- [x] Added Plugin timeout configuration
-- [x] Added typing for options in print routes function
+- [x] Added Fastipy config.
+- [x] Added Plugin timeout configuration.
+- [x] Added typing for options in print routes function.
+- [x] Added types to request handler functions parameters.
 
 ### Changed
 
-- [x] Renaming the fastipy base exception to the fastipy exception to make it easier to handle
+- [x] Renaming the fastipy base exception to the fastipy exception to make it easier to handle.
 - [x] Fixed problem in the error handler for python 3.11.
 - [x] Fixed the function of saving files securely, to save them in the correct path.
 

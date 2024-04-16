@@ -12,7 +12,7 @@ class CORSGenerator:
         max_age: Optional[int] = None,
         content_security_policy: str = "default-src 'self'",
         custom_headers: dict = {},
-    ):
+    ) -> None:
         self.allow_origin = allow_origin
         self.allow_headers = allow_headers
         self.allow_methods = allow_methods

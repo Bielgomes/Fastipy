@@ -1,4 +1,4 @@
-from typing import Literal, Optional, Dict
+from typing import List, Literal, Optional, Dict, Tuple, Union
 
 from ..types.routes import PrintTreeOptionsType
 
@@ -14,7 +14,7 @@ class RouteNode:
         functions: Dict[str, any],
         indent: str = "",
         subsymbol: str = "├──",
-    ):
+    ) -> None:
         if functions:
             print(
                 f"{indent}{'│' if subsymbol == '├──' else ' '}    ⚬ {name} {[f'{function.__name__}()' for function in functions]}"
@@ -25,7 +25,7 @@ class RouteNode:
         node: Optional["RouteNode"] = None,
         indent: str = "",
         options: PrintTreeOptionsType = {},
-    ):
+    ) -> None:
         include_hooks = options.get("include_hooks", False)
         include_middlewares = options.get("include_middlewares", False)
 
@@ -68,7 +68,7 @@ class Router(RouteNode):
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"],
         path: str,
         route: dict,
-    ):
+    ) -> None:
         parts = path.split("/")
         node = self
 
@@ -84,7 +84,7 @@ class Router(RouteNode):
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"],
         path: str,
         return_params: bool = False,
-    ):
+    ) -> Union[Tuple[Optional[Dict[str, any]], dict], Optional[Dict[str, any]]]:
         parts = path.split("/")
         node = self
         params = {}
@@ -108,7 +108,7 @@ class Router(RouteNode):
             return node.handlers.get(method, None), params
         return node.handlers.get(method, None)
 
-    def get_methods(self, path: str):
+    def get_methods(self, path: str) -> List[str]:
         parts = path.split("/")
         node = self
 

@@ -1,4 +1,5 @@
 import traceback
+from typing import Coroutine, Dict
 
 from ..exceptions import ExceptionHandler, FastipyException
 
@@ -10,7 +11,7 @@ from .reply import Reply, RestrictReply
 
 
 class RequestHandler:
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope: dict, receive: Coroutine, send: Coroutine):
         if scope["type"] == "http":
             cors = self._cors.generate_headers() if self._cors else {}
 
@@ -34,7 +35,7 @@ class RequestHandler:
         elif scope["type"] == "lifespan":
             await self._handle_lifespan(receive, send)
 
-    async def _handle_lifespan(self, receive, send):
+    async def _handle_lifespan(self, receive: Coroutine, send: Coroutine):
         while True:
             message = await receive()
             if message["type"] == "lifespan.startup":
@@ -50,7 +51,9 @@ class RequestHandler:
                 await send({"type": "lifespan.shutdown.complete"})
                 return
 
-    async def _handle_http_request(self, scope, receive, send, cors):
+    async def _handle_http_request(
+        self, scope: dict, receive: Coroutine, send: Coroutine, cors: Dict[str, str]
+    ):
         if "." in scope["path"].split("/")[-1]:
             await Reply(send, cors=cors, static_path=self._static_path)._send_archive(
                 scope["path"]
@@ -83,7 +86,9 @@ class RequestHandler:
         except Exception as e:
             await self._handle_exception(route["hooks"], request, reply, e)
 
-    async def _handle_request_lifecycle(self, route, request, reply):
+    async def _handle_request_lifecycle(
+        self, route: dict, request: Request, reply: Reply
+    ):
         route_hooks = route["hooks"]
         route_middlewares = route["middlewares"]
 
@@ -101,7 +106,9 @@ class RequestHandler:
         if not reply.is_sent:
             await reply.send_code(200)
 
-    async def _handle_exception(self, route_hooks, request, reply, exception):
+    async def _handle_exception(
+        self, route_hooks: dict, request: Request, reply: Reply, exception: Exception
+    ):
         try:
             exception_handler = ExceptionHandler(exception)
 
@@ -123,7 +130,11 @@ class RequestHandler:
             )
 
     async def _default_error_handling(
-        self, exception, reply: Reply, exception_handler, internal=False
+        self,
+        exception: Exception,
+        reply: Reply,
+        exception_handler: ExceptionHandler,
+        internal: bool = False,
     ):
         if internal or issubclass(type(exception), FastipyException):
             await reply._send_error(
