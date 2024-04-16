@@ -16,4 +16,9 @@ class RouteHookType(TypedDict):
     onError: NotRequired[List[FunctionType]]
 
 
+class PrintTreeOptionsType(TypedDict):
+    include_hooks: NotRequired[bool]
+    include_middlewares: NotRequired[bool]
+
+
 RouteMiddlewareType = List[FunctionType]

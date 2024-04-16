@@ -1,5 +1,7 @@
 from typing import Literal, Optional, Dict
 
+from ..types.routes import PrintTreeOptionsType
+
 
 class RouteNode:
     def __init__(self):
@@ -22,7 +24,7 @@ class RouteNode:
         self,
         node: Optional["RouteNode"] = None,
         indent: str = "",
-        options: Dict[str, any] = {},
+        options: PrintTreeOptionsType = {},
     ):
         include_hooks = options.get("include_hooks", False)
         include_middlewares = options.get("include_middlewares", False)

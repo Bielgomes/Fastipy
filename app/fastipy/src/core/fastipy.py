@@ -1,5 +1,5 @@
 import re, copy, click, nest_asyncio
-from typing import Callable, Dict, Optional, Self
+from typing import Callable, Optional, Self
 from uvicorn.main import logger
 
 from ..constants.hooks import HOOKS, hookType
@@ -9,7 +9,12 @@ from ..constants.events import EVENTS, eventType
 from ..constants.serializers import SERIALIZERS
 
 from ..types.plugins import PluginOptions
-from ..types.routes import FunctionType, RouteHookType, RouteMiddlewareType
+from ..types.routes import (
+    FunctionType,
+    PrintTreeOptionsType,
+    RouteHookType,
+    RouteMiddlewareType,
+)
 from ..types.fastipy import FastipyOptions
 
 from ..exceptions import (
@@ -76,7 +81,7 @@ class Fastipy(RequestHandler, DecoratorsBase):
     def set_name(self, name: str) -> None:
         self._name = name
 
-    def print_routes(self, options: Dict[str, any] = {}) -> None:
+    def print_routes(self, options: PrintTreeOptionsType = {}) -> None:
         self._router.print_tree(options=options)
 
     def print_plugins(self) -> None:

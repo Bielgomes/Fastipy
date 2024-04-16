@@ -244,14 +244,18 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### Todo
 
+- [ ] Fix safe save file function, to save in correct path.
+
 ### Added
 
 - [x] Added Fastipy config
 - [x] Added Plugin timeout configuration
+- [x] Added typing for options in print routes function
 
 ### Changed
 
 - [x] Renaming the fastipy base exception to the fastipy exception to make it easier to handle
+- [x] Fix problem in error handler for python 3.11.
 
 # Contributors
 
