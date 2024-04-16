@@ -244,8 +244,6 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### Todo
 
-- [ ] Optimize body loading to only execute functions when necessary.
-
 ### Added
 
 - [x] Added Fastipy config.
@@ -258,6 +256,7 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 - [x] Renaming the fastipy base exception to the fastipy exception to make it easier to handle.
 - [x] Fixed problem in the error handler for python 3.11.
 - [x] Fixed the function of saving files securely, to save them in the correct path.
+- [x] Loading text and json from body files on demand.
 
 # Contributors
 

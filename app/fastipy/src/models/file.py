@@ -15,9 +15,6 @@ class File:
         self._text = None
         self._json = None
 
-        self.__text()
-        self.__json()
-
     @property
     def filename(self) -> str:
         return self._filename
@@ -36,10 +33,16 @@ class File:
 
     @property
     def text(self) -> str:
+        if not self._text:
+            self.__text()
+
         return self._text
 
     @property
     def json(self) -> dict:
+        if not self._json:
+            self.__json()
+
         return self._json
 
     def __text(self) -> None:
@@ -49,7 +52,7 @@ class File:
             pass
 
     def __json(self) -> None:
-        if self._type == "application/json":
+        if self._filetype == "application/json":
             try:
                 self._json = json.loads(self._raw_content)
             except:
@@ -69,11 +72,11 @@ class File:
         self, path: Optional[str] = None, extension: Optional[str] = None
     ) -> str:
         if path is None:
-            path = self._filename
+            path = "./"
 
         id = str(uuid.uuid4())
 
-        extension = get_extension(self._type) if extension is None else extension
+        extension = get_extension(self._filetype) if extension is None else extension
         path = f"{path}/{id}.{extension}"
 
         try:
