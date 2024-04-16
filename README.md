@@ -249,6 +249,7 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 - [x] Added Plugin timeout configuration.
 - [x] Added typing for options in print routes function.
 - [x] Added types to request handler functions parameters.
+- [x] Added the option to automatically create folders when saving files
 
 ### Changed
 

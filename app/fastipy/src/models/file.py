@@ -1,4 +1,4 @@
-import uuid, json, io
+import uuid, json, io, os
 from typing import Optional
 from uvicorn.main import logger
 
@@ -58,18 +58,24 @@ class File:
             except:
                 pass
 
-    def save(self, path: Optional[str] = None) -> None:
+    def save(self, path: Optional[str] = None, create_folders: bool = False) -> None:
         if path is None:
             path = self._filename
 
         try:
+            if create_folders:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+
             with io.open(path, "wb") as file:
                 file.write(self._raw_content)
         except:
             raise FileException(f"Could not save file in '{path}'", logger.error)
 
     def save_safe(
-        self, path: Optional[str] = None, extension: Optional[str] = None
+        self,
+        path: Optional[str] = None,
+        extension: Optional[str] = None,
+        create_folders: bool = False,
     ) -> str:
         if path is None:
             path = "./"
@@ -80,6 +86,9 @@ class File:
         path = f"{path}/{id}.{extension}"
 
         try:
+            if create_folders:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+
             with io.open(path, "wb") as file:
                 file.write(self._raw_content)
         except:
