@@ -112,13 +112,13 @@ class File:
             except:
                 pass
 
-    def save(self, path: Optional[str] = None, create_folders: bool = False) -> None:
+    def save(self, path: Optional[str] = None, create_folders: bool = True) -> None:
         """
         Save the file to the specified path.
 
         Args:
             path (Optional[str], optional): The path to save the file. Defaults to None.
-            create_folders (bool, optional): Whether to create folders if they don't exist. Defaults to False.
+            create_folders (bool, optional): Whether to create folders if they don't exist. Defaults to True.
         """
         if path is None:
             path = self._filename
@@ -136,7 +136,7 @@ class File:
         self,
         path: Optional[str] = None,
         extension: Optional[str] = None,
-        create_folders: bool = False,
+        create_folders: bool = True,
     ) -> str:
         """
         Save the file to a safe path.
@@ -144,7 +144,7 @@ class File:
         Args:
             path (Optional[str], optional): The base path to save the file. Defaults to None.
             extension (Optional[str], optional): The file extension. Defaults to None.
-            create_folders (bool, optional): Whether to create folders if they don't exist. Defaults to False.
+            create_folders (bool, optional): Whether to create folders if they don't exist. Defaults to True.
 
         Returns:
             str: The path where the file is saved.
