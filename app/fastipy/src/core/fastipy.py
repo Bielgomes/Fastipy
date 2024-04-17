@@ -42,7 +42,18 @@ from ..middlewares.cors import CORSGenerator
 
 
 class Fastipy(RequestHandler, DecoratorsBase):
+    """
+    Fastipy main class.
+    """
+
     def __init__(self, options: FastipyOptions = {}, static_path: str = None) -> None:
+        """
+        Initializes a Fastipy application.
+
+        Args:
+            options (FastipyOptions, optional): Options for configuring Fastipy. Defaults to {}.
+            static_path (str, optional): Path to the static files directory. Defaults to None.
+        """
         self._router = Router()
         self._plugins = PluginTree()
         self._cors = None
@@ -64,33 +75,117 @@ class Fastipy(RequestHandler, DecoratorsBase):
 
     @property
     def prefix(self) -> str:
+        """
+        Get the prefix for the application routes.
+
+        Returns:
+            str: Prefix for the application routes.
+        """
         return self._prefix
 
     @property
     def name(self) -> str:
+        """
+        Get the name of the application.
+
+        Returns:
+            str: Name of the application.
+        """
         return self._name
+
+    @name.setter
+    def name(self, name: str) -> None:
+        """
+        Set the name of the instance. Most used for plugins.
+
+        Exemple:
+            app.set_name('my_plugin')
+
+            └── root
+                └── my_plugin
+
+        Args:
+            name (str): Name of the instance.
+        """
+        self._name = name
 
     @property
     def cors(self) -> CORSGenerator:
+        """
+        Get the CORS (Cross-Origin Resource Sharing) generator for the application.
+
+        Returns:
+            CORSGenerator: CORS generator for the application.
+        """
         return self._cors
 
     @property
     def static(self) -> str:
+        """
+        Get the path to the static files directory.
+
+        Returns:
+            str: Path to the static files directory.
+        """
         return self._static_path
 
     def set_name(self, name: str) -> None:
+        """
+        Set the name of the instance. Most used for plugins.
+
+        Exemple:
+            app.set_name('my_plugin')
+
+            └── root
+                └── my_plugin
+
+        Args:
+            name (str): Name of the instance.
+        """
         self._name = name
 
     def print_routes(self, options: PrintTreeOptionsType = {}) -> None:
+        """
+        Print the routes tree of the application.
+
+        Example:
+            app.print_routes()
+
+            └── /
+                └── /test2 (GET)
+                    └── /json (GET)
+
+        Args:
+            options (PrintTreeOptionsType, optional): Options for printing the route tree. Defaults to {}.
+        """
         self._router.print_tree(options=options)
 
     def print_plugins(self) -> None:
+        """
+        Print the plugins tree of the application.
+
+        Example:
+            app.print_plugins()
+
+            └── root
+                └── test1
+                    └── test1
+
+        """
         self._plugins.print_tree()
 
     def set_error_handler(self, handler: FunctionType) -> None:
+        """
+        Set the error handler for the application.
+
+        Args:
+            handler (FunctionType): Error handler function.
+        """
         self._error_handler = handler
 
     def error_handler(self) -> FunctionType:
+        """Decorator to set the error handler for the application."""
+
         def internal(handler: FunctionType) -> FunctionType:
             self.set_error_handler(handler)
             return handler
@@ -98,6 +193,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
         return internal
 
     def add_event(self, event_type: eventType, event: FunctionType) -> None:
+        """
+        Add an lifespan event handler to the application.
+
+        Args:
+            event_type (eventType): Type of event.
+            event (FunctionType): Event handler function.
+        """
         if event_type not in EVENTS:
             raise NoEventTypeException(
                 f"Failed to register event [{event_type}] >> Type not supported",
@@ -107,6 +209,8 @@ class Fastipy(RequestHandler, DecoratorsBase):
         self._events[event_type].append(event)
 
     def on(self, event_type: eventType) -> FunctionType:
+        """Decorator to add an lifespan event handler to the application."""
+
         def internal(event: FunctionType) -> FunctionType:
             self.add_event(event_type, event)
             return event
@@ -114,6 +218,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
         return internal
 
     def register(self, plugin: FunctionType, options: PluginOptions = {}) -> Self:
+        """
+        Register a plugin with the application.
+
+        Args:
+            plugin (FunctionType): Plugin function.
+            options (PluginOptions, optional): Options for the plugin. Defaults to {}.
+        """
         instance = FastipyInstance()
 
         instance._router = self._router
@@ -154,7 +265,20 @@ class Fastipy(RequestHandler, DecoratorsBase):
         max_age: Optional[int] = None,
         content_security_policy: str = "default-src 'self'",
         custom_headers: dict = {},
-    ) -> "Fastipy":
+    ) -> Self:
+        """
+        Configure CORS for the application.
+
+        Args:
+            allow_origin (str, optional): Allowed origin. Defaults to "*".
+            allow_headers (str, optional): Allowed headers. Defaults to "*".
+            allow_methods (str, optional): Allowed methods. Defaults to "*".
+            allow_credentials (bool, optional): Allow credentials. Defaults to True.
+            expose_headers (Optional[str], optional): Expose headers. Defaults to None.
+            max_age (Optional[int], optional): Maximum age. Defaults to None.
+            content_security_policy (str, optional): Content security policy. Defaults to "default-src 'self'".
+            custom_headers (dict, optional): Custom headers. Defaults to {}.
+        """
         self._cors = CORSGenerator(
             allow_origin,
             allow_headers,
@@ -168,6 +292,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
         return self
 
     def decorate(self, name: str, value: any) -> None:
+        """
+        Register a decorator for the application.
+
+        Args:
+            name (str): Name of the decorator.
+            value (any): Decorator function.
+        """
         if hasattr(self, name) or self.has_decorator(name):
             raise DecoratorAlreadyExistsException(
                 f"Failed to register decorator '{name}' >> Duplicate decorator",
@@ -177,6 +308,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
         self._decorators["app"][name] = value
 
     def decorate_request(self, name: str, value: any) -> None:
+        """
+        Register a decorator for the request.
+
+        Args:
+            name (str): Name of the decorator.
+            value (any): Decorator function.
+        """
         if hasattr(Request, name) or self.has_request_decorator(name):
             raise DecoratorAlreadyExistsException(
                 f"Failed to register request decorator '{name}' >> Duplicate decorator",
@@ -186,6 +324,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
         self._decorators["request"][name] = value
 
     def decorate_reply(self, name: str, value: any) -> None:
+        """
+        Register a decorator for the reply.
+
+        Args:
+            name (str): Name of the decorator.
+            value (any): Decorator function.
+        """
         if hasattr(Reply, name) or self.has_reply_decorator(name):
             raise DecoratorAlreadyExistsException(
                 f"Failed to register reply decorator '{name}' >> Duplicate decorator",
@@ -195,15 +340,49 @@ class Fastipy(RequestHandler, DecoratorsBase):
         self._decorators["reply"][name] = value
 
     def has_decorator(self, name: str) -> bool:
+        """
+        Check if the application has a decorator.
+
+        Args:
+            name (str): Name of the decorator.
+
+        Returns:
+            bool: True if the application has the decorator, False otherwise.
+        """
         return name in self._decorators["app"]
 
     def has_request_decorator(self, name: str) -> bool:
+        """
+        Check if the application has a request decorator.
+
+        Args:
+            name (str): Name of the decorator.
+
+        Returns:
+            bool: True if the application has the request decorator, False otherwise.
+        """
         return name in self._decorators["request"]
 
     def has_reply_decorator(self, name: str) -> bool:
+        """
+        Check if the application has a reply decorator.
+
+        Args:
+            name (str): Name of the decorator.
+
+        Returns:
+            bool: True if the application has the reply decorator, False otherwise.
+        """
         return name in self._decorators["reply"]
 
     def add_hook(self, hook_type: hookType, hook: FunctionType) -> None:
+        """
+        Add a hook to the application.
+
+        Args:
+            hook_type (hookType): Type of hook.
+            hook (FunctionType): Hook function.
+        """
         if hook_type not in HOOKS:
             raise NoHookTypeException(
                 f"Failed to register hook [{hook_type}] >> Type not supported",
@@ -213,6 +392,16 @@ class Fastipy(RequestHandler, DecoratorsBase):
         self._hooks[hook_type].append(hook)
 
     def hook(self, hook_type: hookType) -> FunctionType:
+        """
+        Decorator to add a hook to the application.
+
+        Args:
+            hook_type (hookType): Type of hook.
+
+        Returns:
+            FunctionType: Hook function.
+        """
+
         def internal(hook: FunctionType) -> FunctionType:
             self.add_hook(hook_type, hook)
             return hook
@@ -220,9 +409,17 @@ class Fastipy(RequestHandler, DecoratorsBase):
         return internal
 
     def add_middleware(self, middleware: FunctionType) -> None:
+        """
+        Add a middleware to the application.
+
+        Args:
+            middleware (FunctionType): Middleware function.
+        """
         self._middlewares.append(middleware)
 
     def use(self) -> FunctionType:
+        """Decorator to add a middleware to the application."""
+
         def internal(middleware: FunctionType) -> FunctionType:
             self.add_middleware(middleware)
             return middleware
@@ -234,6 +431,13 @@ class Fastipy(RequestHandler, DecoratorsBase):
         validation: Callable[[any], bool],
         serializer: Callable[[any], any],
     ):
+        """
+        Add a serializer to the application.
+
+        Args:
+            validation (Callable[[any], bool]): Validation function.
+            serializer (Callable[[any], any]): Serializer function.
+        """
         self._serializers.append({"validate": validation, "serialize": serializer})
 
     def add_route(
@@ -244,6 +448,16 @@ class Fastipy(RequestHandler, DecoratorsBase):
         route_hooks: RouteHookType = {},
         route_middlewares: RouteMiddlewareType = [],
     ) -> None:
+        """
+        Add a route to the application.
+
+        Args:
+            method (httpMethodType): HTTP method.
+            path (str): Path of the route.
+            handler (FunctionType): Route handler function.
+            route_hooks (RouteHookType, optional): Route hooks. Defaults to {}.
+            route_middlewares (RouteMiddlewareType, optional): Route middlewares. Defaults to [].
+        """
         if self.prefix != "/":
             path = f"{self.prefix}{path if path != '/' else ''}"
         if method not in HTTP_METHODS:
@@ -297,6 +511,18 @@ class Fastipy(RequestHandler, DecoratorsBase):
         route_hooks: RouteHookType = {},
         route_middlewares: RouteMiddlewareType = [],
     ) -> FunctionType:
+        """
+        Decorator to add a GET route to the application.
+
+        Args:
+            path (str): Path of the route.
+            route_hooks (RouteHookType, optional): Route hooks. Defaults to {}.
+            route_middlewares (RouteMiddlewareType, optional): Route middlewares. Defaults to [].
+
+        Returns:
+            FunctionType: Route handler function.
+        """
+
         def internal(handler: FunctionType) -> FunctionType:
             self.add_route("GET", path, handler, route_hooks, route_middlewares)
             return handler
@@ -309,6 +535,18 @@ class Fastipy(RequestHandler, DecoratorsBase):
         route_hooks: RouteHookType = {},
         route_middlewares: RouteMiddlewareType = [],
     ) -> FunctionType:
+        """
+        Decorator to add a POST route to the application.
+
+        Args:
+            path (str): Path of the route.
+            route_hooks (RouteHookType, optional): Route hooks. Defaults to {}.
+            route_middlewares (RouteMiddlewareType, optional): Route middlewares. Defaults to [].
+
+        Returns:
+            FunctionType: Route handler function.
+        """
+
         def internal(handler: FunctionType) -> FunctionType:
             self.add_route("POST", path, handler, route_hooks, route_middlewares)
             return handler
@@ -321,6 +559,18 @@ class Fastipy(RequestHandler, DecoratorsBase):
         route_hooks: RouteHookType = {},
         route_middlewares: RouteMiddlewareType = [],
     ) -> FunctionType:
+        """
+        Decorator to add a PUT route to the application.
+
+        Args:
+            path (str): Path of the route.
+            route_hooks (RouteHookType, optional): Route hooks. Defaults to {}.
+            route_middlewares (RouteMiddlewareType, optional): Route middlewares. Defaults to [].
+
+        Returns:
+            FunctionType: Route handler function.
+        """
+
         def internal(handler: FunctionType) -> FunctionType:
             self.add_route("PUT", path, handler, route_hooks, route_middlewares)
             return handler
@@ -333,6 +583,18 @@ class Fastipy(RequestHandler, DecoratorsBase):
         route_hooks: RouteHookType = {},
         route_middlewares: RouteMiddlewareType = [],
     ) -> FunctionType:
+        """
+        Decorator to add a PATCH route to the application.
+
+        Args:
+            path (str): Path of the route.
+            route_hooks (RouteHookType, optional): Route hooks. Defaults to {}.
+            route_middlewares (RouteMiddlewareType, optional): Route middlewares. Defaults to [].
+
+        Returns:
+            FunctionType: Route handler function.
+        """
+
         def internal(handler: FunctionType) -> FunctionType:
             self.add_route("PATCH", path, handler, route_hooks, route_middlewares)
             return handler
@@ -345,6 +607,18 @@ class Fastipy(RequestHandler, DecoratorsBase):
         route_hooks: RouteHookType = {},
         route_middlewares: RouteMiddlewareType = [],
     ) -> FunctionType:
+        """
+        Decorator to add a DELETE route to the application.
+
+        Args:
+            path (str): Path of the route.
+            route_hooks (RouteHookType, optional): Route hooks. Defaults to {}.
+            route_middlewares (RouteMiddlewareType, optional): Route middlewares. Defaults to [].
+
+        Returns:
+            FunctionType: Route handler function.
+        """
+
         def internal(handler: FunctionType) -> FunctionType:
             self.add_route("DELETE", path, handler, route_hooks, route_middlewares)
             return handler
@@ -357,6 +631,18 @@ class Fastipy(RequestHandler, DecoratorsBase):
         route_hooks: RouteHookType = {},
         route_middlewares: RouteMiddlewareType = [],
     ) -> FunctionType:
+        """
+        Decorator to add a HEAD route to the application.
+
+        Args:
+            path (str): Path of the route.
+            route_hooks (RouteHookType, optional): Route hooks. Defaults to {}.
+            route_middlewares (RouteMiddlewareType, optional): Route middlewares. Defaults to [].
+
+        Returns:
+            FunctionType: Route handler function.
+        """
+
         def internal(handler: FunctionType) -> FunctionType:
             self.add_route("HEAD", path, handler, route_hooks, route_middlewares)
             return handler

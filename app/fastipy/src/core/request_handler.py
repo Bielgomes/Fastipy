@@ -11,7 +11,19 @@ from .reply import Reply, RestrictReply
 
 
 class RequestHandler:
-    async def __call__(self, scope: dict, receive: Coroutine, send: Coroutine):
+    """
+    Handles incoming requests and dispatches them to the appropriate routes and handlers.
+    """
+
+    async def __call__(self, scope: dict, receive: Coroutine, send: Coroutine) -> None:
+        """
+        Invoked when a request is received by the server.
+
+        Args:
+            scope (dict): The ASGI scope of the request.
+            receive (Coroutine): The coroutine to receive messages from the client.
+            send (Coroutine): The coroutine to send messages to the client.
+        """
         if scope["type"] == "http":
             cors = self._cors.generate_headers() if self._cors else {}
 
@@ -22,7 +34,7 @@ class RequestHandler:
             elif scope["method"] == "OPTIONS":
                 allowed_methods = self._router.get_methods(scope["path"])
                 if len(allowed_methods) == 0:
-                    await self._handle_404(send, cors)
+                    await self._handle_route_not_found(send, cors)
                     return
 
                 await Reply(send, cors=cors)._options(allowed_methods)
@@ -35,7 +47,14 @@ class RequestHandler:
         elif scope["type"] == "lifespan":
             await self._handle_lifespan(receive, send)
 
-    async def _handle_lifespan(self, receive: Coroutine, send: Coroutine):
+    async def _handle_lifespan(self, receive: Coroutine, send: Coroutine) -> None:
+        """
+        Handles lifespan events of the application.
+
+        Args:
+            receive (Coroutine): The coroutine to receive lifespan events.
+            send (Coroutine): The coroutine to send lifespan event responses.
+        """
         while True:
             message = await receive()
             if message["type"] == "lifespan.startup":
@@ -53,7 +72,16 @@ class RequestHandler:
 
     async def _handle_http_request(
         self, scope: dict, receive: Coroutine, send: Coroutine, cors: Dict[str, str]
-    ):
+    ) -> None:
+        """
+        Handles incoming HTTP requests.
+
+        Args:
+            scope (dict): The ASGI scope of the request.
+            receive (Coroutine): The coroutine to receive messages from the client.
+            send (Coroutine): The coroutine to send messages to the client.
+            cors (Dict[str, str]): CORS headers for the response.
+        """
         if "." in scope["path"].split("/")[-1]:
             await Reply(send, cors=cors, static_path=self._static_path)._send_archive(
                 scope["path"]
@@ -64,7 +92,7 @@ class RequestHandler:
             scope["method"], scope["path"], return_params=True
         )
         if route is None:
-            await self._handle_404(send, cors)
+            await self._handle_route_not_found(send, cors)
             return
 
         scope["params"] = params
@@ -88,7 +116,15 @@ class RequestHandler:
 
     async def _handle_request_lifecycle(
         self, route: dict, request: Request, reply: Reply
-    ):
+    ) -> None:
+        """
+        Handles the lifecycle of an HTTP request.
+
+        Args:
+            route (dict): The route matched for the request.
+            request (Request): The Request object.
+            reply (Reply): The Reply object.
+        """
         route_hooks = route["hooks"]
         route_middlewares = route["middlewares"]
 
@@ -108,7 +144,16 @@ class RequestHandler:
 
     async def _handle_exception(
         self, route_hooks: dict, request: Request, reply: Reply, exception: Exception
-    ):
+    ) -> None:
+        """
+        Handles exceptions that occur during request processing.
+
+        Args:
+            route_hooks (dict): Hooks registered for the route.
+            request (Request): The Request object.
+            reply (Reply): The Reply object.
+            exception (Exception): The exception that occurred.
+        """
         try:
             exception_handler = ExceptionHandler(exception)
 
@@ -135,7 +180,16 @@ class RequestHandler:
         reply: Reply,
         exception_handler: ExceptionHandler,
         internal: bool = False,
-    ):
+    ) -> None:
+        """
+        Handles default error handling for exceptions.
+
+        Args:
+            exception (Exception): The exception that occurred.
+            reply (Reply): The Reply object.
+            exception_handler (ExceptionHandler): Exception handler object.
+            internal (bool, optional): Indicates if the exception is internal. Defaults to False.
+        """
         if internal or issubclass(type(exception), FastipyException):
             await reply._send_error(
                 message=f"{exception_handler.type}:"
@@ -146,5 +200,14 @@ class RequestHandler:
         else:
             raise exception
 
-    async def _handle_404(self, send, cors):
+    async def _handle_route_not_found(
+        self, send: Coroutine, cors: Dict[str, str]
+    ) -> None:
+        """
+        Handles requests for routes that are not found.
+
+        Args:
+            send: The coroutine to send messages to the client.
+            cors (Dict[str, str]): CORS headers for the response.
+        """
         await Reply(send, cors=cors)._send_error(message="Route not found", code=404)

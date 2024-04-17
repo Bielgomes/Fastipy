@@ -4,7 +4,14 @@ from ..types.routes import PrintTreeOptionsType
 
 
 class RouteNode:
+    """
+    Represents a node in the router tree structure.
+    """
+
     def __init__(self):
+        """
+        Initializes a RouteNode object with empty children and handlers.
+        """
         self.children: Dict[str, "RouteNode"] = {}
         self.handlers: Dict[str, any] = {}
 
@@ -15,6 +22,15 @@ class RouteNode:
         indent: str = "",
         subsymbol: str = "├──",
     ) -> None:
+        """
+        Helper method to print hooks or middlewares.
+
+        Args:
+            name (str): The name of the functions (e.g., "onRequest", "middleware").
+            functions (Dict[str, any]): The dictionary of functions indexed by their names.
+            indent (str): The indentation string for formatting. Defaults to "".
+            subsymbol (str): The symbol used for indentation. Defaults to "├──".
+        """
         if functions:
             print(
                 f"{indent}{'│' if subsymbol == '├──' else ' '}    ⚬ {name} {[f'{function.__name__}()' for function in functions]}"
@@ -26,6 +42,18 @@ class RouteNode:
         indent: str = "",
         options: PrintTreeOptionsType = {},
     ) -> None:
+        """
+        Recursively prints the router tree structure.
+
+        Args:
+            node (Optional[RouteNode]): The starting node. Defaults to None (uses the root node).
+            indent (str): The indentation string for formatting. Defaults to "".
+            options (PrintTreeOptionsType): Additional options for printing. Defaults to {}.
+
+        Options:
+            include_hooks (bool): Whether to include hooks in the printed output. Defaults to False.
+            include_middlewares (bool): Whether to include middlewares in the printed output. Defaults to False.
+        """
         include_hooks = options.get("include_hooks", False)
         include_middlewares = options.get("include_middlewares", False)
 
@@ -63,12 +91,24 @@ class RouteNode:
 
 
 class Router(RouteNode):
+    """
+    Represents a router for managing routes and handlers.
+    """
+
     def add_route(
         self,
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"],
         path: str,
         route: dict,
     ) -> None:
+        """
+        Adds a new route with the specified method and path.
+
+        Args:
+            method (Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"]): The HTTP method for the route.
+            path (str): The path of the route.
+            route (dict): The route configuration.
+        """
         parts = path.split("/")
         node = self
 
@@ -85,6 +125,18 @@ class Router(RouteNode):
         path: str,
         return_params: bool = False,
     ) -> Union[Tuple[Optional[Dict[str, any]], dict], Optional[Dict[str, any]]]:
+        """
+        Finds a route based on the method and path.
+
+        Args:
+            method (Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD"]): The HTTP method.
+            path (str): The path of the route.
+            return_params (bool): Whether to return parameters along with the route. Defaults to False.
+
+        Returns:
+            Union[Tuple[Optional[Dict[str, any]], dict], Optional[Dict[str, any]]]: The route and parameters (if return_params is True).
+        """
+
         parts = path.split("/")
         node = self
         params = {}
@@ -109,6 +161,15 @@ class Router(RouteNode):
         return node.handlers.get(method, None)
 
     def get_methods(self, path: str) -> List[str]:
+        """
+        Retrieves the allowed methods for the given path.
+
+        Args:
+            path (str): The path for which to retrieve the allowed methods.
+
+        Returns:
+            List[str]: The list of allowed methods.
+        """
         parts = path.split("/")
         node = self
 

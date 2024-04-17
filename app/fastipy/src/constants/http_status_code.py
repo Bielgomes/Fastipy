@@ -1,4 +1,8 @@
 class Status:
+    """
+    Class containing HTTP status codes and methods for checking status categories.
+    """
+
     HTTP_200_OK = 200
     HTTP_201_CREATED = 201
     HTTP_202_ACCEPTED = 202
@@ -29,21 +33,66 @@ class Status:
     HTTP_504_GATEWAY_TIMEOUT = 504
 
     @staticmethod
-    def is_informational(status: int):
+    def is_informational(status: int) -> bool:
+        """
+        Check if the status code is in the informational range (100-199).
+
+        Args:
+            status (int): The HTTP status code.
+
+        Returns:
+            bool: True if the status code is in the informational range, False otherwise.
+        """
         return 100 <= status < 200
 
     @staticmethod
-    def is_success(status: int):
+    def is_success(status: int) -> bool:
+        """
+        Check if the status code is in the success range (200-299).
+
+        Args:
+            status (int): The HTTP status code.
+
+        Returns:
+            bool: True if the status code is in the success range, False otherwise.
+        """
         return 200 <= status < 300
 
     @staticmethod
-    def is_redirect(status: int):
+    def is_redirect(status: int) -> bool:
+        """
+        Check if the status code is in the redirection range (300-399).
+
+        Args:
+            status (int): The HTTP status code.
+
+        Returns:
+            bool: True if the status code is in the redirection range, False otherwise.
+        """
         return 300 <= status < 400
 
     @staticmethod
-    def is_client_error(status: int):
+    def is_client_error(status: int) -> bool:
+        """
+        Check if the status code is in the client error range (400-499).
+
+        Args:
+            status (int): The HTTP status code.
+
+        Returns:
+            bool: True if the status code is in the client error range, False otherwise.
+        """
         return 400 <= status < 500
 
     @staticmethod
-    def is_server_error(status: int):
+    def is_server_error(status: int) -> bool:
+        """
+        Check if the status code is in the server error range (500-599).
+
+        Args:
+            status (int): The HTTP status code.
+
+        Returns:
+            bool: True if the status code is in the server error range, False otherwise.
+        """
         return 500 <= status < 600

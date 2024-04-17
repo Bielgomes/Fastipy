@@ -9,7 +9,17 @@ if TYPE_CHECKING:
 
 
 class Form:
+    """
+    Represents a form parsed from a request body, extracting form fields and files.
+    """
+
     def __init__(self, body: "Body"):
+        """
+        Initialize a Form object.
+
+        Args:
+            body (Body): The Body object containing the form data.
+        """
         self._body = body
         self._fields = {}
         self._files = {}
@@ -18,13 +28,28 @@ class Form:
 
     @property
     def fields(self) -> Dict[str, str]:
+        """
+        Get the form fields.
+
+        Returns:
+            Dict[str, str]: The form fields.
+        """
         return self._fields
 
     @property
     def files(self) -> Dict[str, File]:
+        """
+        Get the form files.
+
+        Returns:
+            Dict[str, File]: The form files.
+        """
         return self._files
 
     def __get_variables(self) -> None:
+        """
+        Parse the form data and extract variables.
+        """
         if self._body.type is None:
             return
 

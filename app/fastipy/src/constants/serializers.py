@@ -1,7 +1,7 @@
 import json
 
 
-def validate_json(data: any):
+def validate_json(data: any) -> bool:
     try:
         return bool(json.loads(data))
     except:

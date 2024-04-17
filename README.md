@@ -243,8 +243,6 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 ### Todo
 
-- [ ] Document the entire code.
-
 ### Added
 
 - [x] Added Fastipy config.
@@ -253,6 +251,7 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 - [x] Added types to request handler functions parameters.
 - [x] Added the option to automatically create folders when saving files.
 - [x] Added shortcut form property inside Request class to facilitate usability.
+- [x] Added documentation for most methods and classes.
 
 ### Changed
 

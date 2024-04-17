@@ -13,6 +13,19 @@ class CORSGenerator:
         content_security_policy: str = "default-src 'self'",
         custom_headers: dict = {},
     ) -> None:
+        """
+        Initialize the CORS generator with default values.
+
+        Args:
+            allow_origin (str, optional): Allowed origin. Defaults to "*".
+            allow_headers (str, optional): Allowed headers. Defaults to "*".
+            allow_methods (str, optional): Allowed methods. Defaults to "*".
+            allow_credentials (bool, optional): Allow credentials. Defaults to True.
+            expose_headers (Optional[str], optional): Expose headers. Defaults to None.
+            max_age (Optional[int], optional): Max age. Defaults to None.
+            content_security_policy (str, optional): Content security policy. Defaults to "default-src 'self'".
+            custom_headers (dict, optional): Custom headers. Defaults to {}.
+        """
         self.allow_origin = allow_origin
         self.allow_headers = allow_headers
         self.allow_methods = allow_methods
@@ -24,6 +37,12 @@ class CORSGenerator:
         self.custom_headers = custom_headers
 
     def generate_headers(self) -> dict:
+        """
+        Generate CORS headers.
+
+        Returns:
+            dict: Generated CORS headers.
+        """
         headers = {
             "X-XSS-Protection": "1; mode=block",
             "X-Content-Type-Options": "nosniff",
