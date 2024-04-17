@@ -657,5 +657,9 @@ class Fastipy(RequestHandler, DecoratorsBase):
 
 
 class FastipyInstance(Fastipy):
+    """
+    Fastipy instance class.
+    """
+
     def cors(self, *args, **kwargs) -> None:
         logger.warn("FastipyInstance.cors() is not implemented")
