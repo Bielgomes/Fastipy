@@ -1,0 +1,4 @@
+uvicorn[standard]
+starlette
+nest-asyncio
+Jinja2
