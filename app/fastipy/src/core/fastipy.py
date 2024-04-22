@@ -1,5 +1,5 @@
 import re, copy, click, nest_asyncio
-from typing import Callable, Optional, Self
+from typing import Callable, Dict, List, Optional, Self, Union
 from uvicorn.main import logger
 
 from ..constants.hooks import HOOKS, hookType
@@ -257,36 +257,36 @@ class Fastipy(RequestHandler, DecoratorsBase):
 
     def cors(
         self,
-        allow_origin: str = "*",
-        allow_headers: str = "*",
-        allow_methods: str = "*",
+        allow_origins: Union[str, List[str]] = "*",
+        allow_headers: Union[str, List[str]] = "*",
+        allow_methods: Union[str, List[str]] = "*",
         allow_credentials: bool = True,
-        expose_headers: Optional[str] = None,
+        expose_headers: Optional[Union[str, List[str]]] = None,
         max_age: Optional[int] = None,
-        content_security_policy: str = "default-src 'self'",
-        custom_headers: dict = {},
-    ) -> Self:
+        content_security_policys: Union[str, List[str]] = "default-src 'self'",
+        custom_headers: Dict[str, Union[str, List[str]]] = {},
+    ) -> None:
         """
-        Configure CORS for the application.
+        Initialize the CORS generator with default values.
 
         Args:
-            allow_origin (str, optional): Allowed origin. Defaults to "*".
-            allow_headers (str, optional): Allowed headers. Defaults to "*".
-            allow_methods (str, optional): Allowed methods. Defaults to "*".
+            allow_origins (Union[str, List[str]], optional): Allowed origins. Defaults to "*".
+            allow_headers (Union[str, List[str]], optional): Allowed headers. Defaults to "*".
+            allow_methods (Union[str, List[str]], optional): Allowed methods. Defaults to "*".
             allow_credentials (bool, optional): Allow credentials. Defaults to True.
-            expose_headers (Optional[str], optional): Expose headers. Defaults to None.
-            max_age (Optional[int], optional): Maximum age. Defaults to None.
-            content_security_policy (str, optional): Content security policy. Defaults to "default-src 'self'".
-            custom_headers (dict, optional): Custom headers. Defaults to {}.
+            expose_headers (Optional[Union[str, List[str]]], optional): Expose headers. Defaults to None.
+            max_age (Optional[int], optional): Max age. Defaults to None.
+            content_security_policys (Union[str, List[str]], optional): Content security policies. Defaults to "default-src 'self'".
+            custom_headers (Dict[str, Union[str, List[str]]], optional): Custom headers. Defaults to {}.
         """
         self._cors = CORSGenerator(
-            allow_origin,
+            allow_origins,
             allow_headers,
             allow_methods,
             allow_credentials,
             expose_headers,
             max_age,
-            content_security_policy,
+            content_security_policys,
             custom_headers,
         )
         return self
