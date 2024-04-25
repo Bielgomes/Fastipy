@@ -97,7 +97,6 @@ class RequestHandler:
 
         scope["params"] = params
         request = Request(scope, receive, self._decorators)
-        self._serializers: list = self._serializers
         reply = Reply(
             send,
             request,

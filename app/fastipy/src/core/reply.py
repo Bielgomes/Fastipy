@@ -70,7 +70,7 @@ class Reply(DecoratorsBase):
         self._response_sent = False
         self._serializers = reversed(serializers)
 
-        self._instance_decorators = decorators.get(Self, [])
+        self._instance_decorators = decorators.get("reply", [])
 
     @property
     def status_code(self) -> int:

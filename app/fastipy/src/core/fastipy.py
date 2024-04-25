@@ -265,7 +265,7 @@ class Fastipy(RequestHandler, DecoratorsBase):
         max_age: Optional[int] = None,
         content_security_policys: Union[str, List[str]] = "default-src 'self'",
         custom_headers: Dict[str, Union[str, List[str]]] = {},
-    ) -> None:
+    ) -> Self:
         """
         Initialize the CORS generator with default values.
 
