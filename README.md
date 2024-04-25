@@ -248,6 +248,7 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 ### Changed
 
 - [X] Fixing and improving CORS header generation
+- [X] Fixing Reply class that didn't store decorators 
 
 # Contributors
 
