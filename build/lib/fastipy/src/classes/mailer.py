@@ -82,6 +82,8 @@ def create_message(
 
 
 class Mailer:
+    """A class to send emails using SMTP."""
+
     def __init__(
         self,
         smtp_host: str,

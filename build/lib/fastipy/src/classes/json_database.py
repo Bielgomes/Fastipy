@@ -3,6 +3,8 @@ import json, uuid
 
 
 class Database:
+    """A simple JSON-based database class."""
+
     def __init__(self):
         """
         Initialize the Database object.

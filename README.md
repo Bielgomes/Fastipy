@@ -239,7 +239,7 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 # Change Log
 
-## Development Version 1.5.3
+## Version 1.5.3
 
 ### Todo
 

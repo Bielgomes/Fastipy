@@ -1,7 +1,6 @@
 from typing import Union, Dict, Tuple, List
 from http.cookies import SimpleCookie
 from urllib.parse import parse_qsl
-from logging import Logger
 
 from ..types.routes import FunctionType
 
@@ -20,7 +19,6 @@ class Request(DecoratorsBase):
         self,
         scope,
         receive,
-        logger: Logger,
         decorators: Dict[str, List[FunctionType]] = {},
     ) -> None:
         """
@@ -29,13 +27,11 @@ class Request(DecoratorsBase):
         Args:
             scope: The ASGI scope of the request.
             receive: The coroutine function to receive messages from the client.
-            logger (Logger): The logger object for logging.
             decorators (Dict[str, List[FunctionType]], optional): The decorators for the request. Defaults to {}.
         """
         self.__scope = scope
         self.__receive = receive
         self._instance_decorators = decorators.get("request", [])
-        self._log = logger
         self._body = None
 
         self.__headers()

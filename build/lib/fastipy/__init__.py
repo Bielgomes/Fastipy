@@ -1,4 +1,4 @@
-__version__ = "1.5.2"
+__version__ = "1.5.3"
 
 from .src.core.fastipy import Fastipy, FastipyInstance
 
@@ -13,6 +13,8 @@ from .src.classes.json_database import Database
 
 from .src.constants.http_status_code import Status
 
+from .src.exceptions.exception_handler import ExceptionHandler
+
 from starlette.testclient import TestClient
 
 __all__ = [
@@ -26,5 +28,6 @@ __all__ = [
     "render_template",
     "Database",
     "Status",
+    "ExceptionHandler",
     "TestClient",
 ]
