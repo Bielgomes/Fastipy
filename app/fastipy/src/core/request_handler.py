@@ -97,7 +97,6 @@ class RequestHandler:
 
         scope["params"] = params
         request = Request(scope, receive, self._decorators)
-        self._serializers: list = self._serializers
         reply = Reply(
             send,
             request,
@@ -192,7 +191,7 @@ class RequestHandler:
         """
         if internal or issubclass(type(exception), FastipyException):
             await reply._send_error(
-                message=f"{exception_handler.type}:"
+                message=f"{exception_handler.type}: "
                 + exception_handler.message.replace('"', "'"),
                 code=500,
             )

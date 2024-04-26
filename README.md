@@ -239,24 +239,16 @@ For production deployment, please refer to this **[uvicorn guide](https://www.uv
 
 # Change Log
 
-## Version 1.5.2
+## Development Version 1.5.3
+
+### Todo
 
 ### Added
 
-- [x] Added Fastipy config.
-- [x] Added Plugin timeout configuration.
-- [x] Added typing for options in print routes function.
-- [x] Added types to request handler functions parameters.
-- [x] Added the option to automatically create folders when saving files.
-- [x] Added shortcut form property inside Request class to facilitate usability.
-- [x] Added documentation for most methods and classes.
-
 ### Changed
 
-- [x] Renaming the fastipy base exception to the fastipy exception to make it easier to handle.
-- [x] Fixed problem in the error handler for python 3.11.
-- [x] Fixed the function of saving files securely, to save them in the correct path.
-- [x] Loading text and json from body files on demand.
+- [X] Fixing and improving CORS header generation
+- [X] Fixing Reply class that didn't store decorators 
 
 # Contributors
 
